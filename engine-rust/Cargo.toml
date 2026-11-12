@@ -1,0 +1,25 @@
+[package]
+name = "reportforge"
+version = "2.0.0"
+edition = "2021"
+authors = ["Edwin Abreu & ReportForge Contributors"]
+description = "Universal Document Composition and PDF Engine in Rust"
+license = "MIT"
+
+[lib]
+name = "reportforge"
+crate-type = ["cdylib", "rlib", "staticlib"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+lopdf = "0.33"
+qrcode = { version = "0.14", default-features = false }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

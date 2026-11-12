@@ -20,4 +20,9 @@ output/
 bin/
 obj/
 node_modules/
+target/
+engine-rust/target/
+*.so
+*.dll
+*.dylib
 

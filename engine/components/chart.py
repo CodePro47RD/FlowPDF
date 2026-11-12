@@ -159,6 +159,7 @@ class Chart(Component):
 
         buf = io.BytesIO()
         fig.savefig(buf, format="PNG", dpi=dpi, facecolor=fig.get_facecolor(), edgecolor="none")
+        plt.close(fig)
         buf.seek(0)
         self._image_cache = ImageReader(buf)
         return self._image_cache
