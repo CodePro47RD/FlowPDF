@@ -5,7 +5,8 @@ __pycache__/
 *.sqlite3
 media/
 static_collected/
-dist/
+/sdk/typescript/dist/
+/examples/typescript/dist/
 build/
 *.egg-info/
 .coverage
@@ -25,5 +26,12 @@ engine-rust/target/
 *.so
 *.dll
 *.dylib
-!sdk/csharp/ReportForge/runtimes/**
+!sdk/**/runtimes/**
+!sdk/java/lib/**
+!sdk/**/sdk/typescript/dist/
+/examples/typescript/dist/**
+!sdk/**/*.tgz
+!sdk/**/*.nupkg
+!sdk/**/*.whl
+!sdk/**/*.jar
 

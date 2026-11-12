@@ -410,4 +410,9 @@ export class ReportDocument {
     build(): DocumentDefinition {
         return this.doc;
     }
+
+    renderPdf(data?: object | string): Uint8Array {
+        const { ReportForgeEngine } = require('./native');
+        return ReportForgeEngine.renderPdf(this.build(), data);
+    }
 }

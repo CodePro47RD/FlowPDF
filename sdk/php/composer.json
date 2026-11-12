@@ -1,0 +1,35 @@
+{
+  "name": "reportforge/reportforge",
+  "description": "Universal Document Engine and Fluent Report Builder SDK for PHP with native Rust Core v2.0",
+  "version": "2.0.0",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Edwin Abreu & ReportForge Contributors",
+      "email": "dev@reportforge.io"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "ext-json": "*",
+    "ext-curl": "*"
+  },
+  "suggest": {
+    "ext-ffi": "Allows ultra-fast in-process native PDF rendering via Rust Core v2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ReportForge\\": "src/"
+    }
+  },
+  "keywords": [
+    "reportforge",
+    "pdf",
+    "reports",
+    "document-engine",
+    "rust",
+    "fluent",
+    "php"
+  ]
+}

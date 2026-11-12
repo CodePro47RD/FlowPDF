@@ -1,9 +1,14 @@
 {
-  "name": "@reportforge/client",
-  "version": "1.0.0",
-  "description": "Strongly-typed client and Fluent Builder SDK for ReportForge Document Engine",
+  "name": "reportforge",
+  "version": "2.0.0",
+  "description": "Universal Document Engine and Fluent Report Builder SDK for TypeScript, JavaScript, Bun and Node.js with native Rust Core v2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "runtimes",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc"
   },
@@ -13,11 +18,18 @@
     "reporting",
     "document-engine",
     "fluent",
-    "typescript"
+    "typescript",
+    "javascript",
+    "bun",
+    "rust"
   ],
   "author": "Edwin Abreu & ReportForge Contributors",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^20.19.43",
     "typescript": "^5.4.5"
+  },
+  "optionalDependencies": {
+    "koffi": "^3.3.7"
   }
 }
