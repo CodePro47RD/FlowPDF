@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ReportForge</RootNamespace>
+    <AssemblyName>ReportForge</AssemblyName>
+    
+    <!-- Package metadata -->
+    <PackageId>ReportForge</PackageId>
+    <Version>2.0.0</Version>
+    <Authors>Edwin Abreu &amp; ReportForge Contributors</Authors>
+    <Company>ReportForge</Company>
+    <Product>ReportForge</Product>
+    <Title>ReportForge - High-Performance Document Engine for .NET</Title>
+    <Description>Enterprise reporting and document generation engine for .NET. Features a declarative Fluent Builder API, strongly-typed AST, remote HTTP client, and ultra-fast in-process native rendering powered by the Rust Core (v2.0) with embedded win-x64 and linux-x64 runtimes.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/reportforge/reportforge</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/reportforge/reportforge</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>reportforge;pdf;reports;reporting;fluent;rust;inprocess;high-performance;csharp</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    
+    <!-- Build & packing options -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <Content Include="runtimes\win-x64\native\reportforge_native.dll">
+      <PackagePath>runtimes/win-x64/native/reportforge_native.dll</PackagePath>
+      <Pack>true</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\linux-x64\native\libreportforge_native.so">
+      <PackagePath>runtimes/linux-x64/native/libreportforge_native.so</PackagePath>
+      <Pack>true</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

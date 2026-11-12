@@ -25,4 +25,5 @@ engine-rust/target/
 *.so
 *.dll
 *.dylib
+!sdk/csharp/ReportForge/runtimes/**
 

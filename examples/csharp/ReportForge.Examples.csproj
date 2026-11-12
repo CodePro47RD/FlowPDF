@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\sdk\csharp\ReportForge.Client\ReportForge.Client.csproj" />
+    <ProjectReference Include="..\..\sdk\csharp\ReportForge\ReportForge.csproj" />
   </ItemGroup>
 
 </Project>
