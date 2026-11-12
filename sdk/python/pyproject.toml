@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reportforge-sdk"
+version = "1.0.0"
+description = "Official Python client for ReportForge Document & Report Engine"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "ReportForge Team", email = "dev@reportforge.io" }
+]
+dependencies = [
+    "requests>=2.28.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/reportforge/reportforge"

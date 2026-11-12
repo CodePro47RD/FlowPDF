@@ -1,0 +1,669 @@
+openapi: 3.0.3
+info:
+  title: ReportForge API
+  version: 1.0.0
+  description: Universal document and report generation engine with Django REST Framework.
+paths:
+  /api/v1/assets/:
+    get:
+      operationId: v1_assets_list
+      summary: List uploaded assets for tenant
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAssetList'
+          description: ''
+    post:
+      operationId: v1_assets_create
+      summary: Upload a new image or font asset
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssetRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetRequest'
+        required: true
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+  /api/v1/assets/{id}/:
+    get:
+      operationId: v1_assets_retrieve
+      summary: Get asset details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Asset.
+        required: true
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+    delete:
+      operationId: v1_assets_destroy
+      summary: Delete an asset
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Asset.
+        required: true
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/reports/{id}/:
+    get:
+      operationId: v1_reports_retrieve
+      description: Check the processing status and metadata of a report generation
+        job.
+      summary: Get report job status and details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportJobResponse'
+          description: ''
+  /api/v1/reports/{id}/download/:
+    get:
+      operationId: v1_reports_download_retrieve
+      description: Download the generated PDF document.
+      summary: Download completed PDF document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: PDF file binary attachment
+  /api/v1/reports/generate/:
+    post:
+      operationId: v1_reports_generate_create
+      description: |-
+        Generate a PDF document from a stored template or inline JSON definition.
+        Supports synchronous binary streaming or asynchronous background worker execution.
+      summary: Generate a document or report
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequestRequest'
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: PDF binary stream (synchronous binary mode)
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportJobResponse'
+          description: ''
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportJobResponse'
+          description: ''
+        '400':
+          description: Validation or template syntax error
+  /api/v1/reports/preview/:
+    post:
+      operationId: v1_reports_preview_create
+      description: Instantly render and preview a document as a raw inline PDF binary.
+      summary: Preview a document in real-time
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequestRequest'
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Inline PDF binary for browser rendering
+  /api/v1/templates/:
+    get:
+      operationId: v1_templates_list
+      description: CRUD API for managing tenant-scoped document templates.
+      summary: List all templates belonging to authenticated tenant
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTemplateList'
+          description: ''
+    post:
+      operationId: v1_templates_create
+      description: CRUD API for managing tenant-scoped document templates.
+      summary: Create a new reusable document template
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+        required: true
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+  /api/v1/templates/{id}/:
+    get:
+      operationId: v1_templates_retrieve
+      description: CRUD API for managing tenant-scoped document templates.
+      summary: Retrieve template details by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Template.
+        required: true
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+    put:
+      operationId: v1_templates_update
+      description: CRUD API for managing tenant-scoped document templates.
+      summary: Update an existing template definition
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Template.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+        required: true
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+    patch:
+      operationId: v1_templates_partial_update
+      description: CRUD API for managing tenant-scoped document templates.
+      summary: Partially update an existing template
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Template.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateRequest'
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+    delete:
+      operationId: v1_templates_destroy
+      description: CRUD API for managing tenant-scoped document templates.
+      summary: Delete a template
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Template.
+        required: true
+      tags:
+      - v1
+      security:
+      - ApiKeyAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        asset_type:
+          $ref: '#/components/schemas/AssetTypeEnum'
+        file:
+          type: string
+          format: uri
+        mime_type:
+          type: string
+          readOnly: true
+        file_size:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - file
+      - file_size
+      - id
+      - mime_type
+      - name
+      - url
+    AssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        asset_type:
+          $ref: '#/components/schemas/AssetTypeEnum'
+        file:
+          type: string
+          format: binary
+      required:
+      - file
+      - name
+    AssetTypeEnum:
+      enum:
+      - image
+      - font
+      type: string
+      description: |-
+        * `image` - Image
+        * `font` - Font
+    FormatEnum:
+      enum:
+      - pdf
+      - html
+      type: string
+      description: |-
+        * `pdf` - pdf
+        * `html` - html
+    GenerateReportRequestRequest:
+      type: object
+      properties:
+        template:
+          type: string
+          nullable: true
+          minLength: 1
+          description: Name or UUID of a saved template
+        document:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          description: Inline document definition schema (if not using a saved template)
+        data:
+          type: object
+          additionalProperties: {}
+          description: Data variables and collections to bind into template expressions
+        format:
+          allOf:
+          - $ref: '#/components/schemas/FormatEnum'
+          default: pdf
+          description: |-
+            Output format (default: pdf)
+
+            * `pdf` - pdf
+            * `html` - html
+        async_mode:
+          type: boolean
+          default: false
+          description: Whether to process via background Celery worker
+        response_type:
+          allOf:
+          - $ref: '#/components/schemas/ResponseTypeEnum'
+          default: binary
+          description: |-
+            For synchronous generation: 'binary' streams PDF directly, 'json' returns download link
+
+            * `binary` - binary
+            * `json` - json
+    PaginatedAssetList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asset'
+    PaginatedTemplateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+    PatchedTemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        description:
+          type: string
+        definition:
+          description: Document layout JSON definition
+        is_active:
+          type: boolean
+    ReportJobResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        format:
+          type: string
+          maxLength: 10
+        file_size:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        page_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        download_url:
+          type: string
+          readOnly: true
+        error_message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - created_at
+      - download_url
+      - id
+    ResponseTypeEnum:
+      enum:
+      - binary
+      - json
+      type: string
+      description: |-
+        * `binary` - binary
+        * `json` - json
+    StatusEnum:
+      enum:
+      - pending
+      - processing
+      - completed
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `processing` - Processing
+        * `completed` - Completed
+        * `failed` - Failed
+    Template:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        version:
+          type: string
+          maxLength: 20
+        description:
+          type: string
+        definition:
+          description: Document layout JSON definition
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - definition
+      - id
+      - name
+      - updated_at
+    TemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        description:
+          type: string
+        definition:
+          description: Document layout JSON definition
+        is_active:
+          type: boolean
+      required:
+      - definition
+      - name
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API Key authentication for ReportForge tenants (e.g. rf_live_...)
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
