@@ -106,7 +106,7 @@ impl PdfEngine {
                 for word in words {
                     if current_line.is_empty() {
                         current_line.push_str(word);
-                    } else if current_line.len() + 1 + word.len() <= max_chars_per_line {
+                    } else if current_line.chars().count() + 1 + word.chars().count() <= max_chars_per_line {
                         current_line.push(' ');
                         current_line.push_str(word);
                     } else {
@@ -127,7 +127,7 @@ impl PdfEngine {
 
                 for (idx, line) in lines.iter().enumerate() {
                     let line_y = y + (idx as f32 * line_height);
-                    let line_w = line.len() as f32 * char_width;
+                    let line_w = line.chars().count() as f32 * char_width;
 
                     let draw_x = match align {
                         "center" => x + ((available_w - line_w) / 2.0).max(0.0),
@@ -339,8 +339,8 @@ impl PdfEngine {
                 for (idx, col) in columns.iter().enumerate() {
                     let w = col_widths[idx];
                     let text_x = match col.align.as_deref() {
-                        Some("right") => cell_x + w - 8.0 - (col.title.len() as f32 * 5.0),
-                        Some("center") => cell_x + (w - (col.title.len() as f32 * 5.0)) / 2.0,
+                        Some("right") => cell_x + w - 8.0 - (col.title.chars().count() as f32 * 5.0),
+                        Some("center") => cell_x + (w - (col.title.chars().count() as f32 * 5.0)) / 2.0,
                         _ => cell_x + 8.0,
                     };
                     ops.push(PdfOp::Text {
@@ -389,7 +389,7 @@ impl PdfEngine {
                                 String::new()
                             };
 
-                            let text_w = val_str.len() as f32 * 4.8;
+                            let text_w = val_str.chars().count() as f32 * 4.8;
                             let text_x = match col.align.as_deref() {
                                 Some("right") => cell_x + w - 8.0 - text_w,
                                 Some("center") => cell_x + (w - text_w) / 2.0,
@@ -460,7 +460,7 @@ impl PdfEngine {
                     }
 
                     // Texto del código debajo
-                    let text_w = interpolated.len() as f32 * 5.0;
+                    let text_w = interpolated.chars().count() as f32 * 5.0;
                     ops.push(PdfOp::Text {
                         text: interpolated,
                         font: "Helvetica".to_string(),
@@ -478,7 +478,7 @@ impl PdfEngine {
 
             ComponentAst::PageNumber { format, alignment, .. } => {
                 let page_text = format.replace("{page}", "1").replace("{total}", "1");
-                let text_w = page_text.len() as f32 * 4.5;
+                let text_w = page_text.chars().count() as f32 * 4.5;
                 let text_x = match alignment.as_str() {
                     "left" => x,
                     "center" => x + (available_w - text_w) / 2.0,
@@ -529,11 +529,11 @@ impl PdfEngine {
                 PdfOp::Text { text, font, size, x, y, color } => {
                     let pdf_y = page_h - y - size;
                     let font_ref = if font.contains("Bold") { "/F2" } else { "/F1" };
-                    let sanitized = text.replace('\\', "\\\\").replace('(', "\\(").replace(')', "\\)");
+                    let hex_str = crate::encoding::unicode_to_winansi_hex(&text);
 
                     writeln!(
                         content_stream,
-                        "BT {font_ref} {size} Tf {r:.3} {g:.3} {b:.3} rg 1 0 0 1 {x:.2} {pdf_y:.2} Tm ({sanitized}) Tj ET",
+                        "BT {font_ref} {size} Tf {r:.3} {g:.3} {b:.3} rg 1 0 0 1 {x:.2} {pdf_y:.2} Tm {hex_str} Tj ET",
                         r = color.r,
                         g = color.g,
                         b = color.b,
@@ -585,12 +585,14 @@ impl PdfEngine {
             "Type" => "Font",
             "Subtype" => "Type1",
             "BaseFont" => "Helvetica",
+            "Encoding" => "WinAnsiEncoding",
         });
 
         let font2_id = doc.add_object(dictionary! {
             "Type" => "Font",
             "Subtype" => "Type1",
             "BaseFont" => "Helvetica-Bold",
+            "Encoding" => "WinAnsiEncoding",
         });
 
         let resources_id = doc.add_object(dictionary! {
