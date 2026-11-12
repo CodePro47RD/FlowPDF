@@ -1,0 +1,16 @@
+{
+  "name": "reportforge-ts-examples",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/generate_report.js"
+  },
+  "dependencies": {
+    "@reportforge/client": "file:../../sdk/typescript"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
+}
