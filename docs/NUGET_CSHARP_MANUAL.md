@@ -26,6 +26,7 @@
 | **Códigos QR y Barcodes Nativos** | **Sí (Zero-dependency en Core)** | Requiere SkiaSharp externo | Requiere módulos adicionales | Requiere librerías JS/Python |
 | **Capacidad de Delegación Cloud** | **Nativa (`ReportForgeClient`)** | No (Solo local) | No | Requiere wrappers custom |
 | **Binarios Nativos Embebidos** | **Win-x64 y Linux-x64 incluidos** | Solo SkiaSharp | No | No |
+| **Soporte Unicode / Acentos / Símbolos** | **Nativo Hexadecimal (WinAnsi/Latin-1)** | Sí | Sí | Sí |
 
 ---
 
@@ -189,7 +190,7 @@ col.Row(row =>
 });
 ```
 
-### 5.4. Tipografía y Estilos de Texto
+### 5.4. Tipografía, Estilos de Texto y Soporte Unicode Nativo
 
 Los textos aceptan helpers ergonómicos para personalización completa:
 
@@ -205,6 +206,17 @@ col.Text("Título Principal", t => t
 // Helpers semánticos predefinidos:
 col.Text("Subtítulo H2", t => t.H2().Color("#0F766E"));
 col.Text("Nota aclaratoria pequeña", t => t.Caption().Italic());
+```
+
+#### Soporte Completo para Unicode, Acentos y Caracteres Internacionales
+
+El motor nativo de ReportForge (v2.0) incorpora un encoder hexadecimal ISO 32000-1 para WinAnsi / Latin-1. Esto garantiza que todos los caracteres y símbolos se dibujen con máxima nitidez y sin errores de codificación (mojibake como `Ã³` o `Ã±`):
+- **Acentos y caracteres en español:** `á`, `é`, `í`, `ó`, `ú`, `Á`, `É`, `Í`, `Ó`, `Ú`, `ñ`, `Ñ`, `ü`, `Ü`, `¿`, `¡`
+- **Símbolos monetarios internacionales:** `€` (Euro), `$`, `£`, `¥`
+- **Signos tipográficos y comillas:** `—` (em-dash), `–` (en-dash), `“` `”` (curly quotes), `‘` `’`, `•` (bullet), `©`, `®`, `™`, `°`, `±`
+
+```csharp
+col.Text("Facturación Electrónica en Español: á é í ó ú ñ Ñ ¿ ¡ € — • “ ” © ® ™");
 ```
 
 ### 5.5. Tablas de Datos (`TableBuilder`)
