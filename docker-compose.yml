@@ -9,7 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${REPORTFORGE_DB_PORT:-5439}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d reportforge"]
       interval: 5s
@@ -20,7 +20,7 @@ services:
     image: redis:7-alpine
     container_name: reportforge_redis
     ports:
-      - "6379:6379"
+      - "${REPORTFORGE_REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -37,6 +37,7 @@ services:
     restart: always
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
+      PORT: 8050
       SECRET_KEY: ${SECRET_KEY:-reportforge-super-secret-key-change-in-production}
       ALLOWED_HOSTS: "*"
       DB_NAME: reportforge
@@ -48,9 +49,9 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       REPORTFORGE_STORAGE_BACKEND: local
       REPORTFORGE_STORAGE_DIR: /app/media/reports
-      CSRF_TRUSTED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080,http://localhost:8000,http://127.0.0.1:8000,http://localhost,http://127.0.0.1"
+      CSRF_TRUSTED_ORIGINS: "http://localhost:8090,http://127.0.0.1:8090,http://localhost:8050,http://127.0.0.1:8050,http://localhost:8080,http://127.0.0.1:8080,http://localhost:8000,http://127.0.0.1:8000,http://localhost,http://127.0.0.1"
     ports:
-      - "8000:8000"
+      - "${REPORTFORGE_PORT:-8050}:8050"
     depends_on:
       db:
         condition: service_healthy
@@ -80,7 +81,7 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       REPORTFORGE_STORAGE_BACKEND: local
       REPORTFORGE_STORAGE_DIR: /app/media/reports
-      CSRF_TRUSTED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080,http://localhost:8000,http://127.0.0.1:8000,http://localhost,http://127.0.0.1"
+      CSRF_TRUSTED_ORIGINS: "http://localhost:8090,http://127.0.0.1:8090,http://localhost:8050,http://127.0.0.1:8050,http://localhost:8080,http://127.0.0.1:8080,http://localhost:8000,http://127.0.0.1:8000,http://localhost,http://127.0.0.1"
     depends_on:
       db:
         condition: service_healthy
@@ -95,7 +96,7 @@ services:
     container_name: reportforge_nginx
     restart: always
     ports:
-      - "8080:80"
+      - "${REPORTFORGE_GATEWAY_PORT:-8090}:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/app/static_collected:ro

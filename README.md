@@ -41,11 +41,11 @@ git clone https://github.com/tu-usuario/reportforge.git
 cd reportforge
 docker compose up -d
 ```
-¡Listo! Abre tu navegador en 👉 **[http://localhost:8080/api/docs/](http://localhost:8080/api/docs/)** para explorar la documentación interactiva Swagger.
+¡Listo! Abre tu navegador en 👉 **[http://localhost:8090/api/docs/](http://localhost:8090/api/docs/)** (o directo a Gunicorn en `http://localhost:8050/api/docs/`) para explorar la documentación interactiva Swagger.
 
 #### Genera tu primer PDF en 1 segundo con `curl`:
 ```bash
-curl -X POST http://localhost:8080/api/v1/reports/generate/ \
+curl -X POST http://localhost:8090/api/v1/reports/generate/ \
   -H "Content-Type: application/json" \
   -H "X-API-Key: rf_live_docker_demo_12345" \
   -d '{
@@ -89,7 +89,7 @@ ReportForge está diseñado en dos capas estrictamente independientes:
 
 ```mermaid
 flowchart TD
-    Client["Clientes Multi-Plataforma<br/>(C#, JS, TS, Java, PHP, Python, Go)"] -->|HTTP REST + X-API-Key| Gateway["Nginx Reverse Proxy (:8080)"]
+    Client["Clientes Multi-Plataforma<br/>(C#, JS, TS, Java, PHP, Python, Go)"] -->|HTTP REST + X-API-Key| Gateway["Nginx Reverse Proxy (:8090)"]
     Gateway --> DRF["Django REST Framework (/api/v1/)"]
 
     subgraph Django_Layer["Capa de Plataforma y Multi-Tenancy (apps/)"]
@@ -464,9 +464,9 @@ public class App {
 ## 🌐 API REST & Documentación OpenAPI
 
 La API está documentada con **OpenAPI 3 / Swagger**:
-- **Swagger UI:** `http://localhost:8080/api/docs/`
-- **ReDoc:** `http://localhost:8080/api/redoc/`
-- **Esquema JSON:** `http://localhost:8080/api/schema/`
+- **Swagger UI:** `http://localhost:8090/api/docs/` (o directo: `http://localhost:8050/api/docs/`)
+- **ReDoc:** `http://localhost:8090/api/redoc/`
+- **Esquema JSON:** `http://localhost:8090/api/schema/`
 
 ### Endpoints Principales:
 
@@ -493,11 +493,11 @@ La API está documentada con **OpenAPI 3 / Swagger**:
 ## 🐳 Despliegue con Docker
 
 El stack de producción incluye:
-- **`nginx`**: Reverse proxy con compresión Gzip en puerto `8080`.
-- **`web`**: Servidor WSGI Gunicorn ejecutando Django REST Framework.
+- **`nginx`**: Reverse proxy con compresión Gzip en puerto `8090` (personalizable en `.env`).
+- **`web`**: Servidor WSGI Gunicorn ejecutando Django REST Framework en puerto `8050` (evitando conflictos con el puerto 8000).
 - **`worker`**: Tareas asíncronas pesadas con Celery.
-- **`db`**: PostgreSQL 16 Alpine.
-- **`redis`**: Broker de mensajería en memoria para Celery.
+- **`db`**: PostgreSQL 16 Alpine expuesto en puerto host `5439` (para evitar colisiones con PostgreSQL local en 5432).
+- **`redis`**: Broker de mensajería en memoria para Celery en puerto `6379`.
 
 ```bash
 # Iniciar todos los servicios

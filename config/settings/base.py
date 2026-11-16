@@ -17,7 +17,7 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         "CSRF_TRUSTED_ORIGINS",
-        "http://localhost:8080,http://127.0.0.1:8080,http://localhost:8000,http://127.0.0.1:8000,http://localhost,http://127.0.0.1",
+        "http://localhost:8090,http://127.0.0.1:8090,http://localhost:8050,http://127.0.0.1:8050,http://localhost:8080,http://127.0.0.1:8080,http://localhost:8000,http://127.0.0.1:8000,http://localhost,http://127.0.0.1",
     ).split(",")
     if origin.strip()
 ]

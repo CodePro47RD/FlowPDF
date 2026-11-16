@@ -4,7 +4,7 @@ FROM python:3.12-slim as base
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
-    PORT=8000
+    PORT=8050
 
 WORKDIR /app
 
@@ -36,6 +36,6 @@ COPY . /app/
 # Collect static assets
 RUN python manage.py collectstatic --noinput || true
 
-EXPOSE 8000
+EXPOSE 8050
 
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2", "--timeout", "120"]
+CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8050} --workers 4 --threads 2 --timeout 120"]
