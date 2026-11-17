@@ -1048,7 +1048,7 @@ Todo documento ReportForge se puede definir mediante un payload JSON puro valida
 
 ## 5. Sistema de Plantillas y Formateadores Seguros
 
-ReportForge implementa un motor de resolución de plantillas **cero-eval** (sin interprete dinámico que pueda ejecutar código malicioso), garantizando seguridad total en entornos multi-inquilino.
+ReportForge implementa un motor de resolución de plantillas **cero-eval** (sin intérprete dinámico que pueda ejecutar código malicioso), garantizando seguridad total en entornos multi-inquilino.
 
 ### Sintaxis de Variables
 - `{{ nombre_variable }}`: Accede a valores de primer nivel en el objeto de datos.
