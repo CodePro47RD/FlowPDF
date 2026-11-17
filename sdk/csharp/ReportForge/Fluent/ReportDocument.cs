@@ -102,6 +102,16 @@ namespace ReportForge.Fluent
         {
             return client.GeneratePdfAsync(_document, data, cancellationToken);
         }
+
+        /// <summary>
+        /// Extracts text from a PDF byte array using the native Rust Core v2.0 engine.
+        /// </summary>
+        public static string ExtractText(byte[] pdfBytes) => ReportForgeEngine.ExtractText(pdfBytes);
+
+        /// <summary>
+        /// Extracts structured document data (pages, metadata) from a PDF byte array as JSON.
+        /// </summary>
+        public static string ExtractJson(byte[] pdfBytes, string? optionsJson = null) => ReportForgeEngine.ExtractJson(pdfBytes, optionsJson);
     }
 
     public class PageSettingsBuilder

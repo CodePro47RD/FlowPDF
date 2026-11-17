@@ -89,6 +89,14 @@ public class ReportDocument {
         return renderPdf(null);
     }
 
+    public static String extractText(byte[] pdfBytes) {
+        return ReportForgeEngine.extractText(pdfBytes);
+    }
+
+    public static String extractJson(byte[] pdfBytes, String optionsJson) {
+        return ReportForgeEngine.extractJson(pdfBytes, optionsJson);
+    }
+
     public static String toJson(Object obj) {
         if (obj == null) return "null";
         if (obj instanceof String) {

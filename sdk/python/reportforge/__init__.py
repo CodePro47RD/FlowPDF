@@ -27,9 +27,19 @@ from .exceptions import (
 
 __version__ = "2.0.0"
 
+def extract_text(pdf_bytes: bytes) -> str:
+    """Extracts text from PDF bytes using native Rust Core v2.0."""
+    return ReportForgeEngine.extract_text(pdf_bytes)
+
+def extract_document(pdf_bytes: bytes, options=None) -> dict:
+    """Extracts structured document data (pages, metadata) from PDF bytes using native Rust Core v2.0."""
+    return ReportForgeEngine.extract_document(pdf_bytes, options)
+
 __all__ = [
     # In-Process Native Engine
     "ReportForgeEngine",
+    "extract_text",
+    "extract_document",
     # Fluent Builders
     "ReportDocument",
     "PageConfigBuilder",

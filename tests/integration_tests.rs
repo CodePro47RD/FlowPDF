@@ -27,6 +27,10 @@ fn test_render_minimal_document() {
     let pdf_bytes = result.unwrap();
     assert!(pdf_bytes.len() > 100, "PDF should have substantial length");
     assert!(pdf_bytes.starts_with(b"%PDF-"), "Output must start with PDF header bytes");
+
+    let doc = lopdf::Document::load_mem(&pdf_bytes).expect("Load PDF from memory");
+    let text = doc.extract_text(&[1]).expect("Extract text from page 1");
+    assert!(text.contains("Hello from ReportForge"), "Extracted text should contain our string: {}", text);
 }
 
 #[test]
@@ -154,4 +158,61 @@ fn test_c_abi_render_pdf() {
 
     // Cleanup
     unsafe { reportforge_free_result(result) };
+}
+
+#[test]
+fn test_c_abi_extract_text() {
+    let json_input = r#"{
+        "page": { "size": "A4", "margin": 30.0 },
+        "content": [
+            { "type": "text", "value": "Texto Extraído con Éxito", "bold": true },
+            { "type": "text", "value": "Segunda línea de prueba." }
+        ]
+    }"#;
+
+    let c_json = CString::new(json_input).unwrap();
+    let render_res = unsafe { reportforge_render_pdf(c_json.as_ptr(), std::ptr::null()) };
+    assert!(render_res.success);
+
+    // Call extraction
+    let extract_res = unsafe { reportforge_extract_text(render_res.data, render_res.length) };
+    assert!(extract_res.success, "Extraction should succeed");
+    assert!(!extract_res.data.is_null());
+
+    let extracted_slice = unsafe { std::slice::from_raw_parts(extract_res.data, extract_res.length) };
+    let extracted_str = std::str::from_utf8(extracted_slice).expect("Valid UTF-8 extracted text");
+    assert!(extracted_str.contains("Texto Extraído con Éxito"));
+
+    unsafe {
+        reportforge_free_result(extract_res);
+        reportforge_free_result(render_res);
+    }
+}
+
+#[test]
+fn test_c_abi_extract_json() {
+    let json_input = r#"{
+        "page": { "size": "A4", "margin": 30.0 },
+        "content": { "type": "text", "value": "Extracción de Metadatos y Estructura" }
+    }"#;
+
+    let c_json = CString::new(json_input).unwrap();
+    let render_res = unsafe { reportforge_render_pdf(c_json.as_ptr(), std::ptr::null()) };
+    assert!(render_res.success);
+
+    let extract_res = unsafe { reportforge_extract_json(render_res.data, render_res.length, std::ptr::null()) };
+    assert!(extract_res.success, "JSON Extraction should succeed");
+
+    let slice = unsafe { std::slice::from_raw_parts(extract_res.data, extract_res.length) };
+    let json_str = std::str::from_utf8(slice).expect("Valid UTF-8 JSON");
+    let val: serde_json::Value = serde_json::from_str(json_str).expect("Valid JSON object");
+
+    assert_eq!(val["page_count"], 1);
+    assert!(val["pages"].is_array());
+    assert_eq!(val["pages"].as_array().unwrap().len(), 1);
+
+    unsafe {
+        reportforge_free_result(extract_res);
+        reportforge_free_result(render_res);
+    }
 }

@@ -127,4 +127,68 @@ export class ReportForgeEngine {
             'Alternatively, use ReportForgeClient for HTTP/REST server rendering.'
         );
     }
+
+    public static extractText(pdfBytes: Uint8Array | Buffer): string {
+        const libPath = this.getLibraryPath();
+        const koffi = getKoffi();
+        if (koffi) {
+            const ReportForgeResult = koffi.struct('ReportForgeResultExtractText', {
+                data: 'uint8_t *',
+                length: 'size_t',
+                success: 'bool',
+                error_message: 'char *'
+            });
+            const lib = koffi.load(libPath);
+            const extractFn = lib.func('reportforge_extract_text', ReportForgeResult, ['uint8_t *', 'size_t']);
+            const freeFn = lib.func('reportforge_free_result', 'void', [ReportForgeResult]);
+
+            const res = extractFn(pdfBytes, pdfBytes.length);
+            try {
+                if (!res.success) {
+                    throw new Error(`ReportForge Extraction Error: ${res.error_message || 'Unknown error'}`);
+                }
+                if (res.length > 0 && res.data) {
+                    const decoded = koffi.decode(res.data, 'uint8_t', res.length);
+                    return Buffer.from(decoded).toString('utf-8');
+                }
+                return '';
+            } finally {
+                freeFn(res);
+            }
+        }
+        throw new Error('ReportForge native extraction requires "koffi" in Node.js.');
+    }
+
+    public static extractDocument(pdfBytes: Uint8Array | Buffer, options?: object): any {
+        const libPath = this.getLibraryPath();
+        const koffi = getKoffi();
+        if (koffi) {
+            const ReportForgeResult = koffi.struct('ReportForgeResultExtractJson', {
+                data: 'uint8_t *',
+                length: 'size_t',
+                success: 'bool',
+                error_message: 'char *'
+            });
+            const lib = koffi.load(libPath);
+            const extractJsonFn = lib.func('reportforge_extract_json', ReportForgeResult, ['uint8_t *', 'size_t', 'str']);
+            const freeFn = lib.func('reportforge_free_result', 'void', [ReportForgeResult]);
+
+            const optStr = options ? JSON.stringify(options) : null;
+            const res = extractJsonFn(pdfBytes, pdfBytes.length, optStr);
+            try {
+                if (!res.success) {
+                    throw new Error(`ReportForge Extraction Error: ${res.error_message || 'Unknown error'}`);
+                }
+                if (res.length > 0 && res.data) {
+                    const decoded = koffi.decode(res.data, 'uint8_t', res.length);
+                    const jsonStr = Buffer.from(decoded).toString('utf-8');
+                    return JSON.parse(jsonStr);
+                }
+                return {};
+            } finally {
+                freeFn(res);
+            }
+        }
+        throw new Error('ReportForge native extraction requires "koffi" in Node.js.');
+    }
 }

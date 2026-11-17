@@ -75,6 +75,12 @@ class ReportForgeEngine:
             cls._lib.reportforge_render_pdf.argtypes = [c_char_p, c_char_p]
             cls._lib.reportforge_render_pdf.restype = ReportForgeResult
 
+            cls._lib.reportforge_extract_text.argtypes = [POINTER(ctypes.c_ubyte), c_size_t]
+            cls._lib.reportforge_extract_text.restype = ReportForgeResult
+
+            cls._lib.reportforge_extract_json.argtypes = [POINTER(ctypes.c_ubyte), c_size_t, c_char_p]
+            cls._lib.reportforge_extract_json.restype = ReportForgeResult
+
             cls._lib.reportforge_free_result.argtypes = [ReportForgeResult]
             cls._lib.reportforge_free_result.restype = None
 
@@ -132,3 +138,42 @@ class ReportForgeEngine:
             return b""
         finally:
             lib.reportforge_free_result(result)
+
+    @classmethod
+    def extract_text(cls, pdf_bytes: bytes) -> str:
+        """Extracts text content from PDF bytes using Rust Core v2.0."""
+        if not pdf_bytes:
+            return ""
+        lib = cls._get_lib()
+        c_bytes = (ctypes.c_ubyte * len(pdf_bytes)).from_buffer_copy(pdf_bytes)
+        result = lib.reportforge_extract_text(c_bytes, len(pdf_bytes))
+        try:
+            if not result.success:
+                err_msg = result.error_message.decode("utf-8") if result.error_message else "Unknown native error"
+                raise RuntimeError(f"ReportForge Extraction Error: {err_msg}")
+            if result.length > 0 and result.data:
+                return bytes(result.data[: result.length]).decode("utf-8", errors="replace")
+            return ""
+        finally:
+            lib.reportforge_free_result(result)
+
+    @classmethod
+    def extract_document(cls, pdf_bytes: bytes, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Extracts structured document data (pages, metadata) from PDF bytes as dict."""
+        if not pdf_bytes:
+            return {}
+        lib = cls._get_lib()
+        c_bytes = (ctypes.c_ubyte * len(pdf_bytes)).from_buffer_copy(pdf_bytes)
+        opt_json = json.dumps(options).encode("utf-8") if options else None
+        result = lib.reportforge_extract_json(c_bytes, len(pdf_bytes), opt_json)
+        try:
+            if not result.success:
+                err_msg = result.error_message.decode("utf-8") if result.error_message else "Unknown native error"
+                raise RuntimeError(f"ReportForge Extraction Error: {err_msg}")
+            if result.length > 0 and result.data:
+                raw_json = bytes(result.data[: result.length]).decode("utf-8", errors="replace")
+                return json.loads(raw_json)
+            return {}
+        finally:
+            lib.reportforge_free_result(result)
+

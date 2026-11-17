@@ -525,3 +525,15 @@ class ReportDocument:
         """
         from .native import ReportForgeEngine
         return ReportForgeEngine.render_pdf(self.build(), data)
+
+    @staticmethod
+    def extract_text(pdf_bytes: bytes) -> str:
+        """Extracts text from PDF bytes using native Rust Core v2.0."""
+        from .native import ReportForgeEngine
+        return ReportForgeEngine.extract_text(pdf_bytes)
+
+    @staticmethod
+    def extract_document(pdf_bytes: bytes, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Extracts structured document data from PDF bytes using native Rust Core v2.0."""
+        from .native import ReportForgeEngine
+        return ReportForgeEngine.extract_document(pdf_bytes, options)

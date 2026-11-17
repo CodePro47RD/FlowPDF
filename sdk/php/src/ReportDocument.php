@@ -92,4 +92,14 @@ class ReportDocument
     {
         return ReportForgeEngine::renderPdf($this->build(), $data);
     }
+
+    public static function extractText(string $pdfBytes): string
+    {
+        return ReportForgeEngine::extractText($pdfBytes);
+    }
+
+    public static function extractDocument(string $pdfBytes, ?array $options = null): array
+    {
+        return ReportForgeEngine::extractDocument($pdfBytes, $options);
+    }
 }

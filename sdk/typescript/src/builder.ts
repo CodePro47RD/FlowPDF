@@ -415,4 +415,14 @@ export class ReportDocument {
         const { ReportForgeEngine } = require('./native');
         return ReportForgeEngine.renderPdf(this.build(), data);
     }
+
+    static extractText(pdfBytes: Uint8Array | Buffer): string {
+        const { ReportForgeEngine } = require('./native');
+        return ReportForgeEngine.extractText(pdfBytes);
+    }
+
+    static extractDocument(pdfBytes: Uint8Array | Buffer, options?: object): any {
+        const { ReportForgeEngine } = require('./native');
+        return ReportForgeEngine.extractDocument(pdfBytes, options);
+    }
 }

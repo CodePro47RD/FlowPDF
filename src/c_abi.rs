@@ -78,6 +78,54 @@ pub unsafe extern "C" fn reportforge_render_pdf(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn reportforge_extract_text(
+    pdf_data: *const u8,
+    pdf_len: usize,
+) -> ReportForgeResult {
+    if pdf_data.is_null() || pdf_len == 0 {
+        return ReportForgeResult::error("pdf_data pointer is null or length is 0");
+    }
+
+    let slice = std::slice::from_raw_parts(pdf_data, pdf_len);
+    match crate::extractor::PdfExtractor::extract_text(slice) {
+        Ok(text) => ReportForgeResult::success(text.into_bytes()),
+        Err(err) => ReportForgeResult::error(&err),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn reportforge_extract_json(
+    pdf_data: *const u8,
+    pdf_len: usize,
+    options_json_ptr: *const c_char,
+) -> ReportForgeResult {
+    if pdf_data.is_null() || pdf_len == 0 {
+        return ReportForgeResult::error("pdf_data pointer is null or length is 0");
+    }
+
+    let slice = std::slice::from_raw_parts(pdf_data, pdf_len);
+    let options: Option<crate::extractor::ExtractOptions> = if !options_json_ptr.is_null() {
+        match CStr::from_ptr(options_json_ptr).to_str() {
+            Ok(s) => match serde_json::from_str(s) {
+                Ok(opt) => Some(opt),
+                Err(e) => return ReportForgeResult::error(&format!("Invalid options JSON: {}", e)),
+            },
+            Err(e) => return ReportForgeResult::error(&format!("Invalid UTF-8 in options JSON: {}", e)),
+        }
+    } else {
+        None
+    };
+
+    match crate::extractor::PdfExtractor::extract_document(slice, options) {
+        Ok(extracted) => match serde_json::to_vec(&extracted) {
+            Ok(json_bytes) => ReportForgeResult::success(json_bytes),
+            Err(e) => ReportForgeResult::error(&format!("Serialization error: {}", e)),
+        },
+        Err(err) => ReportForgeResult::error(&err),
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn reportforge_free_result(result: ReportForgeResult) {
     if !result.data.is_null() && result.length > 0 {
         let _ = Vec::from_raw_parts(result.data, result.length, result.length);

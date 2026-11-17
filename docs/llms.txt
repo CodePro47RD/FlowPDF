@@ -26,15 +26,16 @@
 5. [Sistema de Plantillas y Formateadores Seguros](#5-sistema-de-plantillas-y-formateadores-seguros)
 6. [Catálogo de 9 Reportes Empresariales de Producción](#6-catálogo-de-9-reportes-empresariales-de-producción)
 7. [Especificación de la Interfaz C ABI / FFI y Gestión de Memoria](#7-especificación-de-la-interfaz-c-abi--ffi-y-gestión-de-memoria)
-8. [Implementación Completa de Casos de Producción por Lenguaje](#8-implementación-completa-de-casos-de-producción-por-lenguaje)
-   - [8.1 C# (.NET 8, 9, 10)](#81-c-net-8-9-10)
-   - [8.2 TypeScript / JavaScript (Node.js & Bun)](#82-typescript--javascript-nodejs--bun)
-   - [8.3 Java (Java 11+)](#83-java-java-11)
-   - [8.4 PHP (PHP 8+)](#84-php-php-8)
-   - [8.5 Python (Python 3.9+)](#85-python-python-39)
-   - [8.6 Rust Puro](#86-rust-puro)
-9. [Guía de Compilación, Despliegue y Empaquetado](#9-guía-de-compilación-despliegue-y-empaquetado)
-10. [Matriz de Resolución de Problemas (Troubleshooting)](#10-matriz-de-resolución-de-problemas-troubleshooting)
+8. [Motor Nativo de Extracción y Parsing de PDFs (Texto y Metadatos)](#8-motor-nativo-de-extracción-y-parsing-de-pdfs-texto-y-metadatos)
+9. [Implementación Completa de Casos de Producción por Lenguaje](#9-implementación-completa-de-casos-de-producción-por-lenguaje)
+   - [9.1 C# (.NET 8, 9, 10)](#91-c-net-8-9-10)
+   - [9.2 TypeScript / JavaScript (Node.js & Bun)](#92-typescript--javascript-nodejs--bun)
+   - [9.3 Java (Java 11+)](#93-java-java-11)
+   - [9.4 PHP (PHP 8+)](#94-php-php-8)
+   - [9.5 Python (Python 3.9+)](#95-python-python-39)
+   - [9.6 Rust Puro](#96-rust-puro)
+10. [Guía de Compilación, Despliegue y Empaquetado](#10-guía-de-compilación-despliegue-y-empaquetado)
+11. [Matriz de Resolución de Problemas (Troubleshooting)](#11-matriz-de-resolución-de-problemas-troubleshooting)
 
 ---
 
@@ -1111,9 +1112,168 @@ const char* reportforge_version(void);
 
 ---
 
-## 8. Implementación Completa de Casos de Producción por Lenguaje
+## 8. Motor Nativo de Extracción y Parsing de PDFs (Texto y Metadatos)
 
-### 8.1 C# (.NET 8, 9, 10)
+ReportForge v2.0 integra un motor in-process de ultra-alta velocidad capaz de leer, inspeccionar y extraer el contenido textual y los metadatos de cualquier documento PDF en menos de 5 milisegundos, sin navegadores ni dependencias externas.
+
+### 8.1 Símbolos Exportados en la Interfaz C-ABI FFI
+```c
+// 1. Extrae el texto plano completo del PDF codificado en UTF-8
+ReportForgeResult reportforge_extract_text(
+    const uint8_t* pdf_data,
+    size_t pdf_len
+);
+
+// 2. Extrae páginas, dimensiones y metadatos en un payload estructurado JSON
+ReportForgeResult reportforge_extract_json(
+    const uint8_t* pdf_data,
+    size_t pdf_len,
+    const char* options_json
+);
+```
+
+### 8.2 Esquema JSON de Extracción Estructurada (`ExtractedDocument`)
+```json
+{
+  "page_count": 2,
+  "metadata": {
+    "title": "Factura Comercial E310000000542",
+    "author": "EMPRESA MODELO S.R.L.",
+    "subject": "Comprobante Fiscal Electrónico",
+    "keywords": "factura, itbis, ncf",
+    "creator": "ReportForge v2.0 Rust Core",
+    "producer": "ReportForge v2.0",
+    "creation_date": "D:20261117120000",
+    "modification_date": null
+  },
+  "pages": [
+    {
+      "page_number": 1,
+      "width": 595.28,
+      "height": 841.89,
+      "text": "EMPRESA MODELO S.R.L.\nRNC: 101-0000000-1\nSubtotal: $ 1,700.00\nTotal: $ 2,006.00"
+    }
+  ],
+  "full_text": "EMPRESA MODELO S.R.L.\nRNC: 101-0000000-1\n..."
+}
+```
+
+### 8.3 Ejemplos de Extracción de PDF en los 6 Lenguajes
+
+#### C# (.NET 8, 9, 10)
+```csharp
+using System;
+using System.IO;
+using ReportForge.Fluent;
+
+byte[] pdfBytes = File.ReadAllBytes("factura.pdf");
+
+// 1. Extracción de texto plano directo
+string texto = ReportDocument.ExtractText(pdfBytes);
+Console.WriteLine(texto);
+
+// 2. Extracción de metadatos y estructura JSON
+string jsonEstructurado = ReportDocument.ExtractJson(pdfBytes);
+Console.WriteLine(jsonEstructurado);
+```
+
+#### TypeScript / JavaScript (Node.js & Bun)
+```typescript
+import { ReportDocument, ReportForgeEngine } from "reportforge";
+import * as fs from "fs";
+
+const pdfBuffer = fs.readFileSync("factura.pdf");
+
+// 1. Extracción de texto plano
+const texto = ReportDocument.extractText(pdfBuffer);
+console.log(texto);
+
+// 2. Extracción estructurada (objeto JS)
+const docData = ReportDocument.extractDocument(pdfBuffer);
+console.log(`Páginas: ${docData.page_count}, Título: ${docData.metadata?.title}`);
+```
+
+#### Java (Java 11+)
+```java
+import dev.reportforge.ReportDocument;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class ExtraccionPdf {
+    public static void main(String[] args) throws Exception {
+        byte[] pdfBytes = Files.readAllBytes(Paths.get("factura.pdf"));
+
+        // 1. Extracción de texto plano
+        String texto = ReportDocument.extractText(pdfBytes);
+        System.out.println(texto);
+
+        // 2. Extracción en JSON estructurado
+        String json = ReportDocument.extractJson(pdfBytes, null);
+        System.out.println(json);
+    }
+}
+```
+
+#### PHP (PHP 8.0+)
+```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+use ReportForge\ReportDocument;
+
+$pdfBytes = file_get_contents("factura.pdf");
+
+// 1. Extracción de texto plano
+$texto = ReportDocument::extractText($pdfBytes);
+echo $texto;
+
+// 2. Extracción de array estructurado con metadatos
+$docData = ReportDocument::extractDocument($pdfBytes);
+echo "Total Páginas: " . $docData['page_count'];
+```
+
+#### Python (Python 3.9+)
+```python
+import reportforge
+from reportforge import ReportDocument
+
+with open("factura.pdf", "rb") as f:
+    pdf_bytes = f.read()
+
+# 1. Extracción rápida de texto
+texto = reportforge.extract_text(pdf_bytes)
+print(texto)
+
+# 2. Extracción estructurada de diccionario
+datos = reportforge.extract_document(pdf_bytes)
+print(f"Páginas: {datos['page_count']}")
+for pagina in datos['pages']:
+    print(f"Página #{pagina['page_number']} ({pagina['width']}x{pagina['height']} pt)")
+```
+
+#### Rust Puro
+```rust
+use reportforge::extractor::{PdfExtractor, ExtractOptions};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let pdf_bytes = std::fs::read("factura.pdf")?;
+
+    // 1. Extracción de texto plano
+    let texto = PdfExtractor::extract_text(&pdf_bytes)?;
+    println!("{}", texto);
+
+    // 2. Extracción estructurada con metadatos y dimensiones
+    let doc = PdfExtractor::extract_document(&pdf_bytes, None)?;
+    println!("Páginas: {}, Título: {:?}", doc.page_count, doc.metadata.title);
+
+    Ok(())
+}
+```
+
+---
+
+## 9. Implementación Completa de Casos de Producción por Lenguaje
+
+### 9.1 C# (.NET 8, 9, 10)
 **Paquete**: [`docs/packages/ReportForge.2.0.0.nupkg`](packages/ReportForge.2.0.0.nupkg)  
 **Instalación**: `dotnet add package ReportForge --source ./docs/packages`
 
@@ -1154,7 +1314,7 @@ byte[] pdfBytes = doc.GeneratePdf();
 File.WriteAllBytes("reporte_csharp.pdf", pdfBytes);
 ```
 
-### 8.2 TypeScript / JavaScript (Node.js & Bun)
+### 9.2 TypeScript / JavaScript (Node.js & Bun)
 **Paquete**: [`docs/packages/reportforge-2.0.0.tgz`](packages/reportforge-2.0.0.tgz)  
 **Instalación**: `npm install ./docs/packages/reportforge-2.0.0.tgz`
 
@@ -1184,7 +1344,7 @@ const pdfBuffer: Buffer = doc.generatePdf();
 fs.writeFileSync("factura_ts.pdf", pdfBuffer);
 ```
 
-### 8.3 Java (Java 11+)
+### 9.3 Java (Java 11+)
 **Paquete**: [`docs/packages/reportforge-2.0.0.jar`](packages/reportforge-2.0.0.jar)  
 **Instalación**: `mvn install:install-file -Dfile=docs/packages/reportforge-2.0.0.jar -DgroupId=dev.reportforge -DartifactId=reportforge -Dversion=2.0.0 -Dpackaging=jar`
 
@@ -1219,7 +1379,7 @@ public class GenerarReporte {
 }
 ```
 
-### 8.4 PHP (PHP 8.0+)
+### 9.4 PHP (PHP 8.0+)
 **Paquete**: [`docs/packages/reportforge-php-2.0.0.zip`](packages/reportforge-php-2.0.0.zip)  
 **Requisito**: Habilitar `extension=ffi` en `php.ini`.
 
@@ -1255,7 +1415,7 @@ $pdf = $doc->generatePdf();
 file_put_contents("factura_php.pdf", $pdf);
 ```
 
-### 8.5 Python (Python 3.9+)
+### 9.5 Python (Python 3.9+)
 **Paquete**: [`docs/packages/reportforge-2.0.0-py3-none-any.whl`](packages/reportforge-2.0.0-py3-none-any.whl)  
 **Instalación**: `pip install ./docs/packages/reportforge-2.0.0-py3-none-any.whl`
 
@@ -1281,7 +1441,7 @@ with open("factura_python.pdf", "wb") as f:
     f.write(doc.generate_pdf())
 ```
 
-### 8.6 Rust Puro
+### 9.6 Rust Puro
 ```rust
 use reportforge::ast::DocumentDefinitionAst;
 use reportforge::pdf_engine::PdfEngine;
@@ -1307,14 +1467,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ---
 
-## 9. Guía de Compilación, Despliegue y Empaquetado
+## 10. Guía de Compilación, Despliegue y Empaquetado
 
 ### Compilación desde el Código Fuente
 ```bash
 # Compilación para la plataforma actual (Windows/Linux/macOS)
 cargo build --release
 
-# Ejecutar las 7 pruebas de integración
+# Ejecutar las 8 pruebas de integración
 cargo test
 ```
 
@@ -1330,7 +1490,7 @@ docker run --rm -v ${PWD}:/usr/src/reportforge -w /usr/src/reportforge rust:1-al
 
 ---
 
-## 10. Matriz de Resolución de Problemas (Troubleshooting)
+## 11. Matriz de Resolución de Problemas (Troubleshooting)
 
 | Síntoma / Error | Causa Probable | Solución Oficial |
 | :--- | :--- | :--- |

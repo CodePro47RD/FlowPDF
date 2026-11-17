@@ -28,6 +28,8 @@ public class ReportForgeEngine {
 
     public interface ReportForgeNativeLib extends Library {
         ReportForgeResult.ByValue reportforge_render_pdf(byte[] docJson, byte[] dataJson);
+        ReportForgeResult.ByValue reportforge_extract_text(byte[] pdfData, long pdfLen);
+        ReportForgeResult.ByValue reportforge_extract_json(byte[] pdfData, long pdfLen, byte[] optionsJson);
         void reportforge_free_result(ReportForgeResult.ByValue result);
         Pointer reportforge_version();
     }
@@ -131,5 +133,50 @@ public class ReportForgeEngine {
 
     public static byte[] renderPdf(String documentJson) {
         return renderPdf(documentJson, null);
+    }
+
+    public static String extractText(byte[] pdfBytes) {
+        if (pdfBytes == null || pdfBytes.length == 0) {
+            return "";
+        }
+        ReportForgeNativeLib lib = getLib();
+        ReportForgeResult.ByValue result = lib.reportforge_extract_text(pdfBytes, pdfBytes.length);
+        try {
+            if (result.success == 0) {
+                String err = result.errorMessage != null ? result.errorMessage.getString(0, "UTF-8") : "Unknown native error";
+                throw new RuntimeException("ReportForge Extraction Error: " + err);
+            }
+            int len = (int) result.length;
+            if (len > 0 && result.data != null) {
+                byte[] bytes = result.data.getByteArray(0, len);
+                return new String(bytes, StandardCharsets.UTF_8);
+            }
+            return "";
+        } finally {
+            lib.reportforge_free_result(result);
+        }
+    }
+
+    public static String extractJson(byte[] pdfBytes, String optionsJson) {
+        if (pdfBytes == null || pdfBytes.length == 0) {
+            return "{}";
+        }
+        ReportForgeNativeLib lib = getLib();
+        byte[] optBytes = optionsJson != null ? (optionsJson + "\0").getBytes(StandardCharsets.UTF_8) : null;
+        ReportForgeResult.ByValue result = lib.reportforge_extract_json(pdfBytes, pdfBytes.length, optBytes);
+        try {
+            if (result.success == 0) {
+                String err = result.errorMessage != null ? result.errorMessage.getString(0, "UTF-8") : "Unknown native error";
+                throw new RuntimeException("ReportForge Extraction Error: " + err);
+            }
+            int len = (int) result.length;
+            if (len > 0 && result.data != null) {
+                byte[] bytes = result.data.getByteArray(0, len);
+                return new String(bytes, StandardCharsets.UTF_8);
+            }
+            return "{}";
+        } finally {
+            lib.reportforge_free_result(result);
+        }
     }
 }

@@ -94,6 +94,12 @@ namespace ReportForge.Native
         [DllImport(LibName, EntryPoint = "reportforge_render_pdf", CallingConvention = CallingConvention.Cdecl)]
         private static extern ReportForgeResultNative NativeRenderPdf(byte[] docJson, byte[]? dataJson);
 
+        [DllImport(LibName, EntryPoint = "reportforge_extract_text", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ReportForgeResultNative NativeExtractText(byte[] pdfData, UIntPtr pdfLen);
+
+        [DllImport(LibName, EntryPoint = "reportforge_extract_json", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ReportForgeResultNative NativeExtractJson(byte[] pdfData, UIntPtr pdfLen, byte[]? optionsJson);
+
         [DllImport(LibName, EntryPoint = "reportforge_free_result", CallingConvention = CallingConvention.Cdecl)]
         private static extern void NativeFreeResult(ReportForgeResultNative result);
 
@@ -152,6 +158,67 @@ namespace ReportForge.Native
         public static byte[] RenderPdf(ReportDocument document, object? data = null)
         {
             return RenderPdf(document.Build(), data);
+        }
+
+        public static string ExtractText(byte[] pdfBytes)
+        {
+            if (pdfBytes == null || pdfBytes.Length == 0)
+                throw new ArgumentException("PDF bytes cannot be null or empty", nameof(pdfBytes));
+
+            ReportForgeResultNative result = NativeExtractText(pdfBytes, (UIntPtr)pdfBytes.Length);
+            try
+            {
+                if (!result.Success)
+                {
+                    string error = result.ErrorMessage != IntPtr.Zero
+                        ? Marshal.PtrToStringUTF8(result.ErrorMessage) ?? "Unknown native error"
+                        : "Unknown native error";
+                    throw new InvalidOperationException($"ReportForge Extraction Error: {error}");
+                }
+
+                int length = (int)result.Length.ToUInt32();
+                if (length == 0 || result.Data == IntPtr.Zero)
+                    return string.Empty;
+
+                byte[] managedBytes = new byte[length];
+                Marshal.Copy(result.Data, managedBytes, 0, length);
+                return Encoding.UTF8.GetString(managedBytes);
+            }
+            finally
+            {
+                NativeFreeResult(result);
+            }
+        }
+
+        public static string ExtractJson(byte[] pdfBytes, string? optionsJson = null)
+        {
+            if (pdfBytes == null || pdfBytes.Length == 0)
+                throw new ArgumentException("PDF bytes cannot be null or empty", nameof(pdfBytes));
+
+            byte[]? optBytes = optionsJson != null ? Encoding.UTF8.GetBytes(optionsJson + "\0") : null;
+            ReportForgeResultNative result = NativeExtractJson(pdfBytes, (UIntPtr)pdfBytes.Length, optBytes);
+            try
+            {
+                if (!result.Success)
+                {
+                    string error = result.ErrorMessage != IntPtr.Zero
+                        ? Marshal.PtrToStringUTF8(result.ErrorMessage) ?? "Unknown native error"
+                        : "Unknown native error";
+                    throw new InvalidOperationException($"ReportForge Extraction Error: {error}");
+                }
+
+                int length = (int)result.Length.ToUInt32();
+                if (length == 0 || result.Data == IntPtr.Zero)
+                    return "{}";
+
+                byte[] managedBytes = new byte[length];
+                Marshal.Copy(result.Data, managedBytes, 0, length);
+                return Encoding.UTF8.GetString(managedBytes);
+            }
+            finally
+            {
+                NativeFreeResult(result);
+            }
         }
     }
 }

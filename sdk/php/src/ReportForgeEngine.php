@@ -52,6 +52,8 @@ class ReportForgeEngine
                 } ReportForgeResult;
 
                 ReportForgeResult reportforge_render_pdf(const char *doc_json, const char *data_json);
+                ReportForgeResult reportforge_extract_text(const uint8_t *pdf_data, size_t pdf_len);
+                ReportForgeResult reportforge_extract_json(const uint8_t *pdf_data, size_t pdf_len, const char *options_json);
                 void reportforge_free_result(ReportForgeResult result);
                 const char *reportforge_version(void);
             ';
@@ -93,6 +95,52 @@ class ReportForgeEngine
                 return \FFI::string($result->data, $result->length);
             }
             return '';
+        } finally {
+            $ffi->reportforge_free_result($result);
+        }
+    }
+
+    public static function extractText(string $pdfBytes): string
+    {
+        $len = strlen($pdfBytes);
+        if ($len === 0) return '';
+        $ffi = self::getFFI();
+        $buf = $ffi->new("uint8_t[$len]");
+        \FFI::memcpy($buf, $pdfBytes, $len);
+        $result = $ffi->reportforge_extract_text(\FFI::cast("uint8_t*", $buf), $len);
+        try {
+            if (!$result->success) {
+                $err = $result->error_message ? \FFI::string($result->error_message) : 'Unknown native extraction error';
+                throw new \RuntimeException("ReportForge Extraction Error: {$err}");
+            }
+            if ($result->length > 0 && $result->data !== null) {
+                return \FFI::string($result->data, $result->length);
+            }
+            return '';
+        } finally {
+            $ffi->reportforge_free_result($result);
+        }
+    }
+
+    public static function extractDocument(string $pdfBytes, ?array $options = null): array
+    {
+        $len = strlen($pdfBytes);
+        if ($len === 0) return [];
+        $ffi = self::getFFI();
+        $buf = $ffi->new("uint8_t[$len]");
+        \FFI::memcpy($buf, $pdfBytes, $len);
+        $optJson = $options !== null ? json_encode($options) : null;
+        $result = $ffi->reportforge_extract_json(\FFI::cast("uint8_t*", $buf), $len, $optJson);
+        try {
+            if (!$result->success) {
+                $err = $result->error_message ? \FFI::string($result->error_message) : 'Unknown native extraction error';
+                throw new \RuntimeException("ReportForge Extraction Error: {$err}");
+            }
+            if ($result->length > 0 && $result->data !== null) {
+                $json = \FFI::string($result->data, $result->length);
+                return json_decode($json, true) ?: [];
+            }
+            return [];
         } finally {
             $ffi->reportforge_free_result($result);
         }
