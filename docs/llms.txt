@@ -9,12 +9,23 @@
 ## 📑 Índice de Contenidos
 1. [Visión General y Propuesta de Valor](#1-visión-general-y-propuesta-de-valor)
 2. [Arquitectura del Motor y Modelo Matemático de Composición](#2-arquitectura-del-motor-y-modelo-matemático-de-composición)
-3. [Catálogo Técnico de Componentes y Propiedades](#3-catálogo-técnico-de-componentes-y-propiedades)
+3. [Catálogo Exhaustivo de Componentes con Ejemplos en los 6 Lenguajes](#3-catálogo-exhaustivo-de-componentes-con-ejemplos-en-los-6-lenguajes)
+   - [3.1 Text (Texto y Tipografía)](#31-text-texto-y-tipografía)
+   - [3.2 Container (Modelo de Cajas, Bordes y Fondos)](#32-container-modelo-de-cajas-bordes-y-fondos)
+   - [3.3 Column (Distribución Vertical y Espaciado)](#33-column-distribución-vertical-y-espaciado)
+   - [3.4 Row (Distribución Horizontal y Grid Proporcional)](#34-row-distribución-horizontal-y-grid-proporcional)
+   - [3.5 Table (Tablas Corporativas, Repetición de Cabeceras y Zebra Striping)](#35-table-tablas-corporativas-repetición-de-cabeceras-y-zebra-striping)
+   - [3.6 QRCode (Códigos QR Vectoriales In-Process)](#36-qrcode-códigos-qr-vectoriales-in-process)
+   - [3.7 Barcode (Códigos de Barras 1D Code128 / EAN13)](#37-barcode-códigos-de-barras-1d-code128--ean13)
+   - [3.8 Spacer (Espaciador Vertical)](#38-spacer-espaciador-vertical)
+   - [3.9 Divider (Línea Separadora Horizontal)](#39-divider-línea-separadora-horizontal)
+   - [3.10 PageNumber (Numeración de Páginas y Paginado Dinámico)](#310-pagenumber-numeración-de-páginas-y-paginado-dinámico)
+   - [3.11 Image (Imágenes Embebidas y Ajuste)](#311-image-imágenes-embebidas-y-ajuste)
 4. [Especificación Formal del AST JSON (Esquema v2.0)](#4-especificación-formal-del-ast-json-esquema-v20)
 5. [Sistema de Plantillas y Formateadores Seguros](#5-sistema-de-plantillas-y-formateadores-seguros)
 6. [Catálogo de 9 Reportes Empresariales de Producción](#6-catálogo-de-9-reportes-empresariales-de-producción)
 7. [Especificación de la Interfaz C ABI / FFI y Gestión de Memoria](#7-especificación-de-la-interfaz-c-abi--ffi-y-gestión-de-memoria)
-8. [Implementación y Código de Producción por Lenguaje](#8-implementación-y-código-de-producción-por-lenguaje)
+8. [Implementación Completa de Casos de Producción por Lenguaje](#8-implementación-completa-de-casos-de-producción-por-lenguaje)
    - [8.1 C# (.NET 8, 9, 10)](#81-c-net-8-9-10)
    - [8.2 TypeScript / JavaScript (Node.js & Bun)](#82-typescript--javascript-nodejs--bun)
    - [8.3 Java (Java 11+)](#83-java-java-11)
@@ -72,71 +83,811 @@ Reglas de resolución:
 
 ---
 
-## 3. Catálogo Técnico de Componentes y Propiedades
+## 3. Catálogo Exhaustivo de Componentes con Ejemplos en los 6 Lenguajes
+
+A continuación se detalla cada componente del catálogo de ReportForge, sus propiedades admitidas y su invocación idéntica en los 6 entornos compatibles: **C# (.NET)**, **TypeScript / JavaScript (Node.js & Bun)**, **Java**, **PHP**, **Python** y **Rust / AST JSON**.
+
+---
 
 ### 3.1 Text (Texto y Tipografía)
-- `value` (string, requerido): Texto literal o con expresiones interpoladas `{{ variable }}`.
-- `style` (string, opcional): Estilo tipográfico (`h1`, `h2`, `h3`, `body`, `caption`).
-- `font_size` (float, opcional): Tamaño de fuente en puntos (ej. `12.0`).
-- `bold` (bool, opcional): Alterna entre fuentes base y Bold (`Helvetica-Bold`, `Times-Bold`).
-- `italic` (bool, opcional): Estilo cursiva.
-- `underline` (bool, opcional): Subrayado tipográfico.
-- `color` (string, opcional): Color en formato hexadecimal (ej. `"#0066FF"`).
-- `alignment` (string, opcional): `"left"`, `"center"`, `"right"`, `"justify"`.
+Renderiza cadenas de texto con ajuste automático de línea, compatibilidad total con acentos en español (WinAnsi CP1252) y estilización tipográfica.
 
-### 3.2 Container (Modelo de Cajas)
-- `child` (Component, opcional): Componente anidado dentro del contenedor.
-- `width` / `height` (float, opcional): Dimensiones fijas explícitas.
-- `padding` / `margin` (float, opcional): Espaciado interior y exterior en puntos.
-- `background` (string, opcional): Color de relleno de fondo en hex.
-- `border_color` (string, opcional): Color del borde.
-- `border_width` (float, opcional): Grosor del borde en puntos.
-- `border_radius` (float, opcional): Radio de esquinas redondeadas.
-- `alignment` (string, opcional): Alineación interna del hijo.
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `value` | `value` | `string` | *(Requerido)* | Contenido del texto o plantilla `{{ var }}`. |
+| `style` | `style` | `string` | `"body"` | Estilo predeterminado: `"h1"`, `"h2"`, `"h3"`, `"body"`, `"caption"`. |
+| `fontSize` | `font_size` | `float` | Según estilo | Tamaño del texto en puntos tipográficos. |
+| `color` | `color` | `string` | `"#000000"` | Color hexadecimal (ej. `"#0066FF"`). |
+| `bold` | `bold` | `bool` | `false` | Activa variante en negrita de la fuente. |
+| `italic` | `italic` | `bool` | `false` | Activa variante cursiva de la fuente. |
+| `underline` | `underline` | `bool` | `false` | Traza una línea inferior de subrayado. |
+| `alignment` | `alignment` | `string` | `"left"` | Alineación: `"left"`, `"center"`, `"right"`, `"justify"`. |
 
-### 3.3 Column (Distribución Vertical)
-- `items` (array de Components): Lista secuencial de componentes renderizados de arriba hacia abajo.
-- `spacing` (float, por defecto `0.0`): Separación vertical uniforme entre elementos consecutivos.
+#### Ejemplos en Todos los Lenguajes
 
-### 3.4 Row (Distribución Horizontal)
-- `items` (array de RowItems): Lista de elementos dispuestos horizontalmente.
-  - Cada elemento puede tener un `width` fijo (float) o un `flex` relativo (float, ej. `1.0`, `2.0`).
-- `spacing` (float, por defecto `0.0`): Separación horizontal entre elementos.
-- `vertical_alignment` (string): `"top"`, `"center"`, `"bottom"`.
+```csharp
+// C# (.NET 8/9/10)
+c.Text("Factura Comercial #9842", t => t
+    .H2()
+    .Color("#0066FF")
+    .AlignCenter()
+    .Bold()
+    .Underline());
+```
 
-### 3.5 Table (Tablas Corporativas de Alto Rendimiento)
-- `columns` (array de TableColumnAst):
-  - `title` (string): Texto de cabecera.
-  - `field` (string, opcional): Clave del campo en el array de datos.
-  - `width` (float, opcional): Ancho fijo en puntos.
-  - `flex` (float, opcional): Proporción de expansión en espacio restante.
-- `data` (array de objetos clave-valor): Filas de información.
-- `header_background` (string, opcional): Color de fondo de los encabezados (ej. `"#0066FF"`).
-- `zebra` (bool, por defecto `true`): Alterna fondo gris claro (`#F8FAFC`) en filas pares.
-- `repeat_header` (bool, por defecto `true`): Repite automáticamente la cabecera en cada salto de página.
-- `border_color` / `border_width`: Estilo de líneas divisorias de celda.
+```typescript
+// TypeScript / JavaScript (Node.js & Bun)
+c.text("Factura Comercial #9842", t => t
+    .h2()
+    .color("#0066FF")
+    .alignCenter()
+    .bold()
+    .underline());
+```
 
-### 3.6 QRCode (Códigos QR Vectoriales)
-- `value` (string, requerido): Datos codificados (URL, cadena de comprobante fiscal, token de firma).
-- `size` (float, por defecto `80.0`): Ancho y alto del módulo QR en puntos.
-- `fill_color` (string, opcional): Color de los módulos (por defecto negro `"#000000"`).
-- `back_color` (string, opcional): Color de fondo (por defecto blanco `"#FFFFFF"`).
-- *Generación interna nativa*: No utiliza servicios HTTP ni APIs externas; compila la matriz vectorial directamente en Rust.
+```java
+// Java (Java 11+)
+c.text("Factura Comercial #9842", t -> t
+    .style("h2")
+    .color("#0066FF")
+    .alignCenter()
+    .bold(true)
+    .underline(true));
+```
 
-### 3.7 Barcode (Códigos de Barras 1D)
-- `value` (string, requerido): Cadena numérica o alfanumérica.
-- `barcode_type` (string, por defecto `"CODE128"`): Formato soportado (`"CODE128"`, `"EAN13"`).
-- `width` (float, por defecto `150.0`): Ancho total del código.
-- `height` (float, por defecto `40.0`): Altura de las barras verticales.
-- `include_text` (bool, por defecto `true`): Muestra el valor numérico en tipografía monoespaciada bajo las barras.
+```php
+// PHP (PHP 8.0+)
+$c->text("Factura Comercial #9842", fn($t) => $t
+    ->h2()
+    ->color("#0066FF")
+    ->alignCenter()
+    ->bold(true)
+    ->underline(true));
+```
 
-### 3.8 Spacer y Divider
-- `Spacer`: Introduce un espacio vacío vertical de altura `height` (float).
-- `Divider`: Traza una línea horizontal continua con `thickness` (grosor), `color` (hex) y `margin` (margen vertical).
+```python
+# Python (Python 3.9+)
+c.text("Factura Comercial #9842", lambda t: t
+    .h2()
+    .color("#0066FF")
+    .center()
+    .bold()
+    .underline())
+```
 
-### 3.9 PageNumber
-- `format` (string): Máscara de texto con tokens, ej. `"Página {page} de {total}"`.
-- `alignment` (string): `"left"`, `"center"`, `"right"`.
+```json
+// Rust AST / JSON
+{
+  "type": "text",
+  "value": "Factura Comercial #9842",
+  "style": "h2",
+  "color": "#0066FF",
+  "alignment": "center",
+  "bold": true,
+  "underline": true
+}
+```
+
+---
+
+### 3.2 Container (Modelo de Cajas, Bordes y Fondos)
+Envuelve un componente hijo aplicando paddings, márgenes, fondos de color plano, bordes perimetrales y radios de curvatura.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `child` | `child` | `Component` | `null` | Componente anidado interior. |
+| `padding` | `padding` | `float` | `0.0` | Espaciado interior en puntos. |
+| `margin` | `margin` | `float` | `0.0` | Espaciado exterior en puntos. |
+| `background` | `background` | `string` | `null` | Color de fondo en hex (ej. `"#EFF6FF"`). |
+| `borderColor` | `border_color` | `string` | `null` | Color del trazo del borde. |
+| `borderWidth` | `border_width` | `float` | `0.0` | Grosor del borde en puntos. |
+| `borderRadius` | `border_radius` | `float` | `0.0` | Radio de redondeo de esquinas. |
+| `width` / `height` | `width` / `height` | `float` | `null` | Restricción rígida de dimensiones. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Container(cont => cont
+    .Background("#EFF6FF")
+    .BorderColor("#3B82F6")
+    .BorderWidth(1.0)
+    .BorderRadius(6.0)
+    .Padding(14.0)
+    .Child(ch => ch.Text("Aviso: Comprobante válido para crédito fiscal.", t => t.Color("#1E40AF").Bold())));
+```
+
+```typescript
+// TypeScript
+c.container(cont => cont
+    .background("#EFF6FF")
+    .border("#3B82F6", 1.0)
+    .borderRadius(6.0)
+    .padding(14.0)
+    .child(ch => ch.text("Aviso: Comprobante válido para crédito fiscal.", t => t.color("#1E40AF").bold())));
+```
+
+```java
+// Java
+c.container(cont -> cont
+    .background("#EFF6FF")
+    .border("#3B82F6", 1.0)
+    .padding(14.0)
+    .child(ch -> ch.text("Aviso: Comprobante válido para crédito fiscal.", t -> t.color("#1E40AF").bold(true))));
+```
+
+```php
+// PHP
+$c->container(function($cont) {
+    $cont->background("#EFF6FF")
+         ->border("#3B82F6", 1.0)
+         ->padding(14.0)
+         ->child(fn($ch) => $ch->text("Aviso: Comprobante válido para crédito fiscal.", fn($t) => $t->color("#1E40AF")->bold(true)));
+});
+```
+
+```python
+# Python
+c.container(lambda cont: cont
+    .background("#EFF6FF")
+    .border("#3B82F6", width=1.0, radius=6.0)
+    .padding(14.0)
+    .child(lambda ch: ch.text("Aviso: Comprobante válido para crédito fiscal.", lambda t: t.color("#1E40AF").bold())))
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "container",
+  "background": "#EFF6FF",
+  "border_color": "#3B82F6",
+  "border_width": 1.0,
+  "border_radius": 6.0,
+  "padding": 14.0,
+  "child": {
+    "type": "text",
+    "value": "Aviso: Comprobante válido para crédito fiscal.",
+    "color": "#1E40AF",
+    "bold": true
+  }
+}
+```
+
+---
+
+### 3.3 Column (Distribución Vertical y Espaciado)
+Apila una secuencia de componentes de arriba hacia abajo con espaciado vertical configurable entre cada elemento.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `items` | `items` | `Component[]`| `[]` | Lista secuencial de componentes verticales. |
+| `spacing` | `spacing` | `float` | `0.0` | Espacio en puntos entre elementos contiguos. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Column(col => {
+    col.Spacing(8.0);
+    col.Text("Datos de Facturación:", t => t.Bold().FontSize(11));
+    col.Text("RNC: 101-00000-1", t => t.FontSize(10).Color("#64748B"));
+    col.Text("Dirección: Av. Winston Churchill #109", t => t.FontSize(10));
+});
+```
+
+```typescript
+// TypeScript
+c.column(col => {
+    col.spacing(8.0);
+    col.text("Datos de Facturación:", t => t.bold().fontSize(11));
+    col.text("RNC: 101-00000-1", t => t.fontSize(10).color("#64748B"));
+    col.text("Dirección: Av. Winston Churchill #109", t => t.fontSize(10));
+});
+```
+
+```java
+// Java
+c.column(col -> {
+    col.text("Datos de Facturación:", t -> t.bold(true).fontSize(11.0f));
+    col.text("RNC: 101-00000-1", t -> t.fontSize(10.0f).color("#64748B"));
+    col.text("Dirección: Av. Winston Churchill #109", t -> t.fontSize(10.0f));
+}, 8.0);
+```
+
+```php
+// PHP
+$c->column(function($col) {
+    $col->text("Datos de Facturación:", fn($t) => $t->bold(true)->fontSize(11));
+    $col->text("RNC: 101-00000-1", fn($t) => $t->fontSize(10)->color("#64748B"));
+    $col->text("Dirección: Av. Winston Churchill #109", fn($t) => $t->fontSize(10));
+}, 8.0);
+```
+
+```python
+# Python
+c.column(lambda col: (
+    col.text("Datos de Facturación:", lambda t: t.bold().font_size(11))
+       .spacer(8.0)
+       .text("RNC: 101-00000-1", lambda t: t.font_size(10).color("#64748B"))
+       .spacer(8.0)
+       .text("Dirección: Av. Winston Churchill #109", lambda t: t.font_size(10))
+), spacing=8.0)
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "column",
+  "spacing": 8.0,
+  "items": [
+    { "type": "text", "value": "Datos de Facturación:", "bold": true, "font_size": 11.0 },
+    { "type": "text", "value": "RNC: 101-00000-1", "font_size": 10.0, "color": "#64748B" },
+    { "type": "text", "value": "Dirección: Av. Winston Churchill #109", "font_size": 10.0 }
+  ]
+}
+```
+
+---
+
+### 3.4 Row (Distribución Horizontal y Grid Proporcional)
+Distribuye componentes horizontalmente lado a lado. Admite anchos fijos en puntos (`ConstantItem` / `width`) y factores de expansión flexible (`RelativeItem` / `flex`).
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `items` | `items` | `RowItem[]` | `[]` | Colección de elementos horizontales. |
+| `spacing` | `spacing` | `float` | `0.0` | Espacio en puntos entre columnas contiguas. |
+| `verticalAlignment` | `vertical_alignment` | `string` | `"top"` | Alineación vertical: `"top"`, `"center"`, `"bottom"`. |
+
+#### Propiedades de cada `RowItem`
+- `width`: Ancho fijo en puntos (ej. `120.0`).
+- `flex`: Factor proporcional del ancho restante disponible (ej. `1.0`, `2.0`).
+- `item`: Componente que reside dentro de esa celda horizontal.
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Row(r => {
+    r.Spacing(12.0);
+    r.VerticalAlignment("center");
+    r.ConstantItem(120.0, left => left.Qr("https://dgii.gov.do/consulta", size: 80.0));
+    r.RelativeItem(2.0, center => center.Column(col => {
+        col.Text("Comprobante Fiscal Electrónico", t => t.Bold().Color("#0066FF"));
+        col.Text("Firma digital SHA-256 válida", t => t.FontSize(9).Color("#64748B"));
+    }));
+    r.RelativeItem(1.0, right => right.Text("$ 2,006.00", t => t.H2().AlignRight().Color("#059669")));
+});
+```
+
+```typescript
+// TypeScript
+c.row(r => {
+    r.spacing(12.0);
+    r.verticalAlignment("middle");
+    r.constantItem(120.0, left => left.qr("https://dgii.gov.do/consulta", 80.0));
+    r.relativeItem(2.0, center => center.column(col => {
+        col.text("Comprobante Fiscal Electrónico", t => t.bold().color("#0066FF"));
+        col.text("Firma digital SHA-256 válida", t => t.fontSize(9).color("#64748B"));
+    }));
+    r.relativeItem(1.0, right => right.text("$ 2,006.00", t => t.h2().alignRight().color("#059669")));
+});
+```
+
+```java
+// Java
+c.row(r -> {
+    r.constantItem(120.0, left -> left.qr("https://dgii.gov.do/consulta", 80.0));
+    r.relativeItem(2.0, center -> center.column(col -> {
+        col.text("Comprobante Fiscal Electrónico", t -> t.bold(true).color("#0066FF"));
+        col.text("Firma digital SHA-256 válida", t -> t.fontSize(9.0f).color("#64748B"));
+    }));
+    r.relativeItem(1.0, right -> right.text("$ 2,006.00", t -> t.fontSize(18.0f).bold(true).alignRight().color("#059669")));
+}, 12.0);
+```
+
+```php
+// PHP
+$c->row(function($r) {
+    $r->constantItem(120.0, fn($left) => $left->qr("https://dgii.gov.do/consulta", 80.0));
+    $r->relativeItem(2.0, function($center) {
+        $center->column(function($col) {
+            $col->text("Comprobante Fiscal Electrónico", fn($t) => $t->bold(true)->color("#0066FF"));
+            $col->text("Firma digital SHA-256 válida", fn($t) => $t->fontSize(9)->color("#64748B"));
+        });
+    });
+    $r->relativeItem(1.0, fn($right) => $right->text("$ 2,006.00", fn($t) => $t->fontSize(18)->bold(true)->alignRight()->color("#059669")));
+}, 12.0);
+```
+
+```python
+# Python
+c.row(lambda r: (
+    r.item(lambda left: left.qr("https://dgii.gov.do/consulta", size=80.0), width=120.0)
+     .column(lambda col: (
+         col.text("Comprobante Fiscal Electrónico", lambda t: t.bold().color("#0066FF"))
+            .text("Firma digital SHA-256 válida", lambda t: t.font_size(9).color("#64748B"))
+     ), flex=2.0)
+     .item(lambda right: right.text("$ 2,006.00", lambda t: t.h2().right().color("#059669")), flex=1.0)
+), spacing=12.0)
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "row",
+  "spacing": 12.0,
+  "vertical_alignment": "center",
+  "items": [
+    {
+      "width": 120.0,
+      "item": { "type": "qr", "value": "https://dgii.gov.do/consulta", "size": 80.0 }
+    },
+    {
+      "flex": 2.0,
+      "item": {
+        "type": "column",
+        "items": [
+          { "type": "text", "value": "Comprobante Fiscal Electrónico", "bold": true, "color": "#0066FF" },
+          { "type": "text", "value": "Firma digital SHA-256 válida", "font_size": 9.0, "color": "#64748B" }
+        ]
+      }
+    },
+    {
+      "flex": 1.0,
+      "item": { "type": "text", "value": "$ 2,006.00", "style": "h2", "alignment": "right", "color": "#059669" }
+    }
+  ]
+}
+```
+
+---
+
+### 3.5 Table (Tablas Corporativas, Repetición de Cabeceras y Zebra Striping)
+Componente de alto desempeño diseñado para facturas, listados de inventario y estados bancarios con paginado matemático que nunca fragmenta texto a la mitad.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `columns` | `columns` | `TableColumn[]` | *(Requerido)* | Definiciones de cada columna. |
+| `data` | `data` | `Object[]` | `[]` | Colección de registros a renderizar. |
+| `repeatHeader` | `repeat_header` | `bool` | `true` | Repite automáticamente la cabecera en cada nueva página. |
+| `zebra` | `zebra` | `bool` | `true` | Alterna fondo gris claro (`#F8FAFC`) en filas pares. |
+| `headerBackground` | `header_background`| `string` | `"#0066FF"` | Color de fondo de los encabezados de tabla. |
+| `borderColor` | `border_color` | `string` | `"#E2E8F0"` | Color de las cuadrículas de la tabla. |
+| `borderWidth` | `border_width` | `float` | `0.5` | Grosor de las líneas de la cuadrícula. |
+
+#### Definición de Columnas (`TableColumn`)
+- `title`: Texto del encabezado.
+- `field`: Identificador de clave en el objeto de datos.
+- `width`: Ancho fijo en puntos (opcional).
+- `flex`: Proporción del ancho flexible restante (opcional).
+- `align`: Alineación del texto (`"left"`, `"center"`, `"right"`).
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Table(t => {
+    t.RepeatHeader(true);
+    t.Zebra(true);
+    t.HeaderBackground("#0066FF");
+    t.Border("#CBD5E1", 0.5);
+    t.Columns(cols => {
+        cols.Add("sku", "Código", col => col.Width(80));
+        cols.Add("desc", "Descripción del Ítem", col => col.Flex(1.0));
+        cols.Add("qty", "Cant.", col => col.Width(50).AlignCenter().Number());
+        cols.Add("price", "Precio Unit.", col => col.Width(90).AlignRight().Currency());
+        cols.Add("total", "Total", col => col.Width(90).AlignRight().Currency());
+    });
+    t.Rows(new[] {
+        new { sku = "SVR-01", desc = "Servidor Dedicado Rust", qty = "1", price = "$ 450.00", total = "$ 450.00" },
+        new { sku = "LIC-02", desc = "Licencia ReportForge v2", qty = "1", price = "$ 999.00", total = "$ 999.00" }
+    });
+});
+```
+
+```typescript
+// TypeScript
+c.table(t => {
+    t.repeatHeader(true);
+    t.zebra(true);
+    t.headerBackground("#0066FF");
+    t.border("#CBD5E1", 0.5);
+    t.columns(cols => {
+        cols.column("sku", "Código", { width: 80 });
+        cols.column("desc", "Descripción del Ítem", { flex: 1.0 });
+        cols.column("qty", "Cant.", { width: 50, align: "center" });
+        cols.column("price", "Precio Unit.", { width: 90, align: "right" });
+        cols.column("total", "Total", { width: 90, align: "right" });
+    });
+    t.data([
+        { sku: "SVR-01", desc: "Servidor Dedicado Rust", qty: "1", price: "$ 450.00", total: "$ 450.00" },
+        { sku: "LIC-02", desc: "Licencia ReportForge v2", qty: "1", price: "$ 999.00", total: "$ 999.00" }
+    ]);
+});
+```
+
+```java
+// Java
+c.table(t -> {
+    t.repeatHeader(true);
+    t.zebra(true);
+    t.headerBackground("#0066FF");
+    t.border("#CBD5E1", 0.5);
+    t.addColumn("sku", "Código", 80.0f);
+    t.addColumn("desc", "Descripción del Ítem", 220.0f);
+    t.addColumn("qty", "Cant.", 50.0f);
+    t.addColumn("price", "Precio Unit.", 90.0f);
+    t.addColumn("total", "Total", 90.0f);
+    t.addRow("SVR-01", "Servidor Dedicado Rust", "1", "$ 450.00", "$ 450.00");
+    t.addRow("LIC-02", "Licencia ReportForge v2", "1", "$ 999.00", "$ 999.00");
+});
+```
+
+```php
+// PHP
+$c->table(function($t) {
+    $t->repeatHeader(true);
+    $t->zebra(true);
+    $t->headerBackground("#0066FF");
+    $t->border("#CBD5E1", 0.5);
+    $t->column("sku", "Código", 80.0);
+    $t->column("desc", "Descripción del Ítem", 220.0);
+    $t->column("qty", "Cant.", 50.0, "center");
+    $t->column("price", "Precio Unit.", 90.0, "right");
+    $t->column("total", "Total", 90.0, "right");
+    $t->rows([
+        ['sku' => 'SVR-01', 'desc' => 'Servidor Dedicado Rust', 'qty' => '1', 'price' => '$ 450.00', 'total' => '$ 450.00'],
+        ['sku' => 'LIC-02', 'desc' => 'Licencia ReportForge v2', 'qty' => '1', 'price' => '$ 999.00', 'total' => '$ 999.00']
+    ]);
+});
+```
+
+```python
+# Python
+c.table(lambda t: (
+    t.repeat_header(True)
+     .zebra(True)
+     .header_background("#0066FF")
+     .border("#CBD5E1", 0.5)
+     .column("Código", field="sku", configure=lambda col: col.width(80))
+     .column("Descripción del Ítem", field="desc", configure=lambda col: col.flex(1.0))
+     .column("Cant.", field="qty", configure=lambda col: col.width(50).center())
+     .column("Precio Unit.", field="price", configure=lambda col: col.width(90).right())
+     .column("Total", field="total", configure=lambda col: col.width(90).right())
+     .data([
+         {"sku": "SVR-01", "desc": "Servidor Dedicado Rust", "qty": "1", "price": "$ 450.00", "total": "$ 450.00"},
+         {"sku": "LIC-02", "desc": "Licencia ReportForge v2", "qty": "1", "price": "$ 999.00", "total": "$ 999.00"}
+     ])
+))
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "table",
+  "repeat_header": true,
+  "zebra": true,
+  "header_background": "#0066FF",
+  "border_color": "#CBD5E1",
+  "border_width": 0.5,
+  "columns": [
+    { "field": "sku", "title": "Código", "width": 80.0 },
+    { "field": "desc", "title": "Descripción del Ítem", "flex": 1.0 },
+    { "field": "qty", "title": "Cant.", "width": 50.0, "align": "center" },
+    { "field": "price", "title": "Precio Unit.", "width": 90.0, "align": "right" },
+    { "field": "total", "title": "Total", "width": 90.0, "align": "right" }
+  ],
+  "data": [
+    { "sku": "SVR-01", "desc": "Servidor Dedicado Rust", "qty": "1", "price": "$ 450.00", "total": "$ 450.00" },
+    { "sku": "LIC-02", "desc": "Licencia ReportForge v2", "qty": "1", "price": "$ 999.00", "total": "$ 999.00" }
+  ]
+}
+```
+
+---
+
+### 3.6 QRCode (Códigos QR Vectoriales In-Process)
+Compilado internamente en Rust sin dependencias de red ni librerías C externas. Dibuja los módulos vectoriales como comandos nativos de PDF.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `value` | `value` | `string` | *(Requerido)* | URL, firma electrónica o payload de validación. |
+| `size` | `size` | `float` | `80.0` | Dimensión cuadrada en puntos. |
+| `fillColor` | `fill_color` | `string` | `"#000000"` | Color de los bloques del código QR. |
+| `backColor` | `back_color` | `string` | `"#FFFFFF"` | Color del fondo del código QR. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Qr("https://dgii.gov.do/verif/101000", size: 85.0, fillColor: "#0F172A", backColor: "#FFFFFF");
+```
+
+```typescript
+// TypeScript
+c.qr("https://dgii.gov.do/verif/101000", 85.0, "#0F172A", "#FFFFFF");
+```
+
+```java
+// Java
+c.qr("https://dgii.gov.do/verif/101000", 85.0, "#0F172A", "#FFFFFF");
+```
+
+```php
+// PHP
+$c->qr("https://dgii.gov.do/verif/101000", 85.0, "#0F172A", "#FFFFFF");
+```
+
+```python
+# Python
+c.qr("https://dgii.gov.do/verif/101000", size=85.0, fill_color="#0F172A", back_color="#FFFFFF")
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "qr",
+  "value": "https://dgii.gov.do/verif/101000",
+  "size": 85.0,
+  "fill_color": "#0F172A",
+  "back_color": "#FFFFFF"
+}
+```
+
+---
+
+### 3.7 Barcode (Códigos de Barras 1D Code128 / EAN13)
+Generación vectorial in-process de códigos de barras estándar para logística, almacenes y retail.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `value` | `value` | `string` | *(Requerido)* | Cadena numérica o alfanumérica. |
+| `barcodeType` | `barcode_type` | `string` | `"CODE128"` | Estándar: `"CODE128"`, `"EAN13"`. |
+| `width` | `width` | `float` | `150.0` | Ancho total en puntos tipográficos. |
+| `height` | `height` | `float` | `40.0` | Altura de las barras verticales. |
+| `includeText` | `include_text` | `bool` | `true` | Imprime el número legible bajo el código de barras. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Barcode("E310000000542", barcodeType: "CODE128", width: 170.0, height: 42.0, includeText: true);
+```
+
+```typescript
+// TypeScript
+c.barcode("E310000000542", "CODE128", 170.0, 42.0, true);
+```
+
+```java
+// Java
+c.barcode("E310000000542", "CODE128", 170.0, 42.0, true);
+```
+
+```php
+// PHP
+$c->barcode("E310000000542", "CODE128", 170.0, 42.0, true);
+```
+
+```python
+# Python
+c.barcode("E310000000542", barcode_type="CODE128", width=170.0, height=42.0, include_text=True)
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "barcode",
+  "value": "E310000000542",
+  "barcode_type": "CODE128",
+  "width": 170.0,
+  "height": 42.0,
+  "include_text": true
+}
+```
+
+---
+
+### 3.8 Spacer (Espaciador Vertical)
+Inserta un espacio transparente vertical en el flujo de la página para airear secciones visuales.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `height` | `height` | `float` | `10.0` | Altura del espaciador en puntos tipográficos. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Spacer(15.0);
+```
+
+```typescript
+// TypeScript
+c.spacer(15.0);
+```
+
+```java
+// Java
+c.spacer(15.0);
+```
+
+```php
+// PHP
+$c->spacer(15.0);
+```
+
+```python
+# Python
+c.spacer(height=15.0)
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "spacer",
+  "height": 15.0
+}
+```
+
+---
+
+### 3.9 Divider (Línea Separadora Horizontal)
+Traza una línea horizontal vectorial que delimita bloques de contenido o secciones de encabezado y totales.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `thickness` | `thickness` | `float` | `1.0` | Grosor del trazo de la línea. |
+| `color` | `color` | `string` | `"#CBD5E1"` | Color hexadecimal del trazo (ej. `"#0066FF"`). |
+| `margin` | `margin` | `float` | `8.0` | Margen vertical superior e inferior. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Divider(color: "#0066FF", thickness: 1.5, margin: 10.0);
+```
+
+```typescript
+// TypeScript
+c.divider("#0066FF", 1.5, 10.0);
+```
+
+```java
+// Java
+c.divider(1.5, "#0066FF", 10.0);
+```
+
+```php
+// PHP
+$c->divider(1.5, "#0066FF", 10.0);
+```
+
+```python
+# Python
+c.divider(thickness=1.5, color="#0066FF", margin=10.0)
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "divider",
+  "thickness": 1.5,
+  "color": "#0066FF",
+  "margin": 10.0
+}
+```
+
+---
+
+### 3.10 PageNumber (Numeración de Páginas y Paginado Dinámico)
+Calcula automáticamente el índice de la página actual y el total general de páginas del documento en dos pasadas.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `format` | `format` | `string` | `"Página {page} de {total}"` | Máscara de texto con sustitución de tokens. |
+| `alignment` | `alignment` | `string` | `"right"` | Alineación horizontal: `"left"`, `"center"`, `"right"`. |
+| `style` | `style` | `string` | `"caption"` | Estilo tipográfico asociado. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+f.PageNumber("Página {page} de {total}", p => p.AlignRight().Style("caption"));
+```
+
+```typescript
+// TypeScript
+f.pageNumber("Página {page} de {total}", "right", "caption");
+```
+
+```java
+// Java
+f.text("Página {page} de {total}", t -> t.alignRight().style("caption"));
+```
+
+```php
+// PHP
+$f->text("Página {page} de {total}", fn($t) => $t->alignRight()->style("caption"));
+```
+
+```python
+# Python
+f.page_number("Página {page} de {total}", alignment="right", style="caption")
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "page_number",
+  "format": "Página {page} de {total}",
+  "alignment": "right",
+  "style": "caption"
+}
+```
+
+---
+
+### 3.11 Image (Imágenes Embebidas y Ajuste)
+Inserta logotipos, firmas o fotografías desde rutas locales en disco o cadenas en base64 (`Data URI`).
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `source` | `source` | `string` | *(Requerido)* | Ruta de archivo local o cadena Base64 (`data:image/png;base64,...`). |
+| `width` | `width` | `float` | `null` | Ancho deseado en puntos. |
+| `height` | `height` | `float` | `null` | Alto deseado en puntos. |
+| `fit` | `fit` | `string` | `"contain"` | Modo de ajuste: `"contain"`, `"cover"`, `"fill"`. |
+| `alignment` | `alignment` | `string` | `"center"` | Alineación dentro de la caja disponible. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Image("assets/logo.png", width: 140.0, height: 45.0, fit: "contain", alignment: "left");
+```
+
+```typescript
+// TypeScript
+c.image("assets/logo.png", { width: 140.0, height: 45.0, fit: "contain", alignment: "left" });
+```
+
+```java
+// Java
+c.image("assets/logo.png", 140.0, 45.0, "contain", "left");
+```
+
+```php
+// PHP
+$c->image("assets/logo.png", 140.0, 45.0, "contain", "left");
+```
+
+```python
+# Python
+c.image("assets/logo.png", width=140.0, height=45.0, fit="contain", alignment="left")
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "image",
+  "source": "assets/logo.png",
+  "width": 140.0,
+  "height": 45.0,
+  "fit": "contain",
+  "alignment": "left"
+}
+```
 
 ---
 
@@ -310,7 +1061,7 @@ const char* reportforge_version(void);
 
 ---
 
-## 8. Implementación y Código de Producción por Lenguaje
+## 8. Implementación Completa de Casos de Producción por Lenguaje
 
 ### 8.1 C# (.NET 8, 9, 10)
 **Paquete**: [`docs/packages/ReportForge.2.0.0.nupkg`](packages/ReportForge.2.0.0.nupkg)  
@@ -534,7 +1285,7 @@ docker run --rm -v ${PWD}:/usr/src/reportforge -w /usr/src/reportforge rust:1-al
 | Síntoma / Error | Causa Probable | Solución Oficial |
 | :--- | :--- | :--- |
 | `DllNotFoundException` en C# | El binario `.dll` o `.so` no se encuentra en el directorio de ejecución. | Asegurarse de compilar con el paquete NuGet oficial o copiar `runtimes/win-x64/native/reportforge.dll` junto al ejecutable. |
-| Caracteres españoles corruptos (`` o símbolos raros) | Uso de codificación ASCII estándar en lugar de WinAnsi CP1252. | El motor codifica automáticamente a secuencias hexadecimales ISO 32000-1 (`\E1` para `á`, `\F1` para `ñ`). Pasar cadenas UTF-8 estándar. |
+| Caracteres españoles corruptos (símbolos raros) | Uso de codificación ASCII estándar en lugar de WinAnsi CP1252. | El motor codifica automáticamente a secuencias hexadecimales ISO 32000-1 (`\E1` para `á`, `\F1` para `ñ`). Pasar cadenas UTF-8 estándar. |
 | Fuga de memoria progresiva en servidores | La aplicación no invoca `reportforge_free_result`. | En lenguajes FFI, llamar siempre a `reportforge_free_result(result)` en un bloque `finally` o destructores de clase. |
 | Filas de tabla cortadas entre páginas | El componente padre no permite división de flujo. | La tabla maneja la división automática por defecto. Evitar envolver tablas grandes dentro de contenedores con altura fija (`height`). |
 | `FFI extension not enabled` en PHP | La extensión FFI viene deshabilitada por defecto en PHP. | Editar `php.ini` y configurar `extension=ffi` y `ffi.enable=true`. |
