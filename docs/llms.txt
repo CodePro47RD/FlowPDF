@@ -1,0 +1,198 @@
+# ReportForge 2.0
+
+> Universal Document Composition and PDF Engine in Rust Core v2.0. In-process vector rendering in 15-35 ms, zero Chromium, with native C ABI and SDKs for C#, TypeScript, Java, PHP, and Python.
+
+## Quick Summary
+ReportForge is a high-performance, in-process document and PDF generation engine written 100% in Rust. It eliminates the need for headless browsers (Chromium/Puppeteer), heavy Python microservices, and external databases. Applications in C#, Node.js, Bun, Java, PHP, and Python call ReportForge directly in memory via FFI/C ABI or using official client SDKs.
+
+## Key Capabilities & Benchmarks
+- **Generation Speed**: ~15 ms to 35 ms per single page; under 150 ms for complex multi-page invoices.
+- **RAM Footprint**: ~14 MB to 24 MB peak memory usage (vs 500 MB+ in Chromium).
+- **Execution Mode**: In-process native dynamic library (`reportforge.dll` on Windows, `libreportforge.so` on Linux).
+- **Typography & Encoding**: Full Spanish accent and Unicode support (`á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`) through WinAnsi CP1252 hexadecimal encoding conforming to ISO 32000-1.
+- **Visual Components**: Text, Tables (with pagination and repeat headers), Columns, Rows, Containers, QR Codes, Barcodes (Code128), Spacers, Dividers, Page Numbers.
+
+## Official Resources
+- [Interactive Playground & Portal](index.html): Live interactive web demo and package downloads.
+- [Official Master Manual PDF](packages/ReportForge_Manual_Oficial_Completo.pdf): 13-page technical manual with architectural diagrams and component specifications.
+- [Component Reference Guide](COMPONENTS_REFERENCE.md): Detailed JSON schema properties for each component.
+- [Rust Core Specification](RUST_CORE_V2.md): Low-level documentation of the Rust rendering engine.
+
+## Document JSON Schema Specification
+
+```json
+{
+  "page": {
+    "size": "A4",
+    "orientation": "portrait",
+    "margin": 36.0,
+    "margin_top": 36.0,
+    "margin_bottom": 36.0,
+    "margin_left": 36.0,
+    "margin_right": 36.0
+  },
+  "header": {
+    "type": "text",
+    "value": "Factura Comercial",
+    "font_size": 18.0,
+    "bold": true,
+    "color": "#0066FF"
+  },
+  "content": [
+    {
+      "type": "text",
+      "value": "Cliente: Acrópolis Center • RNC: 101-00000-1",
+      "font_size": 11.0
+    },
+    { "type": "spacer", "height": 10.0 },
+    {
+      "type": "table",
+      "repeat_header": true,
+      "zebra": true,
+      "columns": [
+        { "title": "Descripción", "field": "desc", "width": 220.0 },
+        { "title": "Cant.", "field": "qty", "width": 60.0 },
+        { "title": "Precio Unit.", "field": "price", "width": 100.0 },
+        { "title": "Total", "field": "total", "width": 100.0 }
+      ],
+      "data": [
+        { "desc": "Licencia ReportForge v2.0", "qty": "1", "price": "$999.00", "total": "$999.00" },
+        { "desc": "Soporte Técnico 24/7", "qty": "12", "price": "$50.00", "total": "$600.00" }
+      ]
+    },
+    { "type": "spacer", "height": 15.0 },
+    {
+      "type": "row",
+      "items": [
+        { "type": "qr", "value": "https://dgii.gov.do/facturacion/e-CF", "size": 65.0 },
+        { "type": "barcode", "value": "FAC2026-9901", "barcode_type": "CODE128", "height": 35.0 }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "text",
+    "value": "Documento emitido con ReportForge Rust Core • Página 1 de 1",
+    "font_size": 8.0,
+    "color": "#64748B",
+    "alignment": "center"
+  }
+}
+```
+
+## SDK Installation and Code Examples
+
+### 1. C# (.NET 8/9/10)
+Package: `packages/ReportForge.2.0.0.nupkg`
+```bash
+dotnet add package ReportForge --source ./docs/packages
+```
+```csharp
+using ReportForge;
+
+var doc = ReportDocument.Create(page => page.Size("A4").Margin(36))
+    .Header(h => h.Text("Factura C#").FontSize(18).Bold().Color("#0066FF"))
+    .Content(c => {
+        c.Text("Total: € 1,599.00 con acentos: á, é, í, ó, ú, ñ").FontSize(11);
+        c.Spacer(10);
+        c.Table(t => {
+            t.RepeatHeader();
+            t.Columns(cols => {
+                cols.Add("Producto", width: 200);
+                cols.Add("Precio", width: 100);
+            });
+            t.AddRow("Servidor Rust Core", "$ 350.00");
+        });
+        c.Qr("https://reportforge.dev", size: 60);
+    });
+
+byte[] pdf = doc.GeneratePdf();
+File.WriteAllBytes("factura_csharp.pdf", pdf);
+```
+
+### 2. TypeScript / JavaScript (Node.js / Bun)
+Package: `packages/reportforge-2.0.0.tgz`
+```bash
+npm install ./docs/packages/reportforge-2.0.0.tgz
+```
+```typescript
+import { ReportDocument } from "reportforge";
+import * as fs from "fs";
+
+const doc = ReportDocument.create({ size: "A4", margin: 36 })
+  .header(h => h.text("Reporte TypeScript", { fontSize: 18, bold: true, color: "#0066FF" }))
+  .content(c => {
+    c.text("Renderizado vectorial in-process en ~25 ms");
+    c.spacer(10);
+    c.qr("https://reportforge.dev", { size: 60 });
+  });
+
+const pdfBuffer = doc.generatePdf();
+fs.writeFileSync("reporte.pdf", pdfBuffer);
+```
+
+### 3. Java (Java 11+)
+Package: `packages/reportforge-2.0.0.jar`
+```bash
+mvn install:install-file -Dfile=docs/packages/reportforge-2.0.0.jar -DgroupId=dev.reportforge -DartifactId=reportforge -Dversion=2.0.0 -Dpackaging=jar
+```
+```java
+import dev.reportforge.ReportDocument;
+import java.io.FileOutputStream;
+
+ReportDocument doc = ReportDocument.create(page -> page.size("A4").margin(36.0f))
+    .header(h => h.text("Factura Java").fontSize(18.0f).bold(true).color("#0066FF"))
+    .content(c => {
+        c.text("Generado vía JNA embebido en el JAR");
+        c.qr("https://reportforge.dev", 60.0f);
+    });
+
+byte[] pdfBytes = doc.generatePdf();
+try (FileOutputStream fos = new FileOutputStream("factura.pdf")) {
+    fos.write(pdfBytes);
+}
+```
+
+### 4. PHP (PHP 8.0+)
+Package: `packages/reportforge-php-2.0.0.zip`
+```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+use ReportForge\ReportDocument;
+
+$doc = ReportDocument::create(['size' => 'A4', 'margin' => 36])
+    ->header(fn($h) => $h->text("Factura PHP")->fontSize(18)->bold(true)->color("#0066FF"))
+    .content(function($c) {
+        $c->text("Documento emitido con PHP FFI en 25ms");
+        $c->qr("https://reportforge.dev", 60);
+    });
+
+$pdfBytes = $doc->generatePdf();
+file_put_contents("factura.pdf", $pdfBytes);
+```
+
+### 5. Native Rust
+```rust
+use reportforge::ast::DocumentDefinitionAst;
+use reportforge::pdf_engine::PdfEngine;
+
+let json_str = r#"{"page":{"size":"A4","margin":36.0},"content":{"type":"text","value":"Rust Core v2.0"}}"#;
+let ast: DocumentDefinitionAst = serde_json::from_str(json_str).unwrap();
+let engine = PdfEngine::new();
+let pdf_bytes = engine.render(&ast, None).unwrap();
+std::fs::write("output.pdf", pdf_bytes).unwrap();
+```
+
+## C ABI / FFI Interface
+For other languages (C, C++, Go, Python ctypes, Swift, Ruby):
+```c
+typedef struct {
+    uint8_t* data;
+    size_t length;
+    bool success;
+    char* error_message;
+} ReportForgeResult;
+
+ReportForgeResult reportforge_render_pdf(const char* doc_json, const char* data_json);
+void reportforge_free_result(ReportForgeResult result);
+const char* reportforge_version(void);
+```
