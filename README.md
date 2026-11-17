@@ -6,10 +6,10 @@
 **Composición matemática vectorial • Renderizado in-process en microsegundos • Cero Chromium**
 
 <p align="center">
-  <a href="#benchmark"><img src="https://img.shields.io/badge/Velocidad-15ms--35ms-brightgreen.svg" alt="Performance"></a>
-  <a href="#tests"><img src="https://img.shields.io/badge/Tests-7%20Passed%20(100%25)-success.svg" alt="Tests"></a>
+  <a href="#-comparativa-de-rendimiento"><img src="https://img.shields.io/badge/Velocidad-15ms--35ms-brightgreen.svg" alt="Performance"></a>
+  <a href="#b-ejecutar-las-pruebas-unitarias-y-de-integraci%C3%B3n"><img src="https://img.shields.io/badge/Tests-7%20Passed%20(100%25)-success.svg" alt="Tests"></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-2021%20Edition-orange.svg" alt="Rust Edition 2021"></a>
-  <a href="#ecosistema"><img src="https://img.shields.io/badge/C%20ABI-FFI%20Export-blue.svg" alt="C ABI FFI"></a>
+  <a href="#-interfaz-c-abi--ffi"><img src="https://img.shields.io/badge/C%20ABI-FFI%20Export-blue.svg" alt="C ABI FFI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-lightgrey.svg" alt="License MIT"></a>
 </p>
 
@@ -18,47 +18,347 @@
   Construido 100% en <b>Rust</b> con exportación C ABI nativa (<code>cdylib</code>, <code>rlib</code>, <code>staticlib</code>) e integrable directamente en C#, TypeScript, Java, PHP y Python.
 </p>
 
-[⚡ Inicio Rápido](#-inicio-rápido) •
-[📊 Por qué Rust Core](#-comparativa-de-rendimiento) •
-[🦀 Uso en Rust](#-uso-en-rust) •
+[⚡ Compilación Local](#-compilaci%C3%B3n-y-ejecuci%C3%B3n-local-en-tu-terminal) •
+[🚀 Despliegue por Lenguaje](#-gu%C3%ADa-de-instalaci%C3%B3n-y-despliegue-por-lenguaje) •
+[📊 Rendimiento](#-comparativa-de-rendimiento) •
+[🦀 Uso en Rust](#-uso-directo-en-rust) •
 [🔌 C ABI / FFI](#-interfaz-c-abi--ffi) •
-[📦 SDKs Multiplataforma](#-ecosistema-de-sdks) •
-[📑 Manual PDF](#-documentación-y-manuales)
+[🐳 Uso con Docker](#-uso-opcional-con-docker) •
+[📑 Manuales PDF](#-documentaci%C3%B3n-y-manuales)
 
 </div>
 
 ---
 
-## ⚡ Inicio Rápido
+## 💡 El Gran Cambio: Arquitectura In-Process (Sin Docker)
 
-### Requisitos
-* **Rust 1.70+** (Edición 2021) con Cargo instalado.
+A diferencia de las soluciones tradicionales basadas en microservicios web (que requieren levantar servidores Django, Gunicorn, PostgreSQL, Redis, Celery o Chromium headless):
 
-### Compilar la librería nativa
-```bash
-# Clonar el repositorio
-git clone https://github.com/reportforge/reportforge.git
-cd reportforge
+* **Cero sobrecarga de red**: El renderizado se ejecuta **dentro de la misma memoria RAM** de tu aplicación a través de enlaces binarios de alta velocidad (C ABI / FFI).
+* **Cero dependencias externas**: No necesitas levantar bases de datos ni colas de mensajería para generar un reporte.
+* **Cero consumo ocioso**: La librería solo utiliza recursos en el instante en que compila el PDF (~15 a 35 ms) y libera la memoria de inmediato.
 
-# Compilar en modo Release optimizado
+---
+
+## ⚡ Compilación y Ejecución Local en tu Terminal
+
+Para compilar y verificar el motor directamente en tu máquina:
+
+### A) Compilar la librería para producción
+En la carpeta raíz del proyecto ejecutas en PowerShell o terminal:
+
+```powershell
 cargo build --release
 ```
 
-Los artefactos compilados se generarán en `target/release/`:
+Esto compilará el código en modo release ultra-optimizado (con LTO y strip habilitado) y generará los binarios nativos en `target/release/`:
 * **Windows**: `reportforge.dll` y `reportforge.lib`
 * **Linux**: `libreportforge.so` y `libreportforge.a`
 * **macOS**: `libreportforge.dylib`
 
-### Ejecutar Pruebas Automatizadas
-```bash
+### B) Ejecutar las pruebas unitarias y de integración
+```powershell
 cargo test
 ```
-Ejecuta la suite completa de pruebas unitarias y de integración que validan:
-* Parseo de AST JSON y cálculo geométrico.
-* Compatibilidad total con acentos en español y símbolos Unicode (`á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`).
-* Tablas con paginación exacta y repetición de cabeceras.
-* Códigos de barras (Code128) y códigos QR vectoriales.
-* Exportación y liberación de memoria mediante C ABI.
+
+Ejecuta las **7 pruebas nativas** (Unicode, tablas, repetición de cabeceras, códigos QR, códigos de barra Code128 y gestión de memoria C-ABI) en **menos de 0.1 segundos**.
+
+### C) ¿Cómo lo consumen tus proyectos?
+Tus aplicaciones en **C#, TypeScript, Java, PHP o Python** simplemente importan su respectivo paquete precompilado desde la carpeta [`docs/packages/`](docs/packages/) y llaman a la librería directamente en su código.
+
+---
+
+## 🚀 Guía de Instalación y Despliegue por Lenguaje
+
+Todos los paquetes listos para producción se encuentran en [`docs/packages/`](docs/packages/). A continuación se detalla cómo instalarlos, desplegarlos y utilizarlos en cada plataforma:
+
+```text
+docs/packages/
+├── ReportForge.2.0.0.nupkg                 (1.65 MB, C# .NET 8/9/10)
+├── reportforge-2.0.0.tgz                   (1.58 MB, TypeScript / Node.js)
+├── reportforge-2.0.0.jar                   (1.55 MB, Java 11+)
+├── reportforge-php-2.0.0.zip               (1.54 MB, PHP 8+)
+├── reportforge-2.0.0-py3-none-any.whl      (1.55 MB, Python 3.9+)
+└── ReportForge_Manual_Oficial_Completo.pdf (144 KB, Manual Maestro 13 págs)
+```
+
+---
+
+### 🔵 1. C# (.NET 8, 9, 10)
+
+#### Instalación
+Puedes instalar el paquete NuGet local directamente desde la terminal de tu solución:
+
+```bash
+dotnet add package ReportForge --source ./docs/packages
+```
+
+O agregando un archivo `nuget.config` en la raíz de tu solución:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="LocalReportForge" value="./docs/packages" />
+  </packageSources>
+</configuration>
+```
+
+#### Cómo se despliega
+El paquete `ReportForge.2.0.0.nupkg` incluye las carpetas `runtimes/win-x64/native/reportforge.dll` y `runtimes/linux-x64/native/libreportforge.so`. Al ejecutar:
+```bash
+dotnet publish -c Release -r linux-x64 --self-contained
+# o para Windows:
+dotnet publish -c Release -r win-x64
+```
+El SDK de .NET copia automáticamente el binario nativo adecuado dentro de la carpeta de publicación (`bin/Release/.../publish/runtimes/`). **No tienes que configurar variables de entorno ni copiar DLLs a mano.**
+
+#### Código de Ejemplo (API Fluida)
+```csharp
+using ReportForge;
+
+// 1. Construir el documento con tipado fuerte
+var doc = ReportDocument.Create(page => page.Size("A4").Margin(36))
+    .Header(h => h.Text("Facturación Electrónica en Español")
+                  .FontSize(18)
+                  .Bold()
+                  .Color("#0066FF"))
+    .Content(c => {
+        c.Text("Cliente: Empresa Modelo, S.R.L. • RNC: 101-00000-1").FontSize(11);
+        c.Spacer(10);
+        c.Table(t => {
+            t.RepeatHeader();
+            t.Columns(cols => {
+                cols.Add("Descripción", width: 220);
+                cols.Add("Cant.", width: 60);
+                cols.Add("Precio Unit.", width: 100);
+                cols.Add("Total", width: 100);
+            });
+            t.AddRow("Servidor Cloud Dedicado", "1", "$ 350.00", "$ 350.00");
+            t.AddRow("Licencia ReportForge v2.0", "1", "$ 999.00", "$ 999.00");
+        });
+        c.Spacer(15);
+        c.Row(r => {
+            r.AddQr("https://dgii.gov.do/e-CF", size: 70);
+            r.AddBarcode("FAC2026-9901", format: "CODE128", height: 35);
+        });
+    });
+
+// 2. Generar en memoria (in-process FFI en ~25 ms)
+byte[] pdfBytes = doc.GeneratePdf();
+File.WriteAllBytes("factura_csharp.pdf", pdfBytes);
+```
+
+---
+
+### 🟨 2. TypeScript / JavaScript (Node.js, Bun, Deno)
+
+#### Instalación
+Instala el tarball npm compilado:
+```bash
+# Con npm
+npm install ./docs/packages/reportforge-2.0.0.tgz
+
+# Con Bun
+bun add ./docs/packages/reportforge-2.0.0.tgz
+
+# Con pnpm o yarn
+pnpm add ./docs/packages/reportforge-2.0.0.tgz
+```
+
+#### Cómo se despliega
+El paquete contiene un cargador nativo FFI que detecta automáticamente el sistema operativo (`process.platform === 'win32'` o `'linux'`) y vincula las llamadas nativas de forma transparente. Para entornos contenerizados (como AWS Lambda, Vercel Serverless o contenedores Docker en Alpine/Debian), el archivo `libreportforge.so` viene preempaquetado dentro de `node_modules/reportforge/runtimes/`.
+
+#### Código de Ejemplo
+```typescript
+import { ReportDocument } from "reportforge";
+import * as fs from "fs";
+
+const doc = ReportDocument.create({ size: "A4", margin: 36 })
+  .header(h => h.text("Reporte Ejecutivo Trimestral", { fontSize: 18, bold: true, color: "#0066FF" }))
+  .content(c => {
+    c.text("Soporte completo para acentos: á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €", { fontSize: 11 });
+    c.spacer(12);
+    c.table({
+      repeatHeader: true,
+      columns: [
+        { title: "Métrica", width: 200 },
+        { title: "Valor", width: 100 },
+        { title: "Estado", width: 100 }
+      ],
+      data: [
+        { "Métrica": "Tiempo de Generación", "Valor": "24 ms", "Estado": "Óptimo" },
+        { "Métrica": "Consumo de Memoria", "Valor": "14 MB", "Estado": "Aprobado" }
+      ]
+    });
+    c.qr("https://reportforge.dev/docs", { size: 65 });
+  });
+
+// Generar Buffer del PDF directamente en Node/Bun
+const pdfBuffer = doc.generatePdf();
+fs.writeFileSync("reporte_typescript.pdf", pdfBuffer);
+```
+
+---
+
+### ☕ 3. Java (Java 11+)
+
+#### Instalación
+Instala el artefacto JAR en tu repositorio local Maven:
+```bash
+mvn install:install-file \
+  -Dfile=docs/packages/reportforge-2.0.0.jar \
+  -DgroupId=dev.reportforge \
+  -DartifactId=reportforge \
+  -Dversion=2.0.0 \
+  -Dpackaging=jar
+```
+
+O agrégalo en tu `pom.xml`:
+```xml
+<dependency>
+    <groupId>dev.reportforge</groupId>
+    <artifactId>reportforge</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+#### Cómo se despliega
+El JAR integra internamente **JNA (Java Native Access)** y contiene los runtimes para Windows (`reportforge_native.dll`) y Linux (`libreportforge_native.so`) dentro de su classpath. Al invocar el generador por primera vez, JNA extrae el binario a una carpeta temporal protegida del sistema operativo y lo mapea en memoria. Funciona de manera idéntica en Spring Boot, Quarkus o aplicaciones de consola en Windows o Linux.
+
+#### Código de Ejemplo
+```java
+import dev.reportforge.ReportDocument;
+import java.io.FileOutputStream;
+
+public class GenerarFactura {
+    public static void main(String[] args) throws Exception {
+        ReportDocument doc = ReportDocument.create(page -> page.size("A4").margin(36.0f))
+            .header(h -> h.text("Factura Comercial Java")
+                          .fontSize(18.0f)
+                          .bold(true)
+                          .color("#0066FF"))
+            .content(c -> {
+                c.text("Documento emitido con ReportForge JAR v2.0").fontSize(11.0f);
+                c.spacer(10.0f);
+                c.table(t -> {
+                    t.repeatHeader(true);
+                    t.addColumn("Artículo", 220.0f);
+                    t.addColumn("Subtotal", 120.0f);
+                    t.addRow("Suscripción Anual Cloud", "$ 1,200.00");
+                });
+                c.qr("https://reportforge.dev", 75.0f);
+            });
+
+        byte[] pdfBytes = doc.generatePdf();
+        try (FileOutputStream fos = new FileOutputStream("factura_java.pdf")) {
+            fos.write(pdfBytes);
+        }
+    }
+}
+```
+
+---
+
+### 🐘 4. PHP (PHP 8.0+)
+
+#### Instalación
+Descomprime `docs/packages/reportforge-php-2.0.0.zip` en tu proyecto o regístralo en tu `composer.json`:
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./docs/packages/reportforge-php-2.0.0"
+        }
+    ],
+    "require": {
+        "reportforge/reportforge": "2.0.0"
+    }
+}
+```
+
+#### Cómo se despliega
+PHP interactúa con ReportForge a través de **PHP FFI** (Foreign Function Interface):
+1. Asegúrate de tener habilitada la extensión FFI en tu `php.ini`:
+   ```ini
+   extension=ffi
+   ffi.enable=true
+   ```
+2. El SDK detecta el sistema operativo y carga `reportforge_native.dll` (Windows) o `libreportforge_native.so` (Linux).
+3. En entornos PHP-FPM / Nginx, puedes configurar `ffi.preload` para cargar la librería nativa durante el inicio del servidor, reduciendo el tiempo de llamada a menos de **5 milisegundos**.
+
+#### Código de Ejemplo
+```php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+
+use ReportForge\ReportDocument;
+
+$doc = ReportDocument::create(['size' => 'A4', 'margin' => 36])
+    ->header(function($h) {
+        $h->text("Factura Emitida desde PHP 8.2")
+          ->fontSize(18)
+          ->bold(true)
+          ->color("#0066FF");
+    })
+    ->content(function($c) {
+        $c->text("Comprobante con acentos en español: á, é, í, ó, ú, ñ.");
+        $c->spacer(10);
+        $c->table([
+            'repeatHeader' => true,
+            'columns' => [
+                ['title' => 'Concepto', 'width' => 250],
+                ['title' => 'Monto', 'width' => 100]
+            ],
+            'rows' => [
+                ['Consultoría de Software', '$ 500.00'],
+                ['Mantenimiento Mensual', '$ 250.00']
+            ]
+        ]);
+        $c->qr("https://reportforge.dev/verify", 70);
+    });
+
+// Generar PDF binario
+$pdfBytes = $doc->generatePdf();
+file_put_contents("factura_php.pdf", $pdfBytes);
+```
+
+---
+
+### 🐍 5. Python (Python 3.9+)
+
+#### Instalación
+Instala el paquete wheel universal:
+```bash
+pip install ./docs/packages/reportforge-2.0.0-py3-none-any.whl
+```
+
+#### Cómo se despliega
+El paquete wheel incluye un adaptador ligero basado en la biblioteca estándar `ctypes`. Carga automáticamente `libreportforge_native.so` en Linux o `reportforge_native.dll` en Windows sin requerir compiladores C/C++ ni dependencias pesadas en el servidor de producción.
+
+#### Código de Ejemplo
+```python
+from reportforge import ReportDocument
+
+doc = (
+    ReportDocument.create(size="A4", margin=36)
+    .header(lambda h: h.text("Factura Python Nativa", font_size=18, bold=True, color="#0066FF"))
+    .content(lambda c: [
+        c.text("Generado in-process vía ctypes sin Chromium."),
+        c.spacer(height=10),
+        c.table(
+            columns=[{"title": "Producto", "width": 220}, {"title": "Precio", "width": 100}],
+            rows=[["Licencia Rust Core", "$ 999.00"]],
+            repeat_header=True
+        ),
+        c.qr("https://reportforge.dev", size=60)
+    ])
+)
+
+pdf_bytes = doc.generate_pdf()
+with open("factura_python.pdf", "wb") as f:
+    f.write(pdf_bytes)
+```
 
 ---
 
@@ -76,9 +376,9 @@ Ejecuta la suite completa de pruebas unitarias y de integración que validan:
 
 ---
 
-## 🦀 Uso en Rust
+## 🦀 Uso Directo en Rust
 
-Puedes usar ReportForge directamente como crate dentro de tu aplicación Rust:
+Si estás construyendo una aplicación en Rust, puedes importar ReportForge directamente como crate:
 
 ```rust
 use reportforge::ast::DocumentDefinitionAst;
@@ -86,21 +386,17 @@ use reportforge::pdf_engine::PdfEngine;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let json_template = r#"{
-        "page": {
-            "size": "A4",
-            "orientation": "portrait",
-            "margin": 36.0
-        },
+        "page": { "size": "A4", "orientation": "portrait", "margin": 36.0 },
         "content": [
             {
                 "type": "text",
-                "value": "Factura Electrónica Dominicana",
+                "value": "Factura Electrónica Rust",
                 "bold": true,
                 "font_size": 18.0
             },
             {
                 "type": "text",
-                "value": "Cliente: Acrópolis Center • Total: € 1,450.00",
+                "value": "Total con acentos: á, é, í, ó, ú, ñ • € 1,450.00",
                 "font_size": 11.0
             },
             {
@@ -111,16 +407,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ]
     }"#;
 
-    // Deserializar la plantilla declarativa
     let ast: DocumentDefinitionAst = serde_json::from_str(json_template)?;
-
-    // Inicializar el motor vectorial y renderizar a bytes PDF
     let engine = PdfEngine::new();
     let pdf_bytes = engine.render(&ast, None)?;
 
-    // Guardar en disco
-    std::fs::write("factura_generada.pdf", pdf_bytes)?;
-    println!("¡PDF generado exitosamente en microsegundos!");
+    std::fs::write("factura_rust.pdf", pdf_bytes)?;
+    println!("¡PDF generado en microsegundos!");
     
     Ok(())
 }
@@ -133,7 +425,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ReportForge expone funciones nativas con convención de llamada C para permitir integración in-process de ultra alta velocidad desde cualquier lenguaje:
 
 ```c
-// Definición de la estructura de retorno
+// Estructura de respuesta de memoria C
 typedef struct {
     uint8_t* data;
     size_t length;
@@ -141,33 +433,33 @@ typedef struct {
     char* error_message;
 } ReportForgeResult;
 
-// Renderizar documento desde JSON
+// Renderizar documento desde JSON a PDF
 ReportForgeResult reportforge_render_pdf(const char* doc_json, const char* data_json);
 
-// Liberar memoria del resultado
+// Liberar memoria asignada por Rust
 void reportforge_free_result(ReportForgeResult result);
 
-// Obtener versión del motor
+// Obtener versión oficial del motor
 const char* reportforge_version(void);
 ```
 
 ---
 
-## 📦 Ecosistema de SDKs
+## 🐳 Uso Opcional con Docker
 
-En la carpeta [`sdk/`](sdk/) y listos para distribución en [`docs/packages/`](docs/packages/) se encuentran los paquetes de cliente listos para producción:
+Aunque para usar ReportForge en tus proyectos **no necesitas Docker**, si deseas compilar binarios para entornos Linux (`libreportforge.so`) desde una máquina Windows, puedes compilar usando una imagen de Rust oficial:
 
-1. **C# (.NET 8, 9, 10)**: [`ReportForge.2.0.0.nupkg`](docs/packages/ReportForge.2.0.0.nupkg) con API fluida y carga automática del runtime nativo.
-2. **TypeScript / JavaScript**: [`reportforge-2.0.0.tgz`](docs/packages/reportforge-2.0.0.tgz) para Node.js, Bun FFI y Deno.
-3. **Java (Java 11+)**: [`reportforge-2.0.0.jar`](docs/packages/reportforge-2.0.0.jar) con JNA empaquetado.
-4. **PHP (PHP 8+)**: [`reportforge-php-2.0.0.zip`](docs/packages/reportforge-php-2.0.0.zip) compatible con PHP FFI PSR-4.
-5. **Python (3.9+)**: [`reportforge-2.0.0-py3-none-any.whl`](docs/packages/reportforge-2.0.0-py3-none-any.whl) vía `ctypes`.
+```bash
+docker run --rm -v ${PWD}:/usr/src/reportforge -w /usr/src/reportforge rust:1-alpine cargo build --release
+```
+
+Esto generará el archivo `target/release/libreportforge.so` compatible con Alpine, Debian, Ubuntu y Red Hat.
 
 ---
 
 ## 📑 Documentación y Manuales
 
-* **Landing Page Interactiva**: Abre [`docs/index.html`](docs/index.html) en tu navegador para probar el Playground interactivo y descargar paquetes.
+* **Landing Page y Descargas**: Abre [`docs/index.html`](docs/index.html) en tu navegador para probar el Playground interactivo y descargar paquetes.
 * **Manual Maestro Oficial**: [`ReportForge_Manual_Oficial_Completo.pdf`](docs/packages/ReportForge_Manual_Oficial_Completo.pdf) (13 páginas) con arquitectura, componentes y especificación técnica.
 * **Catálogo de Componentes**: [`docs/COMPONENTS_REFERENCE.md`](docs/COMPONENTS_REFERENCE.md).
 * **Especificación del Motor**: [`docs/RUST_CORE_V2.md`](docs/RUST_CORE_V2.md).
