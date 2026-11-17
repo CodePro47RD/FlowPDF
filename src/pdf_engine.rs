@@ -25,7 +25,7 @@ impl PdfEngine {
         let margin_right = doc_ast.page.margin_right.unwrap_or(doc_ast.page.margin);
 
         let content_w = page_w - (margin_left + margin_right);
-        let content_h = page_h - (margin_top + margin_bottom);
+        let _content_h = page_h - (margin_top + margin_bottom);
 
         // Resolver variables del template en el contenido
         let mut ops = Vec::new();
@@ -40,8 +40,7 @@ impl PdfEngine {
         // 2. Renderizar contenido
         match &doc_ast.content {
             ContentAst::Single(comp) => {
-                let c_size = self.render_component(comp, data, margin_left, current_y, content_w, &mut ops)?;
-                current_y += c_size.height;
+                let _ = self.render_component(comp, data, margin_left, current_y, content_w, &mut ops)?;
             }
             ContentAst::Multiple(items) => {
                 for item in items {
@@ -78,8 +77,8 @@ impl PdfEngine {
                 color,
                 font_size,
                 bold,
-                italic,
-                underline,
+                italic: _,
+                underline: _,
             } => {
                 let interpolated = interpolate_string(value, data);
                 let (font_name, default_size, default_color) = match style.as_deref() {
@@ -305,7 +304,7 @@ impl PdfEngine {
                 };
 
                 // Calcular anchos de columnas
-                let total_cols = columns.len();
+                let _total_cols = columns.len();
                 let mut fixed_w = 0.0;
                 let mut total_flex = 0.0;
 
