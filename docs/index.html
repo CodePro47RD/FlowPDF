@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReportForge 2.0 | Motor Universal de Generación de Documentos y Reportes</title>
+  <title>ReportForge 2.0 | Motor Universal de Generación y Extracción de Documentos PDF</title>
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="alternate" type="text/plain" href="llms.txt" title="Documentación para LLMs y Asistentes de IA">
-  <meta name="description" content="Motor universal de composición y generación de documentos en microsegundos, impulsado por Rust Core v2.0 con soporte Unicode y SDKs para C#, TypeScript, Python, PHP y Java.">
+  <meta name="description" content="Motor universal de composición, generación y extracción de texto de documentos en microsegundos, impulsado por Rust Core v2.0 con soporte Unicode y SDKs para C#, TypeScript, Python, PHP y Java.">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -69,6 +69,10 @@
       <!-- Desktop Nav -->
       <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
         <a href="#caracteristicas" class="hover:text-sky-400 transition-colors">Características</a>
+        <a href="#extraccion" class="hover:text-sky-400 transition-colors flex items-center gap-1.5 text-emerald-400 font-semibold">
+          <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">NUEVO</span>
+          <span>Extracción</span>
+        </a>
         <a href="#benchmark" class="hover:text-sky-400 transition-colors">Benchmark</a>
         <a href="#playground" class="hover:text-sky-400 transition-colors">Demo en Vivo</a>
         <a href="#ecosistema" class="hover:text-sky-400 transition-colors">SDKs Oficiales</a>
@@ -97,24 +101,25 @@
     <!-- Version Pill -->
     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-xs font-medium text-slate-300 mb-8 backdrop-blur-md">
       <span class="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
-      <span>ReportForge 2.0 liberado con motor nativo in-process en Rust</span>
+      <span>ReportForge 2.0: Generación vectorial + Extracción de texto y metadatos in-process en Rust</span>
       <span class="text-slate-500">|</span>
-      <a href="#descargas" class="text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1">
-        Ver paquetes &rarr;
+      <a href="#extraccion" class="text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1">
+        Ver extractor &rarr;
       </a>
     </div>
 
     <!-- Main Headline -->
     <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.12]">
-      La Forja de Reportes y PDFs <br>
+      La Forja de Generación y Extracción de PDFs <br>
       <span class="bg-gradient-to-r from-blue-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">
         en Microsegundos y sin Chromium.
       </span>
     </h1>
 
     <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-      Genera facturas, recibos y reportes multipágina de misión crítica a <b>25 ms</b>. 
-      Con arquitectura de composición declarativa, impulsado por <b>Rust Core v2.0</b>, 
+      Genera facturas, recibos y reportes multipágina de misión crítica a <b>25 ms</b> y 
+      <b>extrae texto o metadatos estructurados en menos de 1 ms</b>. 
+      Con arquitectura declarativa, impulsado por <b>Rust Core v2.0</b>, 
       con soporte completo para <b>Unicode y acentos en español</b>, y disponible nativamente para <b>C#, TypeScript, Python, PHP y Java</b>.
     </p>
 
@@ -125,32 +130,41 @@
         <span>Probar Demo en Vivo</span>
       </a>
 
+      <a href="#extraccion" class="px-7 py-3.5 rounded-xl font-semibold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/50 border border-emerald-500/40 transition-all flex items-center gap-2">
+        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Extractor de Texto & Metadatos</span>
+      </a>
+
       <a href="#ecosistema" class="px-7 py-3.5 rounded-xl font-semibold text-slate-200 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all flex items-center gap-2">
         <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        <span>Descargar SDKs Oficiales</span>
+        <span>Descargar SDKs</span>
       </a>
 
       <a href="packages/ReportForge_Manual_Oficial_Completo.pdf" target="_blank" class="px-5 py-3.5 rounded-xl font-medium text-slate-300 hover:text-white bg-slate-950/60 hover:bg-slate-900 border border-slate-800 transition-all flex items-center gap-2">
         <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M7 2h10l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h14V9h-5V4H7z"/></svg>
-        <span>Manual Oficial PDF (13 págs)</span>
+        <span>Manual PDF</span>
       </a>
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+    <div class="mt-16 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto">
       <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
         <div class="text-3xl font-extrabold text-sky-400">~25 ms</div>
         <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Generación In-Process</div>
       </div>
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30 bg-emerald-950/10 backdrop-blur-sm">
+        <div class="text-3xl font-extrabold text-emerald-400">&lt; 1 ms</div>
+        <div class="text-xs text-emerald-300 mt-1 uppercase tracking-wider font-semibold">Extracción de Texto</div>
+      </div>
       <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
-        <div class="text-3xl font-extrabold text-emerald-400">0 MB</div>
+        <div class="text-3xl font-extrabold text-teal-400">0 MB</div>
         <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Consumo Chromium</div>
       </div>
       <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
         <div class="text-3xl font-extrabold text-indigo-400">100%</div>
         <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Acentos y Unicode</div>
       </div>
-      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm">
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm col-span-2 sm:col-span-1">
         <div class="text-3xl font-extrabold text-amber-400">5</div>
         <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Lenguajes Soportados</div>
       </div>
@@ -341,6 +355,204 @@
   </section>
 
   <!-- ======================================================== -->
+  <!-- EXTRACCIÓN DE TEXTO Y METADATOS DE PDF (NUEVO EN v2.0) -->
+  <!-- ======================================================== -->
+  <section id="extraccion" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800/80">
+    <div class="text-center mb-16">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-xs font-semibold text-emerald-300 mb-3">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span>Novedad en ReportForge 2.0</span>
+      </div>
+      <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+        Extracción de Texto y Parsing Estructurado <br>
+        <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
+          en Menos de 1 Milisegundo.
+        </span>
+      </h2>
+      <p class="mt-4 text-slate-400 max-w-3xl mx-auto text-base leading-relaxed">
+        No sólo generes reportes: ahora puedes <b>ingerir, auditar y parsear documentos PDF existentes</b> directamente en memoria. 
+        ReportForge incluye un motor nativo en Rust que inspecciona el árbol de objetos PDF (diccionarios, <code>MediaBox</code>, streams de contenido) y extrae texto plano o metadatos estructurados en JSON sin recurrir a Chromium, Poppler o Java.
+      </p>
+    </div>
+
+    <!-- Feature Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <!-- Card 1 -->
+      <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-emerald-500/40 transition-all">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4 text-2xl font-bold">
+          ⚡
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Velocidad Sub-Milisegundo</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Procesa miles de facturas o contratos por segundo. La extracción ocurre <i>in-process</i> en C-ABI con cero copias innecesarias de memoria, ideal para microservicios de alto tráfico y pipelines RAG de IA.
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-teal-500/40 transition-all">
+        <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-4 text-2xl font-bold">
+          📄
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Desglose por Páginas y Dimensiones</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Obtén el texto individual de cada página, su número correlativo y sus dimensiones físicas exactas (ancho y alto en puntos tipográficos), preservando la estructura del documento.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-sky-500/40 transition-all">
+        <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4 text-2xl font-bold">
+          🏷️
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Metadatos Estructurados (JSON)</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Inspecciona automáticamente el diccionario <code>/Info</code> del PDF: Título, Autor, Creador, Software Productor, y fechas de creación y modificación en formato JSON limpio.
+        </p>
+      </div>
+    </div>
+
+    <!-- Extraction Interactive Code Example Showcase -->
+    <div class="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+      <div class="p-4 sm:p-6 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="flex h-3 w-3 rounded-full bg-emerald-400"></span>
+          <span class="text-sm font-bold text-white">API Unificada de Extracción en los 5 SDKs</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/30 text-emerald-300 font-mono">Zero Dependencies</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-mono">
+          <span class="text-slate-400">C-ABI:</span>
+          <code class="text-sky-300">reportforge_extract_text</code>
+          <span class="text-slate-600">|</span>
+          <code class="text-emerald-300">reportforge_extract_json</code>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-800">
+        <!-- Extraction Code Tabs (Left) -->
+        <div class="lg:col-span-7 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Código de Ejemplo en tu Lenguaje</span>
+            <div class="flex gap-1 bg-slate-900 p-1 rounded-lg">
+              <button onclick="switchExtractLang('csharp')" id="ext-btn-csharp" class="ext-tab-btn px-2.5 py-1 rounded text-xs font-semibold bg-emerald-600 text-white">C#</button>
+              <button onclick="switchExtractLang('ts')" id="ext-btn-ts" class="ext-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white">TS / Node</button>
+              <button onclick="switchExtractLang('py')" id="ext-btn-py" class="ext-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white">Python</button>
+              <button onclick="switchExtractLang('php')" id="ext-btn-php" class="ext-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white">PHP</button>
+              <button onclick="switchExtractLang('java')" id="ext-btn-java" class="ext-tab-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white">Java</button>
+            </div>
+          </div>
+
+          <!-- Snippet C# -->
+          <div id="ext-code-csharp" class="ext-code-block">
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>using ReportForge.Native;
+using System.IO;
+
+byte[] pdfBytes = File.ReadAllBytes("factura_existente.pdf");
+
+// 1. Extraer sólo texto plano completo (&lt; 1 ms)
+string texto = ReportForgeEngine.ExtractText(pdfBytes);
+Console.WriteLine($"Texto extraído:\n{texto}");
+
+// 2. Extraer estructura completa (metadatos + páginas)
+string json = ReportForgeEngine.ExtractJson(pdfBytes);
+Console.WriteLine($"Metadatos y páginas en JSON:\n{json}");</code></pre>
+          </div>
+
+          <!-- Snippet TS -->
+          <div id="ext-code-ts" class="ext-code-block hidden">
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import { ReportForgeEngine } from 'reportforge';
+import * as fs from 'fs';
+
+const pdfBytes = fs.readFileSync('factura_existente.pdf');
+
+// 1. Texto plano
+const text = ReportForgeEngine.extractText(pdfBytes);
+
+// 2. Estructura con páginas, dimensiones y metadatos
+const doc = ReportForgeEngine.extractDocument(pdfBytes);
+console.log(`Documento: ${doc.metadata.title}`);
+console.log(`Páginas: ${doc.total_pages}`);
+doc.pages.forEach(p => console.log(`Pág ${p.page_number} (${p.width}x${p.height}pt)`));</code></pre>
+          </div>
+
+          <!-- Snippet Python -->
+          <div id="ext-code-py" class="ext-code-block hidden">
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import reportforge
+
+with open("factura_existente.pdf", "rb") as f:
+    pdf_bytes = f.read()
+
+# 1. Extracción de texto plano
+texto = reportforge.extract_text(pdf_bytes)
+
+# 2. Extracción de diccionario con metadatos y páginas
+doc = reportforge.extract_document(pdf_bytes)
+print(f"Total páginas: {doc['total_pages']}")
+print(f"Autor: {doc['metadata']['author']}")
+print(f"Páginas: {len(doc['pages'])}")</code></pre>
+          </div>
+
+          <!-- Snippet PHP -->
+          <div id="ext-code-php" class="ext-code-block hidden">
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>use ReportForge\ReportForgeEngine;
+
+$pdfBytes = file_get_contents("factura_existente.pdf");
+
+// 1. Extraer texto plano
+$texto = ReportForgeEngine::extractText($pdfBytes);
+
+// 2. Extraer JSON con metadatos y dimensiones
+$json = ReportForgeEngine::extractJson($pdfBytes);
+$doc = json_decode($json, true);
+echo "Total páginas: " . $doc['total_pages'];</code></pre>
+          </div>
+
+          <!-- Snippet Java -->
+          <div id="ext-code-java" class="ext-code-block hidden">
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import dev.reportforge.ReportForgeEngine;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+byte[] pdfBytes = Files.readAllBytes(Path.of("factura_existente.pdf"));
+
+// 1. Extraer texto plano
+String texto = ReportForgeEngine.extractText(pdfBytes);
+
+// 2. Extraer JSON completo
+String json = ReportForgeEngine.extractJson(pdfBytes);
+System.out.println("JSON extraído: " + json);</code></pre>
+          </div>
+        </div>
+
+        <!-- Sample JSON Output (Right) -->
+        <div class="lg:col-span-5 p-6 bg-slate-950/60">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-400 font-mono">Salida JSON Estructurada</span>
+            <span class="text-[10px] text-slate-500 font-mono">RFC 8259 JSON</span>
+          </div>
+          <pre class="text-[11px] font-mono text-emerald-300/90 bg-slate-900/90 p-4 rounded-xl border border-slate-800 overflow-x-auto leading-relaxed max-h-[290px]"><code>{
+  "total_pages": 1,
+  "metadata": {
+    "title": "Factura NCF B0100000492",
+    "author": "Empresa Demo S.R.L.",
+    "producer": "ReportForge Rust Core v2.0",
+    "creation_date": "D:20261117184500"
+  },
+  "pages": [
+    {
+      "page_number": 1,
+      "width": 595.28,
+      "height": 841.89,
+      "text": "REPORTFORGE ENTERPRISE\nFacturación Electrónica..."
+    }
+  ],
+  "full_text": "REPORTFORGE ENTERPRISE..."
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
   <!-- BENCHMARK / COMPARATIVA DE RENDIMIENTO -->
   <!-- ======================================================== -->
   <section id="benchmark" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800/80">
@@ -398,6 +610,12 @@
             <td class="py-4 px-6 text-slate-400">Solo vía Node.js / CLI</td>
             <td class="py-4 px-6 text-slate-400">Solo vía Python</td>
             <td class="py-4 px-6 font-bold text-cyan-300 bg-blue-950/25 border-l border-r border-blue-800/40">🟢 In-Process Nativo + Microservicio HTTP</td>
+          </tr>
+          <tr class="hover:bg-slate-800/40">
+            <td class="py-4 px-6 font-medium text-white">Extracción de Texto y Metadatos</td>
+            <td class="py-4 px-6 text-red-400">🔴 No nativo (requiere librerías pesadas / PDF.js)</td>
+            <td class="py-4 px-6 text-red-400">🔴 No soportado (solo generación HTML a PDF)</td>
+            <td class="py-4 px-6 font-bold text-emerald-400 bg-blue-950/25 border-l border-r border-blue-800/40">🟢 Nativo in-process (&lt; 1 ms, JSON estructurado)</td>
           </tr>
         </tbody>
       </table>
@@ -796,7 +1014,7 @@ public class Main {
             <span class="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">NuGet v2.0.0</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Paquete nupkg multi-target para .NET 8, 9 y 10. API fluida y declarativa con renderizado nativo en 35ms.
+            Paquete nupkg multi-target (.NET 8, 9, 10). Generación declarativa en 35ms y extracción nativa de texto o JSON en &lt; 1ms.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
             dotnet add package ReportForge
@@ -818,7 +1036,7 @@ public class Main {
             <span class="text-xs px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-semibold">npm v2.0.0</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Tarball npm oficial compatible con Node.js, Bun FFI y Deno. Tipos TypeScript completos y declarativos.
+            Tarball npm oficial (Node.js, Bun FFI, Deno). Generación fluida y extracción de texto/metadatos con tipos completos.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
             npm install reportforge
@@ -840,7 +1058,7 @@ public class Main {
             <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">wheel v2.0.0</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Wheel universal para Python 3.9+. Carga automática de runtimes nativos vía ctypes y cliente HTTP requests.
+            Wheel universal para Python 3.9+. Generación in-process y funciones de extracción de texto y metadatos sin compilar.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
             pip install reportforge
@@ -862,7 +1080,7 @@ public class Main {
             <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold">Composer v2.0.0</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Estructura PSR-4 con autoloading. Soporte de PHP FFI para microsegundos o cliente cURL para workers.
+            Estructura PSR-4 con autoloading. Soporte PHP FFI para generación ultra-rápida y extracción nativa de texto.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
             composer require reportforge/reportforge
@@ -884,7 +1102,7 @@ public class Main {
             <span class="text-xs px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 font-semibold">Maven / JAR v2.0.0</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            JAR ejecutable y librería con extracción dinámica de binarios nativos vía JNA. Sin dependencias JSON externas.
+            JAR ejecutable con extracción dinámica vía JNA. Generación de alta fidelidad y extracción estructurada de PDFs.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
             dev.reportforge:reportforge:2.0.0
@@ -991,6 +1209,24 @@ public class Main {
       if (selectedBtn) {
         selectedBtn.classList.remove('bg-slate-900', 'text-slate-300');
         selectedBtn.classList.add('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/25');
+      }
+    }
+
+    // Extraction Tab Switcher
+    function switchExtractLang(lang) {
+      document.querySelectorAll('.ext-code-block').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.ext-tab-btn').forEach(btn => {
+        btn.classList.remove('bg-emerald-600', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+
+      const selectedBlock = document.getElementById(`ext-code-${lang}`);
+      const selectedBtn = document.getElementById(`ext-btn-${lang}`);
+
+      if (selectedBlock) selectedBlock.classList.remove('hidden');
+      if (selectedBtn) {
+        selectedBtn.classList.remove('text-slate-400');
+        selectedBtn.classList.add('bg-emerald-600', 'text-white');
       }
     }
 
