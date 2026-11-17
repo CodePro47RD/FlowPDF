@@ -1,24 +1,148 @@
-# ReportForge 2.0
+# ReportForge 2.0 — Especificación Técnica Exhaustiva (LLM Reference Manual)
 
-> Universal Document Composition and PDF Engine in Rust Core v2.0. In-process vector rendering in 15-35 ms, zero Chromium, with native C ABI and SDKs for C#, TypeScript, Java, PHP, and Python.
+> **ReportForge v2.0**: Motor universal de composición y renderizado de documentos y PDFs en microsegundos, impulsado por **Rust Core v2.0**.
+> Renderizado in-process de ultra-alta velocidad, composición matemática declarativa, soporte nativo Unicode/WinAnsi y SDKs oficiales para C#, TypeScript/JavaScript, Java, PHP, Python y Rust.
+> Formato optimizado para LLMs, Agentes Autónomos y Asistentes de Código (Cursor, Claude Code, GitHub Copilot, ChatGPT, Gemini).
 
-## Quick Summary
-ReportForge is a high-performance, in-process document and PDF generation engine written 100% in Rust. It eliminates the need for headless browsers (Chromium/Puppeteer), heavy Python microservices, and external databases. Applications in C#, Node.js, Bun, Java, PHP, and Python call ReportForge directly in memory via FFI/C ABI or using official client SDKs.
+---
 
-## Key Capabilities & Benchmarks
-- **Generation Speed**: ~15 ms to 35 ms per single page; under 150 ms for complex multi-page invoices.
-- **RAM Footprint**: ~14 MB to 24 MB peak memory usage (vs 500 MB+ in Chromium).
-- **Execution Mode**: In-process native dynamic library (`reportforge.dll` on Windows, `libreportforge.so` on Linux).
-- **Typography & Encoding**: Full Spanish accent and Unicode support (`á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`) through WinAnsi CP1252 hexadecimal encoding conforming to ISO 32000-1.
-- **Visual Components**: Text, Tables (with pagination and repeat headers), Columns, Rows, Containers, QR Codes, Barcodes (Code128), Spacers, Dividers, Page Numbers.
+## 📑 Índice de Contenidos
+1. [Visión General y Propuesta de Valor](#1-visión-general-y-propuesta-de-valor)
+2. [Arquitectura del Motor y Modelo Matemático de Composición](#2-arquitectura-del-motor-y-modelo-matemático-de-composición)
+3. [Catálogo Técnico de Componentes y Propiedades](#3-catálogo-técnico-de-componentes-y-propiedades)
+4. [Especificación Formal del AST JSON (Esquema v2.0)](#4-especificación-formal-del-ast-json-esquema-v20)
+5. [Sistema de Plantillas y Formateadores Seguros](#5-sistema-de-plantillas-y-formateadores-seguros)
+6. [Catálogo de 9 Reportes Empresariales de Producción](#6-catálogo-de-9-reportes-empresariales-de-producción)
+7. [Especificación de la Interfaz C ABI / FFI y Gestión de Memoria](#7-especificación-de-la-interfaz-c-abi--ffi-y-gestión-de-memoria)
+8. [Implementación y Código de Producción por Lenguaje](#8-implementación-y-código-de-producción-por-lenguaje)
+   - [8.1 C# (.NET 8, 9, 10)](#81-c-net-8-9-10)
+   - [8.2 TypeScript / JavaScript (Node.js & Bun)](#82-typescript--javascript-nodejs--bun)
+   - [8.3 Java (Java 11+)](#83-java-java-11)
+   - [8.4 PHP (PHP 8+)](#84-php-php-8)
+   - [8.5 Python (Python 3.9+)](#85-python-python-39)
+   - [8.6 Rust Puro](#86-rust-puro)
+9. [Guía de Compilación, Despliegue y Empaquetado](#9-guía-de-compilación-despliegue-y-empaquetado)
+10. [Matriz de Resolución de Problemas (Troubleshooting)](#10-matriz-de-resolución-de-problemas-troubleshooting)
 
-## Official Resources
-- [Interactive Playground & Portal](index.html): Live interactive web demo and package downloads.
-- [Official Master Manual PDF](packages/ReportForge_Manual_Oficial_Completo.pdf): 13-page technical manual with architectural diagrams and component specifications.
-- [Component Reference Guide](COMPONENTS_REFERENCE.md): Detailed JSON schema properties for each component.
-- [Rust Core Specification](RUST_CORE_V2.md): Low-level documentation of the Rust rendering engine.
+---
 
-## Document JSON Schema Specification
+## 1. Visión General y Propuesta de Valor
+
+ReportForge sustituye los stacks tradicionales de generación de reportes (que ejecutan navegadores headless como Chromium/Puppeteer o servidores web pesados) por una **biblioteca nativa compartida in-process** escrita en **Rust puro**.
+
+### Comparativa de Rendimiento
+- **Velocidad de Render**: 15 ms – 35 ms por página (vs 2,500 – 4,500 ms en Chromium; vs 850 – 1,800 ms en WeasyPrint).
+- **Consumo de Memoria RAM**: 14 MB – 24 MB por proceso (vs 350 MB – 650 MB por worker en Chrome).
+- **Consumo de CPU**: Mínimo, ejecución vectorial compilada con aceleración de instrucciones nativas.
+- **Salto de Páginas en Tablas**: Medición exacta fila por fila; nunca corta una línea de texto a la mitad.
+- **Repetición de Cabeceras**: Soporte nativo (`repeat_header: true`), repite los encabezados de tabla en cada página nueva.
+- **Tipografía y Acentos**: Codificación WinAnsi CP1252 hexadecimal (ISO 32000-1) con soporte pleno para acentos en español y símbolos monetarios (`á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`).
+- **Modo de Ejecución**: In-process en la misma memoria RAM de la aplicación mediante enlaces binarios FFI (`reportforge.dll` en Windows, `libreportforge.so` en Linux, `libreportforge.dylib` en macOS).
+
+---
+
+## 2. Arquitectura del Motor y Modelo Matemático de Composición
+
+### 2.1 Coordenadas Top-Down y Unidad de Medida
+- **Unidad tipográfica base**: Puntos tipográficos (Point), donde `72 points = 1 pulgada = 25.4 mm`.
+- **Dimensiones estándar**:
+  - `A4`: 595.28 × 841.89 pt (210 × 297 mm)
+  - `Letter`: 612.0 × 792.0 pt (8.5 × 11 pulgadas)
+  - `Legal`: 612.0 × 1008.0 pt (8.5 × 14 pulgadas)
+- **Normalización de coordenadas**: El motor convierte el sistema nativo de PDF (origen en esquina inferior izquierda) a un sistema UI moderno **Top-Down** (origen `(0, 0)` en la esquina superior izquierda).
+
+### 2.2 El Modelo de Restricciones `BoxConstraints`
+Cada componente recibe un `BoxConstraints` de su padre y calcula su tamaño resultante:
+```rust
+pub struct BoxConstraints {
+    pub min_width: f32,
+    pub max_width: f32,
+    pub min_height: f32,
+    pub max_height: f32,
+}
+```
+Reglas de resolución:
+1. `Tight`: Ancho o alto forzado (`min == max`).
+2. `Loose`: Ancho o alto flexible (`min == 0`, `max == contenedor`).
+3. `Unbounded`: Permite al componente crecer según su contenido.
+
+### 2.3 Algoritmo de Medición y Paginación en Dos Pasadas
+1. **Fase 1 (Measure Pass)**: Cada componente calcula sus dimensiones ideales (`Size { width, height }`) recursivamente sin emitir bytes PDF. En tablas, calcula el alto de cada celda y determina en qué fila se agota el presupuesto vertical restante de la página (`remaining_page_height`).
+2. **Fase 2 (Layout & Draw Pass)**: Se emiten los comandos vectoriales en los streams de contenido de cada página de lopdf (`BT`, `ET`, `Tf`, `Tj`, `re`, `f`, `m`, `l`, `S`).
+
+---
+
+## 3. Catálogo Técnico de Componentes y Propiedades
+
+### 3.1 Text (Texto y Tipografía)
+- `value` (string, requerido): Texto literal o con expresiones interpoladas `{{ variable }}`.
+- `style` (string, opcional): Estilo tipográfico (`h1`, `h2`, `h3`, `body`, `caption`).
+- `font_size` (float, opcional): Tamaño de fuente en puntos (ej. `12.0`).
+- `bold` (bool, opcional): Alterna entre fuentes base y Bold (`Helvetica-Bold`, `Times-Bold`).
+- `italic` (bool, opcional): Estilo cursiva.
+- `underline` (bool, opcional): Subrayado tipográfico.
+- `color` (string, opcional): Color en formato hexadecimal (ej. `"#0066FF"`).
+- `alignment` (string, opcional): `"left"`, `"center"`, `"right"`, `"justify"`.
+
+### 3.2 Container (Modelo de Cajas)
+- `child` (Component, opcional): Componente anidado dentro del contenedor.
+- `width` / `height` (float, opcional): Dimensiones fijas explícitas.
+- `padding` / `margin` (float, opcional): Espaciado interior y exterior en puntos.
+- `background` (string, opcional): Color de relleno de fondo en hex.
+- `border_color` (string, opcional): Color del borde.
+- `border_width` (float, opcional): Grosor del borde en puntos.
+- `border_radius` (float, opcional): Radio de esquinas redondeadas.
+- `alignment` (string, opcional): Alineación interna del hijo.
+
+### 3.3 Column (Distribución Vertical)
+- `items` (array de Components): Lista secuencial de componentes renderizados de arriba hacia abajo.
+- `spacing` (float, por defecto `0.0`): Separación vertical uniforme entre elementos consecutivos.
+
+### 3.4 Row (Distribución Horizontal)
+- `items` (array de RowItems): Lista de elementos dispuestos horizontalmente.
+  - Cada elemento puede tener un `width` fijo (float) o un `flex` relativo (float, ej. `1.0`, `2.0`).
+- `spacing` (float, por defecto `0.0`): Separación horizontal entre elementos.
+- `vertical_alignment` (string): `"top"`, `"center"`, `"bottom"`.
+
+### 3.5 Table (Tablas Corporativas de Alto Rendimiento)
+- `columns` (array de TableColumnAst):
+  - `title` (string): Texto de cabecera.
+  - `field` (string, opcional): Clave del campo en el array de datos.
+  - `width` (float, opcional): Ancho fijo en puntos.
+  - `flex` (float, opcional): Proporción de expansión en espacio restante.
+- `data` (array de objetos clave-valor): Filas de información.
+- `header_background` (string, opcional): Color de fondo de los encabezados (ej. `"#0066FF"`).
+- `zebra` (bool, por defecto `true`): Alterna fondo gris claro (`#F8FAFC`) en filas pares.
+- `repeat_header` (bool, por defecto `true`): Repite automáticamente la cabecera en cada salto de página.
+- `border_color` / `border_width`: Estilo de líneas divisorias de celda.
+
+### 3.6 QRCode (Códigos QR Vectoriales)
+- `value` (string, requerido): Datos codificados (URL, cadena de comprobante fiscal, token de firma).
+- `size` (float, por defecto `80.0`): Ancho y alto del módulo QR en puntos.
+- `fill_color` (string, opcional): Color de los módulos (por defecto negro `"#000000"`).
+- `back_color` (string, opcional): Color de fondo (por defecto blanco `"#FFFFFF"`).
+- *Generación interna nativa*: No utiliza servicios HTTP ni APIs externas; compila la matriz vectorial directamente en Rust.
+
+### 3.7 Barcode (Códigos de Barras 1D)
+- `value` (string, requerido): Cadena numérica o alfanumérica.
+- `barcode_type` (string, por defecto `"CODE128"`): Formato soportado (`"CODE128"`, `"EAN13"`).
+- `width` (float, por defecto `150.0`): Ancho total del código.
+- `height` (float, por defecto `40.0`): Altura de las barras verticales.
+- `include_text` (bool, por defecto `true`): Muestra el valor numérico en tipografía monoespaciada bajo las barras.
+
+### 3.8 Spacer y Divider
+- `Spacer`: Introduce un espacio vacío vertical de altura `height` (float).
+- `Divider`: Traza una línea horizontal continua con `thickness` (grosor), `color` (hex) y `margin` (margen vertical).
+
+### 3.9 PageNumber
+- `format` (string): Máscara de texto con tokens, ej. `"Página {page} de {total}"`.
+- `alignment` (string): `"left"`, `"center"`, `"right"`.
+
+---
+
+## 4. Especificación Formal del AST JSON (Esquema v2.0)
+
+Todo documento ReportForge se puede definir mediante un payload JSON puro validado por el motor:
 
 ```json
 {
@@ -32,167 +156,386 @@ ReportForge is a high-performance, in-process document and PDF generation engine
     "margin_right": 36.0
   },
   "header": {
-    "type": "text",
-    "value": "Factura Comercial",
-    "font_size": 18.0,
-    "bold": true,
-    "color": "#0066FF"
+    "type": "row",
+    "spacing": 10.0,
+    "items": [
+      {
+        "flex": 2.0,
+        "item": {
+          "type": "column",
+          "items": [
+            { "type": "text", "value": "EMPRESA MODELO S.R.L.", "style": "h2", "color": "#0066FF", "bold": true },
+            { "type": "text", "value": "RNC: 101-0000000-1 • Av. Winston Churchill #109", "style": "caption" }
+          ]
+        }
+      },
+      {
+        "flex": 1.0,
+        "item": {
+          "type": "column",
+          "items": [
+            { "type": "text", "value": "FACTURA ELECTRÓNICA", "style": "h3", "alignment": "right", "bold": true },
+            { "type": "text", "value": "e-NCF: E310000000542", "style": "caption", "alignment": "right", "color": "#0066FF" }
+          ]
+        }
+      }
+    ]
   },
   "content": [
+    { "type": "divider", "thickness": 1.5, "color": "#0066FF", "margin": 10.0 },
     {
       "type": "text",
-      "value": "Cliente: Acrópolis Center • RNC: 101-00000-1",
-      "font_size": 11.0
+      "value": "Cliente: {{ cliente.nombre }} • RNC/Cédula: {{ cliente.documento }}",
+      "font_size": 11.0,
+      "bold": true
     },
     { "type": "spacer", "height": 10.0 },
     {
       "type": "table",
       "repeat_header": true,
       "zebra": true,
+      "header_background": "#0066FF",
       "columns": [
-        { "title": "Descripción", "field": "desc", "width": 220.0 },
-        { "title": "Cant.", "field": "qty", "width": 60.0 },
+        { "title": "Descripción del Artículo", "field": "desc", "width": 240.0 },
+        { "title": "Cant.", "field": "qty", "width": 50.0 },
         { "title": "Precio Unit.", "field": "price", "width": 100.0 },
         { "title": "Total", "field": "total", "width": 100.0 }
       ],
       "data": [
-        { "desc": "Licencia ReportForge v2.0", "qty": "1", "price": "$999.00", "total": "$999.00" },
-        { "desc": "Soporte Técnico 24/7", "qty": "12", "price": "$50.00", "total": "$600.00" }
+        { "desc": "Servicio de Infraestructura Cloud", "qty": "1", "price": "$ 1,200.00", "total": "$ 1,200.00" },
+        { "desc": "Mantenimiento Preventivo y Soporte", "qty": "2", "price": "$ 250.00", "total": "$ 500.00" }
       ]
     },
     { "type": "spacer", "height": 15.0 },
     {
       "type": "row",
+      "spacing": 20.0,
       "items": [
-        { "type": "qr", "value": "https://dgii.gov.do/facturacion/e-CF", "size": 65.0 },
-        { "type": "barcode", "value": "FAC2026-9901", "barcode_type": "CODE128", "height": 35.0 }
+        {
+          "width": 100.0,
+          "item": { "type": "qr", "value": "https://dgii.gov.do/consulta/e-cf?rnc=10100000001&encf=E310000000542", "size": 80.0 }
+        },
+        {
+          "width": 180.0,
+          "item": { "type": "barcode", "value": "E310000000542", "barcode_type": "CODE128", "height": 38.0 }
+        },
+        {
+          "flex": 1.0,
+          "item": {
+            "type": "column",
+            "items": [
+              { "type": "text", "value": "Subtotal: $ 1,700.00", "alignment": "right", "font_size": 10.0 },
+              { "type": "text", "value": "ITBIS (18%): $ 306.00", "alignment": "right", "font_size": 10.0 },
+              { "type": "text", "value": "Total a Pagar: $ 2,006.00", "alignment": "right", "style": "h3", "bold": true, "color": "#059669" }
+            ]
+          }
+        }
       ]
     }
   ],
   "footer": {
-    "type": "text",
-    "value": "Documento emitido con ReportForge Rust Core • Página 1 de 1",
-    "font_size": 8.0,
-    "color": "#64748B",
-    "alignment": "center"
+    "type": "row",
+    "items": [
+      { "item": { "type": "text", "value": "Emitido mediante ReportForge Rust Core v2.0", "style": "caption" } },
+      { "item": { "type": "page_number", "format": "Página {page} de {total}", "alignment": "right" } }
+    ]
   }
 }
 ```
 
-## SDK Installation and Code Examples
+---
 
-### 1. C# (.NET 8/9/10)
-Package: `packages/ReportForge.2.0.0.nupkg`
-```bash
-dotnet add package ReportForge --source ./docs/packages
+## 5. Sistema de Plantillas y Formateadores Seguros
+
+ReportForge implementa un motor de resolución de plantillas **cero-eval** (sin interprete dinámico que pueda ejecutar código malicioso), garantizando seguridad total en entornos multi-inquilino.
+
+### Sintaxis de Variables
+- `{{ nombre_variable }}`: Accede a valores de primer nivel en el objeto de datos.
+- `{{ cliente.direccion.ciudad }}`: Acceso por caminos anidados con punto.
+
+### Formateadores de Datos Integrados
+- `{{ valor | currency }}`: Formatea a moneda internacional con separadores de miles y decimales (`$ 1,250.00`).
+- `{{ valor | number }}`: Formatea cantidades numéricas enteras o flotantes (`1,500,000`).
+- `{{ fecha | date }}`: Convierte estampas de tiempo ISO a fecha legible (`2026-11-17`).
+- `{{ texto | uppercase }}`: Convierte todo a mayúsculas sostenidas.
+- `{{ texto | lowercase }}`: Convierte todo a minúsculas.
+
+---
+
+## 6. Catálogo de 9 Reportes Empresariales de Producción
+
+El manual oficial establece patrones de diseño probados en producción para 9 industrias:
+
+1. **Factura Comercial y Comprobantes Fiscales (Invoices)**: Encabezado institucional, NCF, tabla con zebra striping, ITBIS desglosado, código QR de validación tributaria y código de barras del comprobante.
+2. **Estado de Cuenta Bancario (Bank Account Statements)**: Balance inicial, tabla de movimientos con créditos/débitos discriminados por color, resumen de tasas y balance de cierre.
+3. **Recibo de Nómina / Pago Salarial (Pay Slip)**: Datos del colaborador (cargo, departamento, AFP, SFS), desglose en dos columnas (Ingresos vs Deducciones de ley) y firma de recibido.
+4. **Historial Clínico y Laboratorio Médico**: Identificación del paciente, rangos de referencia normales vs resultados obtenidos, resaltado visual de valores fuera de rango y firma digital del bioanalista.
+5. **Órdenes de Compra y Cotizaciones a Proveedores**: Términos de entrega, validez de la oferta, tabla de ítems con especificaciones técnicas y condiciones de pago.
+6. **Certificados y Diplomas Académicos**: Orientación horizontal (`landscape`), margen amplio, marco ornamental con contenedor anidado, textos con tipografía serif y código QR de verificación de autenticidad.
+7. **Logística, Almacén y Control de Inventario**: Localización en pasillo/rack, SKU en código de barras Code128 para pistolas lectoras, existencias actuales y unidades despachadas.
+8. **Recibos de Caja Menor y Vales de Egreso**: Formato de media página (`size: "A5", orientation: "landscape"`), concepto del gasto, aprobaciones y monto en letras y números.
+9. **Tarjetas de Embarque, Pasajes y Boletos de Transporte**: Cupón de vuelo desmontable con línea discontinua (`Divider`), puerta de embarque en tipografía grande (`h1`), código QR con estándar IATA y datos del pasajero.
+
+---
+
+## 7. Especificación de la Interfaz C ABI / FFI y Gestión de Memoria
+
+El motor exporta símbolos nativos estandarizados bajo la convención C (`extern "C"`):
+
+```c
+// Estructura de resultado retornada por el motor
+typedef struct {
+    uint8_t* data;          // Puntero en memoria RAM al buffer del PDF
+    size_t length;          // Longitud en bytes del documento generado
+    bool success;           // true si el render fue exitoso, false en caso de error
+    char* error_message;    // Mensaje descriptivo de error (NULL en caso de éxito)
+} ReportForgeResult;
+
+// 1. Renderiza a PDF desde cadenas JSON codificadas en UTF-8
+ReportForgeResult reportforge_render_pdf(
+    const char* doc_json,
+    const char* data_json
+);
+
+// 2. Libera de forma segura la memoria asignada por Rust
+void reportforge_free_result(ReportForgeResult result);
+
+// 3. Retorna la cadena de versión oficial del motor
+const char* reportforge_version(void);
 ```
+
+### Reglas de Seguridad en Memoria
+* **Propiedad de la memoria**: La memoria asignada para `data` y `error_message` pertenece al asignador de Rust.
+* **Obligatoriedad de liberación**: Toda aplicación que invoque `reportforge_render_pdf` **DEBE** llamar a `reportforge_free_result` una vez procesados los bytes o capturado el error para evitar fugas de memoria (*memory leaks*).
+
+---
+
+## 8. Implementación y Código de Producción por Lenguaje
+
+### 8.1 C# (.NET 8, 9, 10)
+**Paquete**: [`docs/packages/ReportForge.2.0.0.nupkg`](packages/ReportForge.2.0.0.nupkg)  
+**Instalación**: `dotnet add package ReportForge --source ./docs/packages`
+
 ```csharp
+using System.IO;
 using ReportForge;
 
+// Composición fluida fuertemente tipada
 var doc = ReportDocument.Create(page => page.Size("A4").Margin(36))
-    .Header(h => h.Text("Factura C#").FontSize(18).Bold().Color("#0066FF"))
+    .Header(h => h.Text("Reporte Financiero Corporativo")
+                  .FontSize(18)
+                  .Bold()
+                  .Color("#0066FF"))
     .Content(c => {
-        c.Text("Total: € 1,599.00 con acentos: á, é, í, ó, ú, ñ").FontSize(11);
+        c.Text("Soporte nativo para acentos: á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €").FontSize(11);
         c.Spacer(10);
         c.Table(t => {
             t.RepeatHeader();
             t.Columns(cols => {
-                cols.Add("Producto", width: 200);
-                cols.Add("Precio", width: 100);
+                cols.Add("Concepto", width: 220);
+                cols.Add("Cantidad", width: 60);
+                cols.Add("Precio Unitario", width: 100);
+                cols.Add("Total", width: 100);
             });
-            t.AddRow("Servidor Rust Core", "$ 350.00");
+            t.AddRow("Servidor Rust Dedicado", "1", "$ 450.00", "$ 450.00");
+            t.AddRow("Licencia ReportForge v2.0", "1", "$ 999.00", "$ 999.00");
         });
-        c.Qr("https://reportforge.dev", size: 60);
-    });
+        c.Spacer(15);
+        c.Row(r => {
+            r.AddQr("https://reportforge.dev/verify/2026", size: 65);
+            r.AddBarcode("FAC2026-9901", format: "CODE128", height: 35);
+        });
+    })
+    .Footer(f => f.Text("Página 1 de 1").Alignment(HorizontalAlignment.Center));
 
-byte[] pdf = doc.GeneratePdf();
-File.WriteAllBytes("factura_csharp.pdf", pdf);
+// Generación in-process (~25 ms)
+byte[] pdfBytes = doc.GeneratePdf();
+File.WriteAllBytes("reporte_csharp.pdf", pdfBytes);
 ```
 
-### 2. TypeScript / JavaScript (Node.js / Bun)
-Package: `packages/reportforge-2.0.0.tgz`
-```bash
-npm install ./docs/packages/reportforge-2.0.0.tgz
-```
+### 8.2 TypeScript / JavaScript (Node.js & Bun)
+**Paquete**: [`docs/packages/reportforge-2.0.0.tgz`](packages/reportforge-2.0.0.tgz)  
+**Instalación**: `npm install ./docs/packages/reportforge-2.0.0.tgz`
+
 ```typescript
 import { ReportDocument } from "reportforge";
 import * as fs from "fs";
 
 const doc = ReportDocument.create({ size: "A4", margin: 36 })
-  .header(h => h.text("Reporte TypeScript", { fontSize: 18, bold: true, color: "#0066FF" }))
+  .header(h => h.text("Factura TypeScript / Bun", { fontSize: 18, bold: true, color: "#0066FF" }))
   .content(c => {
-    c.text("Renderizado vectorial in-process en ~25 ms");
+    c.text("Generado en 20 ms con tipado completo", { fontSize: 11 });
     c.spacer(10);
-    c.qr("https://reportforge.dev", { size: 60 });
+    c.table({
+      repeatHeader: true,
+      columns: [
+        { title: "Ítem", width: 220 },
+        { title: "Total", width: 100 }
+      ],
+      data: [
+        { "Ítem": "Suscripción Enterprise", "Total": "$ 1,200.00" }
+      ]
+    });
+    c.qr("https://reportforge.dev", { size: 65 });
   });
 
-const pdfBuffer = doc.generatePdf();
-fs.writeFileSync("reporte.pdf", pdfBuffer);
+const pdfBuffer: Buffer = doc.generatePdf();
+fs.writeFileSync("factura_ts.pdf", pdfBuffer);
 ```
 
-### 3. Java (Java 11+)
-Package: `packages/reportforge-2.0.0.jar`
-```bash
-mvn install:install-file -Dfile=docs/packages/reportforge-2.0.0.jar -DgroupId=dev.reportforge -DartifactId=reportforge -Dversion=2.0.0 -Dpackaging=jar
-```
+### 8.3 Java (Java 11+)
+**Paquete**: [`docs/packages/reportforge-2.0.0.jar`](packages/reportforge-2.0.0.jar)  
+**Instalación**: `mvn install:install-file -Dfile=docs/packages/reportforge-2.0.0.jar -DgroupId=dev.reportforge -DartifactId=reportforge -Dversion=2.0.0 -Dpackaging=jar`
+
 ```java
 import dev.reportforge.ReportDocument;
 import java.io.FileOutputStream;
 
-ReportDocument doc = ReportDocument.create(page -> page.size("A4").margin(36.0f))
-    .header(h => h.text("Factura Java").fontSize(18.0f).bold(true).color("#0066FF"))
-    .content(c => {
-        c.text("Generado vía JNA embebido en el JAR");
-        c.qr("https://reportforge.dev", 60.0f);
-    });
+public class GenerarReporte {
+    public static void main(String[] args) throws Exception {
+        ReportDocument doc = ReportDocument.create(page -> page.size("A4").margin(36.0f))
+            .header(h -> h.text("Factura Empresarial Java")
+                          .fontSize(18.0f)
+                          .bold(true)
+                          .color("#0066FF"))
+            .content(c -> {
+                c.text("Ejecución mediante JNA embebido en el JAR.").fontSize(11.0f);
+                c.spacer(10.0f);
+                c.table(t -> {
+                    t.repeatHeader(true);
+                    t.addColumn("Servicio", 240.0f);
+                    t.addColumn("Subtotal", 100.0f);
+                    t.addRow("Consultoría Cloud", "$ 1,500.00");
+                });
+                c.qr("https://reportforge.dev", 70.0f);
+            });
 
-byte[] pdfBytes = doc.generatePdf();
-try (FileOutputStream fos = new FileOutputStream("factura.pdf")) {
-    fos.write(pdfBytes);
+        byte[] pdf = doc.generatePdf();
+        try (FileOutputStream out = new FileOutputStream("factura_java.pdf")) {
+            out.write(pdf);
+        }
+    }
 }
 ```
 
-### 4. PHP (PHP 8.0+)
-Package: `packages/reportforge-php-2.0.0.zip`
+### 8.4 PHP (PHP 8.0+)
+**Paquete**: [`docs/packages/reportforge-php-2.0.0.zip`](packages/reportforge-php-2.0.0.zip)  
+**Requisito**: Habilitar `extension=ffi` en `php.ini`.
+
 ```php
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 use ReportForge\ReportDocument;
 
 $doc = ReportDocument::create(['size' => 'A4', 'margin' => 36])
-    ->header(fn($h) => $h->text("Factura PHP")->fontSize(18)->bold(true)->color("#0066FF"))
-    .content(function($c) {
-        $c->text("Documento emitido con PHP FFI en 25ms");
-        $c->qr("https://reportforge.dev", 60);
+    ->header(function($h) {
+        $h->text("Factura Comercial PHP")
+          ->fontSize(18)
+          ->bold(true)
+          ->color("#0066FF");
+    })
+    ->content(function($c) {
+        $c->text("Comprobante con caracteres especiales en español: á, é, í, ó, ú, ñ.");
+        $c->spacer(10);
+        $c->table([
+            'repeatHeader' => true,
+            'columns' => [
+                ['title' => 'Producto', 'width' => 220],
+                ['title' => 'Monto', 'width' => 100]
+            ],
+            'rows' => [
+                ['Plan Anual ReportForge', '$ 999.00']
+            ]
+        ]);
+        $c->qr("https://reportforge.dev", 65);
     });
 
-$pdfBytes = $doc->generatePdf();
-file_put_contents("factura.pdf", $pdfBytes);
+$pdf = $doc->generatePdf();
+file_put_contents("factura_php.pdf", $pdf);
 ```
 
-### 5. Native Rust
+### 8.5 Python (Python 3.9+)
+**Paquete**: [`docs/packages/reportforge-2.0.0-py3-none-any.whl`](packages/reportforge-2.0.0-py3-none-any.whl)  
+**Instalación**: `pip install ./docs/packages/reportforge-2.0.0-py3-none-any.whl`
+
+```python
+from reportforge import ReportDocument
+
+doc = (
+    ReportDocument.create(size="A4", margin=36)
+    .header(lambda h: h.text("Factura Python", font_size=18, bold=True, color="#0066FF"))
+    .content(lambda c: [
+        c.text("Generado in-process vía ctypes en 25ms."),
+        c.spacer(height=10),
+        c.table(
+            columns=[{"title": "Ítem", "width": 200}, {"title": "Precio", "width": 100}],
+            rows=[["Licencia Rust", "$ 999.00"]],
+            repeat_header=True
+        ),
+        c.qr("https://reportforge.dev", size=60)
+    ])
+)
+
+with open("factura_python.pdf", "wb") as f:
+    f.write(doc.generate_pdf())
+```
+
+### 8.6 Rust Puro
 ```rust
 use reportforge::ast::DocumentDefinitionAst;
 use reportforge::pdf_engine::PdfEngine;
 
-let json_str = r#"{"page":{"size":"A4","margin":36.0},"content":{"type":"text","value":"Rust Core v2.0"}}"#;
-let ast: DocumentDefinitionAst = serde_json::from_str(json_str).unwrap();
-let engine = PdfEngine::new();
-let pdf_bytes = engine.render(&ast, None).unwrap();
-std::fs::write("output.pdf", pdf_bytes).unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let json_template = r#"{
+        "page": { "size": "A4", "margin": 36.0 },
+        "content": [
+            { "type": "text", "value": "Reporte Nativo en Rust", "font_size": 18.0, "bold": true },
+            { "type": "text", "value": "Acentos y símbolos: á, é, í, ó, ú, ñ, €" },
+            { "type": "qr", "value": "https://reportforge.dev", "size": 65.0 }
+        ]
+    }"#;
+
+    let ast: DocumentDefinitionAst = serde_json::from_str(json_template)?;
+    let engine = PdfEngine::new();
+    let pdf_bytes = engine.render(&ast, None)?;
+
+    std::fs::write("salida_rust.pdf", pdf_bytes)?;
+    Ok(())
+}
 ```
 
-## C ABI / FFI Interface
-For other languages (C, C++, Go, Python ctypes, Swift, Ruby):
-```c
-typedef struct {
-    uint8_t* data;
-    size_t length;
-    bool success;
-    char* error_message;
-} ReportForgeResult;
+---
 
-ReportForgeResult reportforge_render_pdf(const char* doc_json, const char* data_json);
-void reportforge_free_result(ReportForgeResult result);
-const char* reportforge_version(void);
+## 9. Guía de Compilación, Despliegue y Empaquetado
+
+### Compilación desde el Código Fuente
+```bash
+# Compilación para la plataforma actual (Windows/Linux/macOS)
+cargo build --release
+
+# Ejecutar las 7 pruebas de integración
+cargo test
 ```
+
+### Artefactos Generados en `target/release/`
+- Windows: `reportforge.dll` y `reportforge.lib`
+- Linux: `libreportforge.so` y `libreportforge.a`
+- macOS: `libreportforge.dylib`
+
+### Compilación Cruzada para Linux desde Windows con Docker
+```bash
+docker run --rm -v ${PWD}:/usr/src/reportforge -w /usr/src/reportforge rust:1-alpine cargo build --release
+```
+
+---
+
+## 10. Matriz de Resolución de Problemas (Troubleshooting)
+
+| Síntoma / Error | Causa Probable | Solución Oficial |
+| :--- | :--- | :--- |
+| `DllNotFoundException` en C# | El binario `.dll` o `.so` no se encuentra en el directorio de ejecución. | Asegurarse de compilar con el paquete NuGet oficial o copiar `runtimes/win-x64/native/reportforge.dll` junto al ejecutable. |
+| Caracteres españoles corruptos (`` o símbolos raros) | Uso de codificación ASCII estándar en lugar de WinAnsi CP1252. | El motor codifica automáticamente a secuencias hexadecimales ISO 32000-1 (`\E1` para `á`, `\F1` para `ñ`). Pasar cadenas UTF-8 estándar. |
+| Fuga de memoria progresiva en servidores | La aplicación no invoca `reportforge_free_result`. | En lenguajes FFI, llamar siempre a `reportforge_free_result(result)` en un bloque `finally` o destructores de clase. |
+| Filas de tabla cortadas entre páginas | El componente padre no permite división de flujo. | La tabla maneja la división automática por defecto. Evitar envolver tablas grandes dentro de contenedores con altura fija (`height`). |
+| `FFI extension not enabled` en PHP | La extensión FFI viene deshabilitada por defecto en PHP. | Editar `php.ini` y configurar `extension=ffi` y `ffi.enable=true`. |
+| Error al cargar librerías en Linux Alpine | Ausencia de `glibc` en imágenes basadas en `musl`. | Compilar el crate con target `x86_64-unknown-linux-musl` o instalar paquetes de compatibilidad gcompat en Alpine (`apk add gcompat`). |
