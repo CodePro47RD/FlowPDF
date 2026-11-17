@@ -21,6 +21,7 @@
    - [3.9 Divider (Línea Separadora Horizontal)](#39-divider-línea-separadora-horizontal)
    - [3.10 PageNumber (Numeración de Páginas y Paginado Dinámico)](#310-pagenumber-numeración-de-páginas-y-paginado-dinámico)
    - [3.11 Image (Imágenes Embebidas y Ajuste)](#311-image-imágenes-embebidas-y-ajuste)
+   - [3.12 Sistema Integral de Alineación (Horizontal y Vertical)](#312-sistema-integral-de-alineación-horizontal-y-vertical)
 4. [Especificación Formal del AST JSON (Esquema v2.0)](#4-especificación-formal-del-ast-json-esquema-v20)
 5. [Sistema de Plantillas y Formateadores Seguros](#5-sistema-de-plantillas-y-formateadores-seguros)
 6. [Catálogo de 9 Reportes Empresariales de Producción](#6-catálogo-de-9-reportes-empresariales-de-producción)
@@ -888,6 +889,55 @@ c.image("assets/logo.png", width=140.0, height=45.0, fit="contain", alignment="l
   "alignment": "left"
 }
 ```
+
+---
+
+### 3.12 Sistema Integral de Alineación (Horizontal y Vertical)
+
+ReportForge incluye un modelo matemático bidimensional de alineación tanto para tipografía como para composición estructural de contenedores y layouts.
+
+#### 1. Alineación Horizontal de Texto (`Text`)
+Controla la justificación y anclaje del texto dentro de su caja de restricciones disponible:
+- **`left` (Izquierda)**: Alineación predeterminada para textos de lectura.
+- **`center` (Centrado)**: Centra el texto calculando exactamente la mitad del ancho disponible menos el ancho del texto renderizado: `x = box.min_x + (box.width - text_width) / 2.0`.
+- **`right` (Derecha)**: Alinea al borde derecho (`x = box.max_x - text_width`), estándar indispensable para cifras monetarias, subtotales, totales de factura y códigos NCF.
+- **`justify` (Justificado)**: Distribuye el espacio entre palabras uniformemente para que coincidan con ambos bordes izquierdo y derecho.
+
+##### Sintaxis de Alineación Horizontal en Cada SDK:
+| Entorno | Izquierda | Centrado | Derecha | Justificado | Genérico |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **C# (.NET)** | `t.AlignLeft()` | `t.AlignCenter()` | `t.AlignRight()` | `t.Justify()` | `t.Align("center")` |
+| **TypeScript / JS** | `t.alignLeft()` | `t.alignCenter()` | `t.alignRight()` | `t.justify()` | `t.align("center")` |
+| **Java** | `t.alignLeft()` | `t.alignCenter()` | `t.alignRight()` | `t.justify()` | `t.align("center")` |
+| **PHP** | `->alignLeft()` | `->alignCenter()` | `->alignRight()` | `->justify()` | `->align("center")` |
+| **Python** | `t.left()` | `t.center()` | `t.right()` | `t.justify()` | `t.align("center")` |
+| **Rust / AST JSON** | `"alignment": "left"` | `"alignment": "center"` | `"alignment": "right"` | `"alignment": "justify"` | `"alignment": "..."` |
+
+#### 2. Alineación Vertical en Filas (`Row` - `vertical_alignment`)
+Cuando se colocan múltiples elementos lado a lado dentro de una fila (`Row`) que tienen alturas diferentes (por ejemplo, un código QR o logotipo de 80 pt junto a 2 líneas de texto de 24 pt), el motor permite definir la alineación vertical de los elementos:
+- **`top` (Superior)**: Todos los elementos se anclan en la parte superior de la fila (comportamiento predeterminado).
+- **`center` o `middle` (Centrado Vertical)**: Centra verticalmente los elementos de menor altura con respecto al elemento más alto de la fila (`y = row.y + (row.height - item.height) / 2.0`). Ideal para centrar logotipos o códigos QR junto a bloques descriptivos.
+- **`bottom` (Inferior)**: Ancla los elementos a la línea base inferior de la fila. Ideal para alinear firmas, sellos o totales al pie de los bloques.
+
+##### Sintaxis de Alineación Vertical en Cada SDK:
+- **C#**: `r.VerticalAlignment("center")` (o `"top"`, `"bottom"`)
+- **TypeScript**: `r.verticalAlignment("middle")` (o `"top"`, `"bottom"`)
+- **Java**: `r.verticalAlignment("center")` (o `"top"`, `"bottom"`)
+- **PHP**: `$r->verticalAlignment("center")` (o `"top"`, `"bottom"`)
+- **Python**: En el AST o builder con `"vertical_alignment": "center"`
+- **Rust / AST JSON**: `"vertical_alignment": "center"`
+
+#### 3. Alineación Horizontal en Celdas de Tabla (`TableColumn` - `align`)
+Cada columna de una tabla define su propia alineación horizontal tanto para el encabezado como para las celdas de datos:
+- `cols.Add("desc", "Descripción", col => col.AlignLeft())` / `"align": "left"`: Para textos, conceptos y nombres.
+- `cols.Add("qty", "Cant.", col => col.AlignCenter())` / `"align": "center"`: Para cantidades, unidades, fechas y estados.
+- `cols.Add("total", "Total", col => col.AlignRight())` / `"align": "right"`: Para precios, impuestos, subtotales y totales numéricos.
+
+#### 4. Alineación en Contenedores (`Container` - `alignment`)
+En un `Container` con ancho o alto explícito mayor que su contenido hijo, la propiedad `alignment` ubica el componente dentro del espacio disponible:
+- `"alignment": "left"`
+- `"alignment": "center"`
+- `"alignment": "right"`
 
 ---
 
