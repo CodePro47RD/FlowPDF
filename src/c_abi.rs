@@ -126,6 +126,26 @@ pub unsafe extern "C" fn reportforge_extract_json(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn reportforge_register_font(
+    font_name: *const c_char,
+    font_bytes: *const u8,
+    font_len: usize,
+) -> i32 {
+    if font_name.is_null() || font_bytes.is_null() || font_len == 0 {
+        return -1;
+    }
+    let c_str = match CStr::from_ptr(font_name).to_str() {
+        Ok(s) => s,
+        Err(_) => return -2,
+    };
+    let slice = std::slice::from_raw_parts(font_bytes, font_len);
+    match crate::font::register_global_font(c_str, slice) {
+        Ok(_) => 0,
+        Err(_) => -3,
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn reportforge_free_result(result: ReportForgeResult) {
     if !result.data.is_null() && result.length > 0 {
         let _ = Vec::from_raw_parts(result.data, result.length, result.length);
@@ -137,6 +157,6 @@ pub unsafe extern "C" fn reportforge_free_result(result: ReportForgeResult) {
 
 #[no_mangle]
 pub extern "C" fn reportforge_version() -> *const c_char {
-    static VERSION: &[u8] = b"ReportForge Rust Core v2.0.0\0";
+    static VERSION: &[u8] = b"ReportForge Rust Core v2.1.0\0";
     VERSION.as_ptr() as *const c_char
 }

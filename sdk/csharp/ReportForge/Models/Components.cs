@@ -40,6 +40,10 @@ namespace ReportForge.Models
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? Strike { get; set; }
 
+        [JsonPropertyName("font")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Font { get; set; }
+
         public TextComponent() { }
 
         public TextComponent(string value, string? style = null, string? color = null, double? fontSize = null, string? alignment = null)
@@ -292,6 +296,14 @@ namespace ReportForge.Models
         [JsonPropertyName("colors")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string>? Colors { get; set; }
+
+        [JsonPropertyName("theme")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Theme { get; set; }
+
+        [JsonPropertyName("donut")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? Donut { get; set; }
     }
 
     public class QrComponent : ComponentDefinition

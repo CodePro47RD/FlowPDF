@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reportforge"
-version = "2.0.0"
-description = "Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core v2.0"
+version = "2.1.0"
+description = "Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [

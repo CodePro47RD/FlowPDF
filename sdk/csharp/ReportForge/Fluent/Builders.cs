@@ -277,6 +277,7 @@ namespace ReportForge.Fluent
         public TextBuilder Italic(bool italic = true) { _text.Italic = italic; return this; }
         public TextBuilder Underline(bool underline = true) { _text.Underline = underline; return this; }
         public TextBuilder Strike(bool strike = true) { _text.Strike = strike; return this; }
+        public TextBuilder Font(string fontName) { _text.Font = fontName; return this; }
 
         public TextComponent Build() => _text;
     }
@@ -405,6 +406,10 @@ namespace ReportForge.Fluent
         public ChartBuilder Values(params double[] values) { _chart.Values = new List<double>(values); return this; }
         public ChartBuilder Size(double width, double height) { _chart.Width = width; _chart.Height = height; return this; }
         public ChartBuilder Colors(params string[] colors) { _chart.Colors = new List<string>(colors); return this; }
+        public ChartBuilder Theme(string theme) { _chart.Theme = theme; return this; }
+        public ChartBuilder Light() => Theme("light");
+        public ChartBuilder Dark() => Theme("dark");
+        public ChartBuilder Donut(bool donut = true) { _chart.Donut = donut; return this; }
 
         public ChartComponent Build() => _chart;
     }

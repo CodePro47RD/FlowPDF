@@ -5,6 +5,7 @@ import dev.reportforge.builders.PageConfigBuilder;
 import dev.reportforge.builders.SingleContainerBuilder;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -71,6 +72,21 @@ public class ReportDocument {
             doc.put("footer", child);
         }
         return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ReportDocument addFont(String name, String path, String data) {
+        List<Map<String, Object>> fonts = (List<Map<String, Object>>) doc.computeIfAbsent("fonts", k -> new java.util.ArrayList<>());
+        Map<String, Object> fontDef = new LinkedHashMap<>();
+        fontDef.put("name", name);
+        if (path != null) fontDef.put("path", path);
+        if (data != null) fontDef.put("data", data);
+        fonts.add(fontDef);
+        return this;
+    }
+
+    public static boolean registerFont(String fontName, byte[] fontBytes) {
+        return ReportForgeEngine.registerFont(fontName, fontBytes);
     }
 
     public Map<String, Object> build() {

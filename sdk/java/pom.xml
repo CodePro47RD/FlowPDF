@@ -7,11 +7,11 @@
 
     <groupId>dev.reportforge</groupId>
     <artifactId>reportforge</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
     <packaging>jar</packaging>
 
     <name>ReportForge Java SDK</name>
-    <description>Universal Document Engine and Fluent Report Builder SDK for Java with native Rust Core v2.0</description>
+    <description>Universal Document Engine and Fluent Report Builder SDK for Java with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly</description>
     <url>https://github.com/reportforge/reportforge</url>
 
     <licenses>

@@ -91,6 +91,7 @@ export class TextBuilder {
     italic(italic = true): this { this._text.italic = italic; return this; }
     underline(underline = true): this { this._text.underline = underline; return this; }
     strike(strike = true): this { this._text.strike = strike; return this; }
+    font(font: string): this { this._text.font = font; return this; }
 
     build(): TextComponent {
         return this._text;
@@ -304,7 +305,17 @@ export class ColumnBuilder {
         return this;
     }
 
-    chart(type: ChartType, options: { title?: string; labels?: string[]; values?: number[]; width?: number; height?: number }): this {
+    chart(type: ChartType, options: {
+        title?: string;
+        labels?: string[];
+        values?: number[];
+        series?: Array<{ name: string; values: number[]; color?: string }>;
+        width?: number;
+        height?: number;
+        colors?: string[];
+        theme?: 'light' | 'dark';
+        donut?: boolean;
+    }): this {
         this._column.items.push({
             type: 'chart',
             chart_type: type,
@@ -405,6 +416,19 @@ export class ReportDocument {
         fn(b);
         this.doc.footer = b.build();
         return this;
+    }
+
+    addFont(name: string, path?: string, data?: string): this {
+        if (!this.doc.fonts) {
+            this.doc.fonts = [];
+        }
+        this.doc.fonts.push({ name, path, data });
+        return this;
+    }
+
+    static registerFont(name: string, fontBytes: Uint8Array | Buffer): boolean {
+        const { ReportForgeEngine } = require('./native');
+        return ReportForgeEngine.registerFont(name, fontBytes);
     }
 
     build(): DocumentDefinition {

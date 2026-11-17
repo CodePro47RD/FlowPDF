@@ -119,6 +119,10 @@ class TextBuilder:
         self._text["underline"] = is_underline
         return self
 
+    def font(self, font_name: str) -> TextBuilder:
+        self._text["font"] = font_name
+        return self
+
     def build(self) -> Dict[str, Any]:
         return dict(self._text)
 
@@ -413,6 +417,40 @@ class ColumnBuilder:
         self._column["items"].append(img)
         return self
 
+    def chart(
+        self,
+        chart_type: str = "bar",
+        title: Optional[str] = None,
+        labels: Optional[list] = None,
+        values: Optional[list] = None,
+        series: Optional[list] = None,
+        width: float = 400.0,
+        height: float = 200.0,
+        colors: Optional[list] = None,
+        theme: str = "light",
+        donut: bool = False,
+    ) -> ColumnBuilder:
+        c: Dict[str, Any] = {
+            "type": "chart",
+            "chart_type": chart_type,
+            "width": float(width),
+            "height": float(height),
+            "theme": theme,
+            "donut": donut,
+        }
+        if title:
+            c["title"] = title
+        if labels is not None:
+            c["labels"] = labels
+        if values is not None:
+            c["values"] = values
+        if series is not None:
+            c["series"] = series
+        if colors is not None:
+            c["colors"] = colors
+        self._column["items"].append(c)
+        return self
+
     def build(self) -> Dict[str, Any]:
         return dict(self._column)
 
@@ -512,6 +550,23 @@ class ReportDocument:
         if child:
             self._doc["footer"] = child
         return self
+
+    def add_font(self, name: str, path: Optional[str] = None, data: Optional[str] = None) -> ReportDocument:
+        if "fonts" not in self._doc:
+            self._doc["fonts"] = []
+        font_def: Dict[str, Any] = {"name": name}
+        if path:
+            font_def["path"] = path
+        if data:
+            font_def["data"] = data
+        self._doc["fonts"].append(font_def)
+        return self
+
+    @staticmethod
+    def register_font(name: str, font_bytes: Union[bytes, bytearray]) -> bool:
+        """Registers a TrueType font globally in the native Rust core."""
+        from .native import ReportForgeEngine
+        return ReportForgeEngine.register_font(name, font_bytes)
 
     def build(self) -> Dict[str, Any]:
         return dict(self._doc)

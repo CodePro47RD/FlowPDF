@@ -21,7 +21,7 @@ export type TextAlignment = 'left' | 'center' | 'right' | 'justify';
 export type VerticalAlignment = 'top' | 'middle' | 'bottom';
 export type HorizontalAlignment = 'left' | 'center' | 'right';
 export type ImageFit = 'contain' | 'cover' | 'fill' | 'none';
-export type ChartType = 'bar' | 'line' | 'pie' | 'area' | 'multi_bar';
+export type ChartType = 'bar' | 'line' | 'pie' | 'area' | 'donut' | 'multi_bar';
 export type BarcodeType = 'code128' | 'ean13';
 export type ColumnFormat = 'currency' | 'number' | 'percentage' | 'date' | 'uppercase' | 'lowercase' | string;
 
@@ -36,6 +36,7 @@ export interface TextComponent {
     italic?: boolean;
     underline?: boolean;
     strike?: boolean;
+    font?: string;
 }
 
 export interface ImageComponent {
@@ -136,6 +137,8 @@ export interface ChartComponent {
     width?: number;
     height?: number;
     colors?: string[];
+    theme?: 'light' | 'dark';
+    donut?: boolean;
 }
 
 export interface QrComponent {
@@ -169,12 +172,19 @@ export type AnyComponent =
     | QrComponent
     | BarcodeComponent;
 
+export interface CustomFontDefinition {
+    name: string;
+    path?: string;
+    data?: string;
+}
+
 export interface DocumentDefinition {
     page?: PageConfig;
     header?: AnyComponent;
     content: AnyComponent | AnyComponent[];
     footer?: AnyComponent;
     metadata?: Record<string, any>;
+    fonts?: CustomFontDefinition[];
 }
 
 export interface ReportPayload<TData = any> {

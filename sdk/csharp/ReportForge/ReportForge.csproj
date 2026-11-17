@@ -9,17 +9,17 @@
     
     <!-- Package metadata -->
     <PackageId>ReportForge</PackageId>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Authors>Edwin Abreu &amp; ReportForge Contributors</Authors>
     <Company>ReportForge</Company>
     <Product>ReportForge</Product>
     <Title>ReportForge - High-Performance Document Engine for .NET</Title>
-    <Description>Enterprise reporting and document generation engine for .NET. Features a declarative Fluent Builder API, strongly-typed AST, remote HTTP client, and ultra-fast in-process native rendering powered by the Rust Core (v2.0) with embedded win-x64 and linux-x64 runtimes.</Description>
+    <Description>Enterprise reporting and document generation engine for .NET. Features a Fluent Builder API, strongly-typed AST, remote HTTP client, native vector charts, custom TTF font embedding, and ultra-fast in-process native rendering powered by the Rust Core (v2.1) with embedded win-x64 and linux-x64 runtimes.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/reportforge/reportforge</PackageProjectUrl>
     <RepositoryUrl>https://github.com/reportforge/reportforge</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>reportforge;pdf;reports;reporting;fluent;rust;inprocess;high-performance;csharp</PackageTags>
+    <PackageTags>reportforge;pdf;reports;reporting;fluent;rust;inprocess;high-performance;csharp;charts;ttf;extraction</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     
     <!-- Build & packing options -->

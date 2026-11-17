@@ -100,6 +100,9 @@ namespace ReportForge.Native
         [DllImport(LibName, EntryPoint = "reportforge_extract_json", CallingConvention = CallingConvention.Cdecl)]
         private static extern ReportForgeResultNative NativeExtractJson(byte[] pdfData, UIntPtr pdfLen, byte[]? optionsJson);
 
+        [DllImport(LibName, EntryPoint = "reportforge_register_font", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int NativeRegisterFont(byte[] fontName, byte[] fontBytes, UIntPtr fontLen);
+
         [DllImport(LibName, EntryPoint = "reportforge_free_result", CallingConvention = CallingConvention.Cdecl)]
         private static extern void NativeFreeResult(ReportForgeResultNative result);
 
@@ -110,6 +113,15 @@ namespace ReportForge.Native
         {
             IntPtr ptr = NativeVersion();
             return Marshal.PtrToStringUTF8(ptr) ?? "Unknown";
+        }
+
+        public static bool RegisterFont(string fontName, byte[] fontBytes)
+        {
+            if (string.IsNullOrEmpty(fontName) || fontBytes == null || fontBytes.Length == 0)
+                return false;
+            byte[] nameBytes = Encoding.UTF8.GetBytes(fontName + "\0");
+            int res = NativeRegisterFont(nameBytes, fontBytes, (UIntPtr)fontBytes.Length);
+            return res == 0;
         }
 
         public static byte[] RenderPdf(string documentJson, string? dataJson = null)

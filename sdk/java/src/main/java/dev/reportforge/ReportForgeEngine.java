@@ -30,6 +30,7 @@ public class ReportForgeEngine {
         ReportForgeResult.ByValue reportforge_render_pdf(byte[] docJson, byte[] dataJson);
         ReportForgeResult.ByValue reportforge_extract_text(byte[] pdfData, long pdfLen);
         ReportForgeResult.ByValue reportforge_extract_json(byte[] pdfData, long pdfLen, byte[] optionsJson);
+        int reportforge_register_font(byte[] fontName, byte[] fontBytes, long fontLen);
         void reportforge_free_result(ReportForgeResult.ByValue result);
         Pointer reportforge_version();
     }
@@ -178,5 +179,12 @@ public class ReportForgeEngine {
         } finally {
             lib.reportforge_free_result(result);
         }
+    }
+
+    public static boolean registerFont(String fontName, byte[] fontBytes) {
+        if (fontName == null || fontBytes == null || fontBytes.length == 0) return false;
+        ReportForgeNativeLib lib = getLib();
+        byte[] nameBytes = (fontName + "\0").getBytes(StandardCharsets.UTF_8);
+        return lib.reportforge_register_font(nameBytes, fontBytes, fontBytes.length) == 0;
     }
 }

@@ -1,15 +1,21 @@
 pub mod ast;
 pub mod barcode;
 pub mod c_abi;
+pub mod chart;
 pub mod core;
 pub mod encoding;
 pub mod extractor;
+pub mod font;
 pub mod pdf_engine;
+pub mod wasm;
 
 pub use ast::*;
 pub use barcode::*;
 pub use c_abi::*;
+pub use chart::*;
 pub use core::*;
 pub use encoding::*;
 pub use extractor::*;
+pub use font::*;
 pub use pdf_engine::*;
+pub use wasm::*;

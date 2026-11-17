@@ -191,4 +191,16 @@ export class ReportForgeEngine {
         }
         throw new Error('ReportForge native extraction requires "koffi" in Node.js.');
     }
+
+    public static registerFont(fontName: string, fontBytes: Uint8Array | Buffer): boolean {
+        const libPath = this.getLibraryPath();
+        const koffi = getKoffi();
+        if (koffi) {
+            const lib = koffi.load(libPath);
+            const regFn = lib.func('reportforge_register_font', 'int', ['str', 'uint8_t *', 'size_t']);
+            const res = regFn(fontName, fontBytes, fontBytes.length);
+            return res === 0;
+        }
+        throw new Error('ReportForge native font registration requires "koffi" in Node.js.');
+    }
 }

@@ -78,6 +78,23 @@ class ReportDocument
         return $this;
     }
 
+    public function addFont(string $name, ?string $path = null, ?string $data = null): self
+    {
+        if (!isset($this->doc['fonts'])) {
+            $this->doc['fonts'] = [];
+        }
+        $fontDef = ['name' => $name];
+        if ($path !== null) $fontDef['path'] = $path;
+        if ($data !== null) $fontDef['data'] = $data;
+        $this->doc['fonts'][] = $fontDef;
+        return $this;
+    }
+
+    public static function registerFont(string $name, string $fontBytes): bool
+    {
+        return ReportForgeEngine::registerFont($name, $fontBytes);
+    }
+
     public function build(): array
     {
         return $this->doc;

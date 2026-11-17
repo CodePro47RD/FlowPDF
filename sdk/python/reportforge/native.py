@@ -81,6 +81,9 @@ class ReportForgeEngine:
             cls._lib.reportforge_extract_json.argtypes = [POINTER(ctypes.c_ubyte), c_size_t, c_char_p]
             cls._lib.reportforge_extract_json.restype = ReportForgeResult
 
+            cls._lib.reportforge_register_font.argtypes = [c_char_p, POINTER(ctypes.c_ubyte), c_size_t]
+            cls._lib.reportforge_register_font.restype = ctypes.c_int
+
             cls._lib.reportforge_free_result.argtypes = [ReportForgeResult]
             cls._lib.reportforge_free_result.restype = None
 
@@ -176,4 +179,16 @@ class ReportForgeEngine:
             return {}
         finally:
             lib.reportforge_free_result(result)
+
+    @classmethod
+    def register_font(cls, font_name: str, font_bytes: Union[bytes, bytearray]) -> bool:
+        """Registers a TrueType font globally in the native Rust core."""
+        if not font_name or not font_bytes:
+            return False
+        lib = cls._get_lib()
+        if not hasattr(lib, "reportforge_register_font"):
+            return False
+        c_bytes = (ctypes.c_ubyte * len(font_bytes)).from_buffer_copy(font_bytes)
+        res = lib.reportforge_register_font(font_name.encode("utf-8"), c_bytes, len(font_bytes))
+        return res == 0
 

@@ -9,8 +9,8 @@ if os.path.exists(readme_path):
 
 setup(
     name="reportforge",
-    version="2.0.0",
-    description="Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core v2.0",
+    version="2.1.0",
+    description="Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Edwin Abreu & ReportForge Contributors",

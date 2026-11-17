@@ -54,6 +54,7 @@ class ReportForgeEngine
                 ReportForgeResult reportforge_render_pdf(const char *doc_json, const char *data_json);
                 ReportForgeResult reportforge_extract_text(const uint8_t *pdf_data, size_t pdf_len);
                 ReportForgeResult reportforge_extract_json(const uint8_t *pdf_data, size_t pdf_len, const char *options_json);
+                int reportforge_register_font(const char *font_name, const uint8_t *font_bytes, size_t font_len);
                 void reportforge_free_result(ReportForgeResult result);
                 const char *reportforge_version(void);
             ';
@@ -144,5 +145,16 @@ class ReportForgeEngine
         } finally {
             $ffi->reportforge_free_result($result);
         }
+    }
+
+    public static function registerFont(string $fontName, string $fontBytes): bool
+    {
+        $len = strlen($fontBytes);
+        if ($len === 0 || empty($fontName)) return false;
+        $ffi = self::getFFI();
+        $buf = $ffi->new("uint8_t[$len]");
+        \FFI::memcpy($buf, $fontBytes, $len);
+        $res = $ffi->reportforge_register_font($fontName, \FFI::cast("uint8_t*", $buf), $len);
+        return $res === 0;
     }
 }

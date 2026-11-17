@@ -75,6 +75,18 @@ namespace ReportForge.Fluent
             return this;
         }
 
+        public ReportDocument AddFont(string name, string? path = null, string? base64Data = null)
+        {
+            _document.Fonts ??= new List<CustomFontDefinition>();
+            _document.Fonts.Add(new CustomFontDefinition { Name = name, Path = path, Data = base64Data });
+            return this;
+        }
+
+        public static bool RegisterFont(string name, byte[] fontBytes)
+        {
+            return ReportForgeEngine.RegisterFont(name, fontBytes);
+        }
+
         public DocumentDefinition Build() => _document;
 
         /// <summary>

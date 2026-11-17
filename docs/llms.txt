@@ -22,20 +22,23 @@
    - [3.10 PageNumber (Numeración de Páginas y Paginado Dinámico)](#310-pagenumber-numeración-de-páginas-y-paginado-dinámico)
    - [3.11 Image (Imágenes Embebidas y Ajuste)](#311-image-imágenes-embebidas-y-ajuste)
    - [3.12 Sistema Integral de Alineación (Horizontal y Vertical)](#312-sistema-integral-de-alineación-horizontal-y-vertical)
-4. [Especificación Formal del AST JSON (Esquema v2.0)](#4-especificación-formal-del-ast-json-esquema-v20)
+   - [3.13 Chart (Gráficos Estadísticos Vectoriales: Barras, Líneas, Pastel, Dona)](#313-chart-gráficos-estadísticos-vectoriales-nativos)
+   - [3.14 Custom Fonts (Fuentes TrueType / OpenType .ttf Personalizadas)](#314-custom-fonts-fuentes-truetype--opentype-ttf-personalizadas)
+4. [Especificación Formal del AST JSON (Esquema v2.1)](#4-especificación-formal-del-ast-json-esquema-v20)
 5. [Sistema de Plantillas y Formateadores Seguros](#5-sistema-de-plantillas-y-formateadores-seguros)
 6. [Catálogo de 9 Reportes Empresariales de Producción](#6-catálogo-de-9-reportes-empresariales-de-producción)
 7. [Especificación de la Interfaz C ABI / FFI y Gestión de Memoria](#7-especificación-de-la-interfaz-c-abi--ffi-y-gestión-de-memoria)
 8. [Motor Nativo de Extracción y Parsing de PDFs (Texto y Metadatos)](#8-motor-nativo-de-extracción-y-parsing-de-pdfs-texto-y-metadatos)
-9. [Implementación Completa de Casos de Producción por Lenguaje](#9-implementación-completa-de-casos-de-producción-por-lenguaje)
-   - [9.1 C# (.NET 8, 9, 10)](#91-c-net-8-9-10)
-   - [9.2 TypeScript / JavaScript (Node.js & Bun)](#92-typescript--javascript-nodejs--bun)
-   - [9.3 Java (Java 11+)](#93-java-java-11)
-   - [9.4 PHP (PHP 8+)](#94-php-php-8)
-   - [9.5 Python (Python 3.9+)](#95-python-python-39)
-   - [9.6 Rust Puro](#96-rust-puro)
-10. [Guía de Compilación, Despliegue y Empaquetado](#10-guía-de-compilación-despliegue-y-empaquetado)
-11. [Matriz de Resolución de Problemas (Troubleshooting)](#11-matriz-de-resolución-de-problemas-troubleshooting)
+9. [Motor WebAssembly (Wasm) de Ejecución en Navegador (Client-Side Rendering)](#9-motor-webassembly-wasm-de-ejecución-en-navegador-client-side-rendering)
+10. [Implementación Completa de Casos de Producción por Lenguaje](#10-implementación-completa-de-casos-de-producción-por-lenguaje)
+   - [10.1 C# (.NET 8, 9, 10)](#91-c-net-8-9-10)
+   - [10.2 TypeScript / JavaScript (Node.js & Bun)](#92-typescript--javascript-nodejs--bun)
+   - [10.3 Java (Java 11+)](#93-java-java-11)
+   - [10.4 PHP (PHP 8+)](#94-php-php-8)
+   - [10.5 Python (Python 3.9+)](#95-python-python-39)
+   - [10.6 Rust Puro](#96-rust-puro)
+11. [Guía de Compilación, Despliegue y Empaquetado](#10-guía-de-compilación-despliegue-y-empaquetado)
+12. [Matriz de Resolución de Problemas (Troubleshooting)](#11-matriz-de-resolución-de-problemas-troubleshooting)
 
 ---
 
@@ -942,6 +945,130 @@ En un `Container` con ancho o alto explícito mayor que su contenido hijo, la pr
 
 ---
 
+### 3.13 Chart (Gráficos Estadísticos Vectoriales Nativos)
+
+Genera gráficos estadísticos trazados matemáticamente en vectores puros (PostScript nativo `re`, `m`, `l`, `f`, `S`) sin depender de canvas de navegador ni imágenes rasterizadas PNG de 300 DPI. Cero pixelado al imprimir y escala infinita con soporte integral para **temas Light y Dark**.
+
+#### Tipos de Gráficos Soportados
+* `"bar"`: Gráficos de barras verticales u horizontales (simples o agrupadas por series).
+* `"line"`: Líneas de tendencia continuas con marcadores en cada punto de datos.
+* `"area"`: Gráficos de área sombreada bajo la curva con gradiente de transparencia.
+* `"pie"`: Gráficos de pastel circulares con aproximación Bézier y porcentajes.
+* `"donut"`: Gráficos de dona con radio interior configurable y leyendas calculadas.
+
+#### Tabla de Propiedades
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `chart_type` | `chart_type` | `string` | `"bar"` | Tipo de gráfico: `"bar"`, `"line"`, `"area"`, `"pie"`, `"donut"`. |
+| `title` | `title` | `string` | `null` | Título superior del gráfico. |
+| `width` | `width` | `float` | `available_w` | Ancho del gráfico en puntos tipográficos. |
+| `height` | `height` | `float` | `180.0` | Altura total del gráfico. |
+| `categories` | `categories` | `array<string>` | `[]` | Etiquetas del eje X (ej. `["Q1", "Q2", "Q3", "Q4"]`). |
+| `series` | `series` | `array<object>` | *(Requerido)* | Series de datos con `name`, `values` (`float[]`) y `color` hex opcional. |
+| `theme` | `theme` | `string` | `"light"` | Tema visual del gráfico: `"light"` (fondo claro) o `"dark"` (fondo azul marino). |
+| `show_legend` | `show_legend` | `bool` | `true` | Muestra la leyenda de series con indicadores de color y nombres/porcentajes. |
+| `show_grid` | `show_grid` | `bool` | `true` | Dibuja líneas de cuadrícula y etiquetas numéricas en el eje Y. |
+| `show_values` | `show_values` | `bool` | `true` | Muestra las cifras numéricas sobre cada barra o punto. |
+
+#### Ejemplos en Todos los Lenguajes
+
+```csharp
+// C# (.NET)
+c.Chart("bar", chart => chart
+    .Title("Ingresos Trimestrales 2026")
+    .Height(180)
+    .Theme("dark")
+    .Categories(new[] { "Q1", "Q2", "Q3", "Q4" })
+    .Series("Cloud", new[] { 35.0, 48.0, 62.0, 79.0 }, "#0066FF")
+    .Series("Consultoría", new[] { 20.0, 25.0, 29.0, 36.0 }, "#10B981")
+    .ShowLegend(true)
+    .ShowGrid(true)
+);
+```
+
+```typescript
+// TypeScript
+c.chart({
+  chart_type: 'bar',
+  title: 'Ingresos Trimestrales 2026',
+  height: 180,
+  theme: 'dark',
+  categories: ['Q1', 'Q2', 'Q3', 'Q4'],
+  series: [
+    { name: 'Cloud', values: [35, 48, 62, 79], color: '#0066FF' },
+    { name: 'Consultoría', values: [20, 25, 29, 36], color: '#10B981' }
+  ],
+  show_legend: true
+});
+```
+
+```python
+# Python
+c.chart(
+    chart_type="bar",
+    title="Ingresos Trimestrales 2026",
+    height=180,
+    theme="dark",
+    categories=["Q1", "Q2", "Q3", "Q4"],
+    series=[
+        {"name": "Cloud", "values": [35, 48, 62, 79], "color": "#0066FF"},
+        {"name": "Consultoría", "values": [20, 25, 29, 36], "color": "#10B981"}
+    ],
+    show_legend=True
+)
+```
+
+```json
+// Rust AST / JSON
+{
+  "type": "chart",
+  "chart_type": "bar",
+  "title": "Ingresos Trimestrales 2026",
+  "height": 180.0,
+  "theme": "dark",
+  "categories": ["Q1", "Q2", "Q3", "Q4"],
+  "series": [
+    { "name": "Cloud", "values": [35.0, 48.0, 62.0, 79.0], "color": "#0066FF" },
+    { "name": "Consultoría", "values": [20.0, 25.0, 29.0, 36.0], "color": "#10B981" }
+  ],
+  "show_legend": true,
+  "show_grid": true,
+  "show_values": true
+}
+```
+
+---
+
+### 3.14 Custom Fonts (Fuentes TrueType / OpenType .ttf Personalizadas)
+
+Permite incrustar tipografías corporativas personalizadas (Google Fonts como *Inter*, *Roboto*, *Montserrat*, *Poppins*) dentro del archivo PDF final. El motor extrae métricas de avance de glifos con `ttf-parser`, calcula el ancho de línea y genera automáticamente los diccionarios `/FontDescriptor`, `/FontFile2` y `/Widths` compatibles con ISO 32000-1.
+
+#### Modos de Registro
+1. **Global vía C-ABI**: `reportforge_register_font(name, bytes, len)` (disponible en todos los procesos de la aplicación).
+2. **Por Documento en JSON**: Lista `"fonts"` en la raíz del documento con `data_base64` o `path`.
+
+#### Ejemplo en JSON
+```json
+{
+  "page": { "size": "A4", "margin": 30.0 },
+  "fonts": [
+    { "name": "Inter", "path": "assets/fonts/Inter-Regular.ttf" },
+    { "name": "Montserrat", "data_base64": "<base64_data>" }
+  ],
+  "content": [
+    {
+      "type": "text",
+      "value": "Factura emitida con fuente Inter personalizada",
+      "font": "Inter",
+      "font_size": 16.0,
+      "bold": true
+    }
+  ]
+}
+```
+
+---
+
 ## 4. Especificación Formal del AST JSON (Esquema v2.0)
 
 Todo documento ReportForge se puede definir mediante un payload JSON puro validado por el motor:
@@ -1102,7 +1229,14 @@ ReportForgeResult reportforge_render_pdf(
 // 2. Libera de forma segura la memoria asignada por Rust
 void reportforge_free_result(ReportForgeResult result);
 
-// 3. Retorna la cadena de versión oficial del motor
+// 3. Registra una fuente TrueType (.ttf) en la memoria global del motor
+int32_t reportforge_register_font(
+    const char* font_name,
+    const uint8_t* font_bytes,
+    size_t font_len
+);
+
+// 4. Retorna la cadena de versión oficial del motor
 const char* reportforge_version(void);
 ```
 
@@ -1271,7 +1405,60 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ---
 
-## 9. Implementación Completa de Casos de Producción por Lenguaje
+## 9. Motor WebAssembly (Wasm) de Ejecución en Navegador (Client-Side Rendering)
+
+ReportForge compila a `wasm32-unknown-unknown` produciendo un binario standalone (`reportforge.wasm`, 927 KB) que ejecuta el motor de composición, gráficos vectoriales y extracción de texto directamente en navegadores web en menos de 10 milisegundos sin backend.
+
+### 9.1 Símbolos Exportados en WebAssembly
+```c
+// Gestión de Memoria en el Heap de Wasm
+uint8_t* reportforge_wasm_alloc(size_t size);
+void reportforge_wasm_dealloc(uint8_t* ptr, size_t size);
+
+// Renderizado directo de AST JSON a PDF (retorna puntero y longitud empaquetados en uint64_t)
+uint64_t reportforge_wasm_render(const uint8_t* json_ptr, size_t json_len);
+
+// Extracción de texto plano en Wasm
+uint64_t reportforge_wasm_extract_text(const uint8_t* pdf_ptr, size_t pdf_len);
+
+// Registro de fuente TrueType (.ttf) en Wasm
+int32_t reportforge_wasm_register_font(
+    const uint8_t* name_ptr, size_t name_len,
+    const uint8_t* font_ptr, size_t font_len
+);
+```
+
+### 9.2 Integración en JavaScript / Navegador
+```javascript
+import { ReportForgeWasm } from './reportforge-wasm.js';
+
+const rf = new ReportForgeWasm();
+await rf.init('reportforge.wasm');
+
+// 1. Renderizado en memoria en ~8 ms
+const pdfBytes = rf.renderPdf({
+  page: { size: "A4", margin: 25 },
+  content: [
+    { type: "text", value: "Generado en WebAssembly en 8ms!", font_size: 16, bold: true },
+    {
+      type: "chart",
+      chart_type: "bar",
+      title: "Ventas Trimestrales",
+      height: 160,
+      categories: ["Q1", "Q2", "Q3", "Q4"],
+      series: [{ name: "Cloud", values: [35, 48, 62, 79], color: "#0066FF" }]
+    }
+  ]
+});
+
+// 2. Visualización inmediata en un <iframe>
+const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+document.getElementById('pdfViewer').src = URL.createObjectURL(blob);
+```
+
+---
+
+## 10. Implementación Completa de Casos de Producción por Lenguaje
 
 ### 9.1 C# (.NET 8, 9, 10)
 **Paquete**: [`docs/packages/ReportForge.2.0.0.nupkg`](packages/ReportForge.2.0.0.nupkg)  

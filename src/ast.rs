@@ -40,6 +40,7 @@ pub enum ComponentAst {
     Text {
         value: String,
         style: Option<String>,
+        font: Option<String>,
         alignment: Option<String>,
         color: Option<String>,
         font_size: Option<f32>,
@@ -137,6 +138,40 @@ pub enum ComponentAst {
         fit: Option<String>,
         alignment: Option<String>,
     },
+    #[serde(rename = "chart")]
+    Chart {
+        #[serde(default = "default_chart_type")]
+        chart_type: String,
+        title: Option<String>,
+        width: Option<f32>,
+        #[serde(default = "default_chart_height")]
+        height: f32,
+        categories: Option<Vec<String>>,
+        #[serde(default)]
+        series: Vec<ChartSeriesAst>,
+        #[serde(default = "default_true")]
+        show_legend: bool,
+        #[serde(default = "default_true")]
+        show_grid: bool,
+        #[serde(default = "default_true")]
+        show_values: bool,
+        #[serde(default = "default_chart_theme")]
+        theme: String,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChartSeriesAst {
+    pub name: String,
+    pub values: Vec<f64>,
+    pub color: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomFontAst {
+    pub name: String,
+    pub data_base64: Option<String>,
+    pub path: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -166,6 +201,8 @@ pub struct TableColumnAst {
 pub struct DocumentDefinitionAst {
     #[serde(default)]
     pub page: PageConfigAst,
+    #[serde(default)]
+    pub fonts: Vec<CustomFontAst>,
     pub header: Option<Box<ComponentAst>>,
     pub content: ContentAst,
     pub footer: Option<Box<ComponentAst>>,
@@ -199,3 +236,6 @@ fn default_barcode_height() -> f32 { 40.0 }
 fn default_page_number_format() -> String { "Página {page} de {total}".to_string() }
 fn default_page_number_align() -> String { "right".to_string() }
 fn default_format() -> String { "pdf".to_string() }
+fn default_chart_type() -> String { "bar".to_string() }
+fn default_chart_height() -> f32 { 180.0 }
+fn default_chart_theme() -> String { "light".to_string() }

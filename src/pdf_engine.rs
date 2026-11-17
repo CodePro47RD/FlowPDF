@@ -1,12 +1,15 @@
 use std::collections::HashMap;
 use std::io::Write;
+use std::sync::Arc;
 use lopdf::{dictionary, Document, Object, Stream};
 use qrcode::QrCode;
 use serde_json::Value;
 
 use crate::ast::*;
 use crate::barcode::Code128;
+use crate::chart::ChartRenderer;
 use crate::core::{Color, PageSize, Rect, Size};
+use crate::font::{get_global_font, CustomFont};
 
 pub struct PdfEngine {
     pub default_font_size: f32,
@@ -27,24 +30,46 @@ impl PdfEngine {
         let content_w = page_w - (margin_left + margin_right);
         let _content_h = page_h - (margin_top + margin_bottom);
 
-        // Resolver variables del template en el contenido
+        // Inicializar gestor de fuentes locales del documento
+        let mut font_manager: HashMap<String, (String, Arc<CustomFont>)> = HashMap::new();
+        let mut font_counter = 1;
+
+        for f_ast in &doc_ast.fonts {
+            let bytes_opt = if let Some(b64) = &f_ast.data_base64 {
+                use base64::Engine;
+                base64::engine::general_purpose::STANDARD.decode(b64).ok()
+            } else if let Some(path) = &f_ast.path {
+                std::fs::read(path).ok()
+            } else {
+                None
+            };
+
+            if let Some(bytes) = bytes_opt {
+                if let Ok(font) = CustomFont::from_bytes(&f_ast.name, &bytes) {
+                    let alias = format!("/FC{}", font_counter);
+                    font_counter += 1;
+                    font_manager.insert(f_ast.name.to_lowercase(), (alias, Arc::new(font)));
+                }
+            }
+        }
+
         let mut ops = Vec::new();
 
         // 1. Renderizar encabezado si existe
         let mut current_y = margin_top;
         if let Some(header) = &doc_ast.header {
-            let h_size = self.render_component(header, data, margin_left, current_y, content_w, &mut ops)?;
+            let h_size = self.render_component(header, data, margin_left, current_y, content_w, &mut ops, &mut font_manager, &mut font_counter)?;
             current_y += h_size.height + 10.0;
         }
 
         // 2. Renderizar contenido
         match &doc_ast.content {
             ContentAst::Single(comp) => {
-                let _ = self.render_component(comp, data, margin_left, current_y, content_w, &mut ops)?;
+                let _ = self.render_component(comp, data, margin_left, current_y, content_w, &mut ops, &mut font_manager, &mut font_counter)?;
             }
             ContentAst::Multiple(items) => {
                 for item in items {
-                    let c_size = self.render_component(item, data, margin_left, current_y, content_w, &mut ops)?;
+                    let c_size = self.render_component(item, data, margin_left, current_y, content_w, &mut ops, &mut font_manager, &mut font_counter)?;
                     current_y += c_size.height + 6.0;
                 }
             }
@@ -53,13 +78,14 @@ impl PdfEngine {
         // 3. Renderizar pie de página si existe
         if let Some(footer) = &doc_ast.footer {
             let footer_y = page_h - margin_bottom - 20.0;
-            self.render_component(footer, data, margin_left, footer_y, content_w, &mut ops)?;
+            self.render_component(footer, data, margin_left, footer_y, content_w, &mut ops, &mut font_manager, &mut font_counter)?;
         }
 
-        // Compilar a documento PDF válido usando lopdf
-        self.build_pdf(page_w, page_h, ops)
+        // Compilar a documento PDF válido usando lopdf con fuentes incrustadas
+        self.build_pdf(page_w, page_h, ops, font_manager)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn render_component(
         &self,
         comp: &ComponentAst,
@@ -68,11 +94,14 @@ impl PdfEngine {
         y: f32,
         available_w: f32,
         ops: &mut Vec<PdfOp>,
+        font_manager: &mut HashMap<String, (String, Arc<CustomFont>)>,
+        font_counter: &mut usize,
     ) -> Result<Size, String> {
         match comp {
             ComponentAst::Text {
                 value,
                 style,
+                font,
                 alignment,
                 color,
                 font_size,
@@ -81,7 +110,7 @@ impl PdfEngine {
                 underline: _,
             } => {
                 let interpolated = interpolate_string(value, data);
-                let (font_name, default_size, default_color) = match style.as_deref() {
+                let (default_font_name, default_size, default_color) = match style.as_deref() {
                     Some("h1") => ("Helvetica-Bold", 22.0, Color::rgb(0.1, 0.1, 0.2)),
                     Some("h2") => ("Helvetica-Bold", 16.0, Color::rgb(0.12, 0.23, 0.54)),
                     Some("h3") => ("Helvetica-Bold", 12.0, Color::rgb(0.12, 0.23, 0.54)),
@@ -89,34 +118,65 @@ impl PdfEngine {
                     _ => ("Helvetica", 10.0, Color::rgb(0.15, 0.15, 0.15)),
                 };
 
-                let is_bold = bold.unwrap_or(font_name.contains("Bold"));
-                let actual_font = if is_bold { "Helvetica-Bold" } else { "Helvetica" };
+                let is_bold = bold.unwrap_or(default_font_name.contains("Bold"));
                 let size = font_size.unwrap_or(default_size);
                 let text_color = color.as_deref().map(Color::from_hex).unwrap_or(default_color);
                 let align = alignment.as_deref().unwrap_or("left");
 
+                // Resolución de Fuente: Personalizada o Estándar Type1
+                let custom_font_info = if let Some(font_name) = font {
+                    let lower = font_name.to_lowercase();
+                    if let Some((alias, cf)) = font_manager.get(&lower) {
+                        Some((alias.clone(), cf.clone()))
+                    } else if let Some(gf) = get_global_font(font_name) {
+                        let alias = format!("/FC{}", *font_counter);
+                        *font_counter += 1;
+                        font_manager.insert(lower, (alias.clone(), gf.clone()));
+                        Some((alias, gf))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
+                let (font_ref, custom_font_opt) = match custom_font_info {
+                    Some((alias, cf)) => (alias, Some(cf)),
+                    None => {
+                        let std_ref = if is_bold { "/F2".to_string() } else { "/F1".to_string() };
+                        (std_ref, None)
+                    }
+                };
+
                 // Medición y ajuste de líneas
-                let char_width = size * 0.52;
-                let max_chars_per_line = ((available_w / char_width).floor() as usize).max(1);
                 let words: Vec<&str> = interpolated.split_whitespace().collect();
                 let mut lines = Vec::new();
                 let mut current_line = String::new();
 
+                let measure_text = |s: &str| -> f32 {
+                    if let Some(cf) = &custom_font_opt {
+                        cf.measure_text_width(s, size)
+                    } else {
+                        s.chars().count() as f32 * (size * 0.52)
+                    }
+                };
+
                 for word in words {
                     if current_line.is_empty() {
                         current_line.push_str(word);
-                    } else if current_line.chars().count() + 1 + word.chars().count() <= max_chars_per_line {
-                        current_line.push(' ');
-                        current_line.push_str(word);
                     } else {
-                        lines.push(current_line);
-                        current_line = word.to_string();
+                        let test_line = format!("{} {}", current_line, word);
+                        if measure_text(&test_line) <= available_w {
+                            current_line = test_line;
+                        } else {
+                            lines.push(current_line);
+                            current_line = word.to_string();
+                        }
                     }
                 }
                 if !current_line.is_empty() {
                     lines.push(current_line);
                 }
-
                 if lines.is_empty() {
                     lines.push(interpolated);
                 }
@@ -126,7 +186,7 @@ impl PdfEngine {
 
                 for (idx, line) in lines.iter().enumerate() {
                     let line_y = y + (idx as f32 * line_height);
-                    let line_w = line.chars().count() as f32 * char_width;
+                    let line_w = measure_text(line);
 
                     let draw_x = match align {
                         "center" => x + ((available_w - line_w) / 2.0).max(0.0),
@@ -136,7 +196,7 @@ impl PdfEngine {
 
                     ops.push(PdfOp::Text {
                         text: line.clone(),
-                        font: actual_font.to_string(),
+                        font_ref: font_ref.clone(),
                         size,
                         x: draw_x,
                         y: line_y,
@@ -166,7 +226,7 @@ impl PdfEngine {
             ComponentAst::Column { items, spacing } => {
                 let mut col_y = y;
                 for (idx, item) in items.iter().enumerate() {
-                    let s = self.render_component(item, data, x, col_y, available_w, ops)?;
+                    let s = self.render_component(item, data, x, col_y, available_w, ops, font_manager, font_counter)?;
                     col_y += s.height;
                     if idx + 1 < items.len() {
                         col_y += spacing;
@@ -215,7 +275,7 @@ impl PdfEngine {
                         RowItemAst::Simple(comp) => (flex_unit, comp),
                     };
 
-                    let s = self.render_component(comp, data, cur_x, y, w, ops)?;
+                    let s = self.render_component(comp, data, cur_x, y, w, ops, font_manager, font_counter)?;
                     if s.height > max_h {
                         max_h = s.height;
                     }
@@ -244,7 +304,7 @@ impl PdfEngine {
 
                 let mut child_ops = Vec::new();
                 let child_size = if let Some(c) = child {
-                    self.render_component(c, data, draw_x + p, draw_y + p, target_w - (p * 2.0), &mut child_ops)?
+                    self.render_component(c, data, draw_x + p, draw_y + p, target_w - (p * 2.0), &mut child_ops, font_manager, font_counter)?
                 } else {
                     Size::zero()
                 };
@@ -304,7 +364,6 @@ impl PdfEngine {
                 };
 
                 // Calcular anchos de columnas
-                let _total_cols = columns.len();
                 let mut fixed_w = 0.0;
                 let mut total_flex = 0.0;
 
@@ -344,7 +403,7 @@ impl PdfEngine {
                     };
                     ops.push(PdfOp::Text {
                         text: col.title.clone(),
-                        font: "Helvetica-Bold".to_string(),
+                        font_ref: "/F2".to_string(),
                         size: 9.0,
                         x: text_x,
                         y: current_table_y + 7.0,
@@ -366,7 +425,6 @@ impl PdfEngine {
                         });
                     }
 
-                    // Línea inferior de la fila
                     if let Some(bc_hex) = border_color {
                         ops.push(PdfOp::Line {
                             x1: x,
@@ -397,7 +455,7 @@ impl PdfEngine {
 
                             ops.push(PdfOp::Text {
                                 text: val_str,
-                                font: "Helvetica".to_string(),
+                                font_ref: "/F1".to_string(),
                                 size: 9.0,
                                 x: text_x,
                                 y: current_table_y + 5.5,
@@ -458,11 +516,10 @@ impl PdfEngine {
                         }
                     }
 
-                    // Texto del código debajo
                     let text_w = interpolated.chars().count() as f32 * 5.0;
                     ops.push(PdfOp::Text {
                         text: interpolated,
-                        font: "Helvetica".to_string(),
+                        font_ref: "/F1".to_string(),
                         size: 8.0,
                         x: x + ((width - text_w) / 2.0).max(0.0),
                         y: y + height + 2.0,
@@ -486,7 +543,7 @@ impl PdfEngine {
 
                 ops.push(PdfOp::Text {
                     text: page_text,
-                    font: "Helvetica".to_string(),
+                    font_ref: "/F1".to_string(),
                     size: 8.5,
                     x: text_x,
                     y,
@@ -506,7 +563,7 @@ impl PdfEngine {
                 });
                 ops.push(PdfOp::Text {
                     text: "[Image]".to_string(),
-                    font: "Helvetica".to_string(),
+                    font_ref: "/F1".to_string(),
                     size: 9.0,
                     x: x + 10.0,
                     y: y + (h / 2.0) - 4.0,
@@ -514,10 +571,47 @@ impl PdfEngine {
                 });
                 Ok(Size::new(w, h))
             }
+
+            ComponentAst::Chart {
+                chart_type,
+                title,
+                width,
+                height,
+                categories,
+                series,
+                show_legend,
+                show_grid,
+                show_values,
+                theme,
+            } => {
+                let chart_w = width.unwrap_or(available_w);
+                let (chart_ops, size) = ChartRenderer::render(
+                    chart_type,
+                    title.as_deref(),
+                    x,
+                    y,
+                    chart_w,
+                    *height,
+                    categories.as_deref(),
+                    series,
+                    *show_legend,
+                    *show_grid,
+                    *show_values,
+                    theme,
+                );
+                ops.extend(chart_ops);
+                Ok(size)
+            }
         }
     }
 
-    fn build_pdf(&self, page_w: f32, page_h: f32, ops: Vec<PdfOp>) -> Result<Vec<u8>, String> {
+    fn build_pdf(
+        &self,
+        page_w: f32,
+        page_h: f32,
+        ops: Vec<PdfOp>,
+        font_manager: HashMap<String, (String, Arc<CustomFont>)>,
+    ) -> Result<Vec<u8>, String> {
         let mut doc = Document::with_version("1.4");
         let pages_id = doc.new_object_id();
 
@@ -525,9 +619,8 @@ impl PdfEngine {
 
         for op in ops {
             match op {
-                PdfOp::Text { text, font, size, x, y, color } => {
+                PdfOp::Text { text, font_ref, size, x, y, color } => {
                     let pdf_y = page_h - y - size;
-                    let font_ref = if font.contains("Bold") { "/F2" } else { "/F1" };
                     let hex_str = crate::encoding::unicode_to_winansi_hex(&text);
 
                     writeln!(
@@ -594,11 +687,20 @@ impl PdfEngine {
             "Encoding" => "WinAnsiEncoding",
         });
 
+        let mut font_dict = dictionary! {
+            "F1" => font1_id,
+            "F2" => font2_id,
+        };
+
+        // Incrustar cada fuente personalizada cargada en el documento
+        for (_name, (alias, custom_font)) in font_manager {
+            let font_id = custom_font.add_to_pdf_document(&mut doc)?;
+            let clean_alias = alias.trim_start_matches('/');
+            font_dict.set(clean_alias, font_id);
+        }
+
         let resources_id = doc.add_object(dictionary! {
-            "Font" => dictionary! {
-                "F1" => font1_id,
-                "F2" => font2_id,
-            },
+            "Font" => font_dict,
         });
 
         let page_id = doc.add_object(dictionary! {
@@ -629,7 +731,7 @@ impl PdfEngine {
 }
 
 pub enum PdfOp {
-    Text { text: String, font: String, size: f32, x: f32, y: f32, color: Color },
+    Text { text: String, font_ref: String, size: f32, x: f32, y: f32, color: Color },
     Line { x1: f32, y1: f32, x2: f32, y2: f32, thickness: f32, color: Color },
     RectFill { rect: Rect, color: Color },
     RectStroke { rect: Rect, thickness: f32, color: Color },
@@ -649,7 +751,6 @@ fn interpolate_string(text: &str, data: Option<&Value>) -> String {
                 };
                 result = result.replace(&pattern, &v_str);
 
-                // Nested check
                 if let Some(nested_obj) = v.as_object() {
                     for (nk, nv) in nested_obj {
                         let nested_pat = format!("{{{{ {}.{} }}}}", k, nk);
