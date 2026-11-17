@@ -1465,7 +1465,7 @@ public class Main {
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
           }
 
-          const loadingTask = window.pdfjsLib.getDocument({ data: pdfBytes });
+          const loadingTask = window.pdfjsLib.getDocument({ data: pdfBytes.slice() });
           const pdf = await loadingTask.promise;
           const page = await pdf.getPage(1);
 
@@ -1518,21 +1518,21 @@ public class Main {
         const pdfBytes = window.reportforgeWasm.renderPdf(parsed);
         const elapsed = performance.now() - t0;
 
-        currentPdfBytes = pdfBytes;
+        currentPdfBytes = pdfBytes.slice();
         wasmBadge.textContent = `${elapsed.toFixed(1)} ms`;
-        wasmStatus.textContent = `⚡ Wasm Listo (${(pdfBytes.length / 1024).toFixed(1)} KB)`;
+        wasmStatus.textContent = `⚡ Wasm Listo (${(currentPdfBytes.length / 1024).toFixed(1)} KB)`;
 
         if (currentPdfBlobUrl) {
           URL.revokeObjectURL(currentPdfBlobUrl);
         }
 
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const blob = new Blob([currentPdfBytes.slice()], { type: 'application/pdf' });
         currentPdfBlobUrl = URL.createObjectURL(blob);
         if (wasmFrame) {
           wasmFrame.src = currentPdfBlobUrl;
         }
 
-        await renderPdfVisual(pdfBytes);
+        await renderPdfVisual(currentPdfBytes.slice());
       } catch (e) {
         console.error("Error compilando Wasm:", e);
         if (wasmErrorBanner) {
@@ -1569,21 +1569,29 @@ public class Main {
     }
 
     wasmDownloadBtn.addEventListener('click', async () => {
-      if (!currentPdfBytes) {
+      if (!currentPdfBytes || currentPdfBytes.length === 0) {
         await compileWasmPdf();
       }
-      if (currentPdfBytes) {
-        const blob = new Blob([currentPdfBytes], { type: 'application/pdf' });
+      if (currentPdfBytes && currentPdfBytes.length > 0) {
+        const copy = currentPdfBytes.slice();
+        const blob = new Blob([copy], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
+        a.style.display = 'none';
         a.href = url;
         a.download = `reportforge_${wasmSelect.value || 'documento'}.pdf`;
         document.body.appendChild(a);
         a.click();
+
+        // Eliminar del DOM después de 1 segundo
         setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 200);
+          try { document.body.removeChild(a); } catch (_) {}
+        }, 1000);
+
+        // Dar 60 segundos de gracia al navegador antes de revocar el Blob
+        setTimeout(() => {
+          try { URL.revokeObjectURL(url); } catch (_) {}
+        }, 60000);
       } else {
         alert("Primero compila el documento en Wasm antes de descargar.");
       }
