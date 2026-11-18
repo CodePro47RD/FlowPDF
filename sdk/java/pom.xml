@@ -5,14 +5,20 @@
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>dev.reportforge</groupId>
+    <groupId>io.github.codepro47rd</groupId>
     <artifactId>reportforge</artifactId>
     <version>2.1.0</version>
     <packaging>jar</packaging>
 
     <name>ReportForge Java SDK</name>
     <description>Universal Document Engine and Fluent Report Builder SDK for Java with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly</description>
-    <url>https://github.com/reportforge/reportforge</url>
+    <url>https://github.com/CodePro47RD/ReportForge</url>
+
+    <scm>
+        <url>https://github.com/CodePro47RD/ReportForge</url>
+        <connection>scm:git:https://github.com/CodePro47RD/ReportForge.git</connection>
+        <developerConnection>scm:git:https://github.com/CodePro47RD/ReportForge.git</developerConnection>
+    </scm>
 
     <licenses>
         <license>
@@ -77,4 +83,71 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Requisitos de Maven Central: sources, javadoc, firma GPG y publicación vía Central Portal.
+         Uso: mvn -Prelease deploy  (en CI: .github/workflows/release.yml) -->
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals><goal>jar-no-fork</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.11.2</version>
+                        <configuration>
+                            <doclint>none</doclint>
+                            <quiet>true</quiet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals><goal>jar</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals><goal>sign</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.7.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

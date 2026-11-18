@@ -25,6 +25,12 @@
   ],
   "author": "Edwin Abreu & ReportForge Contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodePro47RD/ReportForge.git",
+    "directory": "sdk/typescript"
+  },
+  "homepage": "https://github.com/CodePro47RD/ReportForge#readme",
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.4.5"

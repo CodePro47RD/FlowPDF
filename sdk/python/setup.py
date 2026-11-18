@@ -8,14 +8,14 @@ if os.path.exists(readme_path):
         long_description = f.read()
 
 setup(
-    name="reportforge",
+    name="reportforge-sdk",
     version="2.1.0",
     description="Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Edwin Abreu & ReportForge Contributors",
     author_email="dev@reportforge.io",
-    url="https://github.com/reportforge/reportforge",
+    url="https://github.com/CodePro47RD/ReportForge",
     packages=find_packages(),
     package_data={
         "reportforge": [
