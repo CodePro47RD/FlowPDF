@@ -1,6 +1,6 @@
 # Arquitectura del Sistema FlowPDF
 
-FlowPDF es un motor profesional de composición y generación de documentos para entornos corporativos y aplicaciones multiplataforma.
+FlowPDF es una librería dominicana 🇩🇴 de código abierto para la composición y generación de reportes y documentos, pensada para entornos corporativos y aplicaciones multiplataforma.
 
 Está diseñado con estricta separación de responsabilidades: el **Motor de Composición (Document Engine)** opera como una biblioteca pura de Python, desacoplada de la capa web de **Django REST Framework (DRF)**.
 
@@ -68,7 +68,7 @@ FlowPDF introduce `DrawContext` que normaliza todas las coordenadas al estándar
 
 Cada cliente o microservicio que consume FlowPDF se identifica mediante un encabezado HTTP:
 ```http
-X-API-Key: rf_live_...
+X-API-Key: fp_live_...
 ```
 El modelo `Application` representa al inquilino (tenant):
 - **Plantillas aisladas**: Una aplicación solo puede consultar, modificar y usar sus propias plantillas.

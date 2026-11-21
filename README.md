@@ -1,11 +1,13 @@
 <div align="center">
 
-<img src="docs/assets/logo-dark.png" alt="FlowPDF" width="380" />
+<h1>FlowPDF</h1>
 
-### Motor Universal de Composición y Generación de Documentos y Reportes en Rust
-**Composición matemática vectorial • Renderizado in-process en microsegundos • Cero Chromium**
+### Librería dominicana 🇩🇴 para la generación de reportes y documentos PDF
+**Motor en Rust • Renderizado in-process en microsegundos • Cero Chromium • SDKs para C#, TypeScript, Java, PHP y Python**
 
 <p align="center">
+  <a href="#-hecho-en-república-dominicana"><img src="https://img.shields.io/badge/Hecho%20en-Rep%C3%BAblica%20Dominicana%20%F0%9F%87%A9%F0%9F%87%B4-002D62.svg" alt="Hecho en República Dominicana"></a>
+  <a href="https://www.nuget.org/packages/FlowPDF"><img src="https://img.shields.io/nuget/v/FlowPDF.svg?label=NuGet" alt="NuGet"></a>
   <a href="#-comparativa-de-rendimiento"><img src="https://img.shields.io/badge/Velocidad-15ms--35ms-brightgreen.svg" alt="Performance"></a>
   <a href="#b-ejecutar-las-pruebas-unitarias-y-de-integraci%C3%B3n"><img src="https://img.shields.io/badge/Tests-7%20Passed%20(100%25)-success.svg" alt="Tests"></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-2021%20Edition-orange.svg" alt="Rust Edition 2021"></a>
@@ -429,6 +431,14 @@ Esto generará el archivo `target/release/libflowpdf.so` compatible con Alpine, 
 * **Manual Maestro Oficial**: [`FlowPDF_Manual_Oficial_Completo.pdf`](docs/FlowPDF_Manual_Oficial_Completo.pdf) (13 páginas) con arquitectura, componentes y especificación técnica.
 * **Catálogo de Componentes**: [`docs/COMPONENTS_REFERENCE.md`](docs/COMPONENTS_REFERENCE.md).
 * **Especificación del Motor**: [`docs/RUST_CORE.md`](docs/RUST_CORE.md).
+
+---
+
+## 🇩🇴 Hecho en República Dominicana
+
+FlowPDF es una librería dominicana de código abierto para la generación de reportes, desarrollada en República Dominicana por Edwin Abreu y la comunidad de [CodePro47RD](https://github.com/CodePro47RD).
+
+Nació para resolver los documentos que las empresas generan a diario —facturas, recibos, órdenes de compra, estados de cuenta y reportes multipágina— con un motor rápido, sin dependencias pesadas y con soporte completo para el español (acentos, `ñ`, `¿`, `¡`) y formato de montos. Las contribuciones son bienvenidas: consulta [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 

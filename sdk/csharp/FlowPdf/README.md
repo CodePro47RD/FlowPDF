@@ -2,6 +2,8 @@
 
 **FlowPDF** is a high-performance enterprise document and reporting engine for .NET 8, .NET 9, and .NET 10.
 
+🇩🇴 **Made in the Dominican Republic** — FlowPDF is an open-source Dominican library for report and PDF generation.
+
 It combines a **declarative Fluent Builder API**, strongly-typed AST models, an HTTP REST client for microservices, and **in-process native rendering powered by the Rust core** with pre-compiled embedded binaries for **Windows x64** and **Linux x64**.
 
 ---
@@ -78,7 +80,7 @@ When rendering asynchronously or delegating to a remote rendering cluster:
 using FlowPdf.Client;
 using FlowPdf.Fluent;
 
-using var client = new FlowPdfClient("http://localhost:8080", "rf_live_secret_key");
+using var client = new FlowPdfClient("http://localhost:8080", "fp_live_secret_key");
 
 var doc = ReportDocument.Create(p => p.A4())
     .Content(col => col.Item().Text("Factura Electrónica"));

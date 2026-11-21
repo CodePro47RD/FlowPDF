@@ -24,7 +24,7 @@ namespace FlowPdf.Examples
             Console.WriteLine($"[Core] FlowPDF Native Engine Version: {nativeVersion}\n");
 
             // -------------------------------------------------------------
-            // CONSTRUCCIÓN DEL REPORTE FLUENT (API FLUIDA)
+            // CONSTRUCCIÓN DEL REPORTE CON LA API FLUIDA
             // -------------------------------------------------------------
             Console.WriteLine("[1/3] Construyendo documento con Fluent Builder API...");
 
@@ -104,7 +104,7 @@ namespace FlowPdf.Examples
             // -------------------------------------------------------------
             Console.WriteLine("\n[3/3] Generando PDF VÍA CLIENTE HTTP REST (Microservicio Django/Celery)...");
             string baseUrl = "http://localhost:8080";
-            string apiKey = "rf_live_docker_demo_12345";
+            string apiKey = "fp_live_docker_demo_12345";
 
             using var client = new FlowPdfClient(baseUrl, apiKey);
             try

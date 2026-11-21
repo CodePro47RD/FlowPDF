@@ -1,5 +1,6 @@
 # Manual Oficial de FlowPDF para .NET (Paquete NuGet `FlowPDF`)
 
+> **Origen:** Librería dominicana 🇩🇴 de código abierto para la generación de reportes  
 > **Versión del Paquete:** `1.0.0`  
 > **Target Frameworks:** `.NET 8.0`, `.NET 9.0`, `.NET 10.0`  
 > **Licencia:** MIT  
@@ -17,16 +18,16 @@
 
 ### Comparativa frente a otras soluciones en .NET
 
-| Característica | FlowPDF .NET | Otras librerías .NET | iTextSharp / iText 7 | WeasyPrint / wkhtmltopdf |
-|---|---|---|---|---|
-| **Licencia** | **MIT (100% Libre y Comercial)** | Comercial / PolyForm Noncommercial | AGPL / Comercial de alto costo | BSD / LGPL |
-| **Tiempo de Render (Factura Estándar)** | **~5 - 35 ms** | ~20 - 60 ms | ~80 - 200 ms | ~600 - 2,500 ms |
-| **Consumo de Memoria** | **< 15 MB** | ~30 - 80 MB | ~50 - 120 MB | > 150 MB (Headless browser) |
-| **API Fluent Declarativa** | **Sí** | Sí | No (Imperativa verbosa) | No (HTML / CSS estricto) |
-| **Códigos QR y Barcodes Nativos** | **Sí (Zero-dependency en Core)** | Requiere SkiaSharp externo | Requiere módulos adicionales | Requiere librerías JS/Python |
-| **Capacidad de Delegación Cloud** | **Nativa (`FlowPdfClient`)** | No (Solo local) | No | Requiere wrappers custom |
-| **Binarios Nativos Embebidos** | **Win-x64 y Linux-x64 incluidos** | Solo SkiaSharp | No | No |
-| **Soporte Unicode / Acentos / Símbolos** | **Nativo Hexadecimal (WinAnsi/Latin-1)** | Sí | Sí | Sí |
+| Característica | FlowPDF .NET | iTextSharp / iText 7 | WeasyPrint / wkhtmltopdf |
+|---|---|---|---|
+| **Licencia** | **MIT (100% Libre y Comercial)** | AGPL / Comercial de alto costo | BSD / LGPL |
+| **Tiempo de Render (Factura Estándar)** | **~5 - 35 ms** | ~80 - 200 ms | ~600 - 2,500 ms |
+| **Consumo de Memoria** | **< 15 MB** | ~50 - 120 MB | > 150 MB (Headless browser) |
+| **API Fluent Declarativa** | **Sí** | No (Imperativa verbosa) | No (HTML / CSS estricto) |
+| **Códigos QR y Barcodes Nativos** | **Sí (Zero-dependency en Core)** | Requiere módulos adicionales | Requiere librerías JS/Python |
+| **Capacidad de Delegación Cloud** | **Nativa (`FlowPdfClient`)** | No | Requiere wrappers custom |
+| **Binarios Nativos Embebidos** | **Win-x64 y Linux-x64 incluidos** | No | No |
+| **Soporte Unicode / Acentos / Símbolos** | **Nativo Hexadecimal (WinAnsi/Latin-1)** | Sí | Sí |
 
 ---
 
@@ -379,7 +380,7 @@ builder.Services.AddSingleton(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
     string baseUrl = config["FlowPDF:BaseUrl"] ?? "http://flowpdf-cluster:8080";
-    string apiKey = config["FlowPDF:ApiKey"] ?? "rf_live_secret";
+    string apiKey = config["FlowPDF:ApiKey"] ?? "fp_live_secret";
     return new FlowPdfClient(baseUrl, apiKey);
 });
 ```

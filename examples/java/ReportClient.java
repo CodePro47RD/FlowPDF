@@ -14,7 +14,7 @@ public class ReportClient {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         String endpoint = "http://localhost:8000/api/v1/reports/generate/";
-        String apiKey = "rf_live_your_tenant_api_key_here";
+        String apiKey = "fp_live_your_tenant_api_key_here";
 
         String jsonPayload = """
         {

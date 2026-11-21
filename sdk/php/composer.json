@@ -1,6 +1,6 @@
 {
   "name": "codepro47rd/flowpdf",
-  "description": "Universal Document Engine and Fluent Report Builder SDK for PHP with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
+  "description": "Open-source report generation library made in the Dominican Republic. Universal document engine and fluent report builder SDK for PHP with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
   "type": "library",
   "license": "MIT",
   "authors": [

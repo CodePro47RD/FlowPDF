@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "flowpdf"
 version = "1.0.0"
-description = "Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core, vector charts, custom TTF fonts, and WebAssembly"
+description = "Open-source report generation library made in the Dominican Republic. Universal document engine and fluent report builder SDK for Python with native Rust Core, vector charts, custom TTF fonts, and WebAssembly"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [

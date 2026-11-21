@@ -2,6 +2,7 @@
 
 > **FlowPDF**: Motor universal de composición y renderizado de documentos y PDFs en microsegundos, impulsado por **Rust Core**.
 > Renderizado in-process de ultra-alta velocidad, composición matemática declarativa, soporte nativo Unicode/WinAnsi y SDKs oficiales para C#, TypeScript/JavaScript, Java, PHP, Python y Rust.
+> Librería dominicana 🇩🇴 de código abierto para la generación de reportes, desarrollada en República Dominicana.
 > Formato optimizado para LLMs, Agentes Autónomos y Asistentes de Código (Cursor, Claude Code, GitHub Copilot, ChatGPT, Gemini).
 
 ---
