@@ -107,6 +107,8 @@ export interface TableColumn {
     flex?: number;
     format?: ColumnFormat;
     align?: HorizontalAlignment;
+    /** Ancho según el contenido (texto más ancho de la columna, cabecera incluida). Su texto no se parte. */
+    auto?: boolean;
 }
 
 export interface TableComponent {
@@ -119,6 +121,20 @@ export interface TableComponent {
     border_color?: string;
     border_width?: number;
     repeat_header?: boolean;
+    /** Tamaño de letra de las celdas (pt). Por defecto 9. */
+    font_size?: number;
+    /** Relleno horizontal y vertical de cada celda (pt). Por defecto 8 y 5.5. */
+    padding_x?: number;
+    padding_y?: number;
+    /** Color del texto de la cabecera y de las celdas. */
+    header_color?: string;
+    text_color?: string;
+    /** Fondo de las filas alternas (con zebra). */
+    zebra_color?: string;
+    /** Campo que agrupa las filas; las filas deben venir ordenadas por ese campo. */
+    group_by?: string;
+    group_background?: string;
+    group_color?: string;
 }
 
 export interface ChartSeries {

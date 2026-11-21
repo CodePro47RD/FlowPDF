@@ -54,7 +54,7 @@ FlowPDF 1.0 es la primera versión pública. Es una librería dominicana 🇩�
 - **Imágenes**: JPEG y PNG con transparencia, desde *data URI*, base64 o ruta de archivo (ver [3.11](#311-image-imágenes-embebidas-y-ajuste)).
 - **Métricas tipográficas reales**: anchos AFM de Helvetica / Helvetica-Bold para medir texto, alinear a la derecha y calcular columnas `auto` sin aproximaciones.
 
-> **Disponibilidad por SDK**: todas las novedades funcionan en **todos los lenguajes** enviando el AST JSON a `renderPdf`. Los métodos fluidos de las nuevas propiedades de tabla existen por ahora **solo en C#**; en TypeScript, Java, PHP y Python se usan vía JSON.
+> **Disponibilidad por SDK**: las novedades tienen métodos en la API fluida de **los 5 SDKs** (C#, TypeScript, Java, PHP y Python) y también se pueden usar enviando el AST JSON a `renderPdf`.
 
 ---
 
@@ -545,7 +545,41 @@ Componente de alto desempeño diseñado para facturas, listados de inventario y 
     .Rows(items))
 ```
 
-> En TypeScript, Java, PHP y Python estas propiedades nuevas aún no tienen métodos en el builder fluido: envía el AST JSON a `renderPdf`.
+#### Equivalencias de la API fluida por lenguaje
+
+| AST JSON | C# | TypeScript | Java | PHP | Python |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `group_by` (+ `group_background`, `group_color`) | `GroupBy(f, bg, color)` | `groupBy(f, bg, color)` | `groupBy(f, bg, color)` | `groupBy(f, bg, color)` | `group_by(f, background=, color=)` |
+| `font_size` | `FontSize(n)` | `fontSize(n)` | `fontSize(n)` | `fontSize(n)` | `font_size(n)` |
+| `padding_x` / `padding_y` | `Padding(x, y)` | `padding(x, y)` | `padding(x, y)` | `padding(x, y)` | `padding(x, y)` |
+| `header_color` | `HeaderColor(c)` | `headerColor(c)` | `headerColor(c)` | `headerColor(c)` | `header_color(c)` |
+| `text_color` | `TextColor(c)` | `textColor(c)` | `textColor(c)` | `textColor(c)` | `text_color(c)` |
+| `zebra_color` | `ZebraColor(c)` | `zebraColor(c)` | `zebraColor(c)` | `zebraColor(c)` | `zebra_color(c)` |
+| columna `auto` | `.Auto()` | `{ auto: true }` | `.auto()` | `->auto()` | `.auto()` |
+| columna `format` | `.Currency()`, `.Number()`… | `{ format: 'currency' }` | `.currency()`, `.number()`… | `->currency()`, `->number()`… | `.currency()`, `.number()`… |
+
+```python
+# Python
+c.table(lambda t: t
+    .group_by("categoria", background="#E8F0FE")
+    .font_size(8.5).padding(6, 4).zebra_color("#F8FAFC")
+    .column("Código", "sku", lambda col: col.auto())
+    .column("Descripción", "descripcion", lambda col: col.flex(1))
+    .column("Monto", "monto", lambda col: col.auto().currency().right())
+    .data(items))
+```
+
+```typescript
+// TypeScript
+c.table(t => t
+    .groupBy('categoria', '#E8F0FE')
+    .fontSize(8.5).padding(6, 4).zebraColor('#F8FAFC')
+    .columns(cols => cols
+        .column('sku', 'Código', { auto: true })
+        .column('descripcion', 'Descripción', { flex: 1 })
+        .column('monto', 'Monto', { auto: true, format: 'currency', align: 'right' }))
+    .data(items));
+```
 
 #### Ejemplos en Todos los Lenguajes
 
