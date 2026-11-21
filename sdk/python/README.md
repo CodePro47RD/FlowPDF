@@ -122,4 +122,4 @@ response.save("reporte_remoto.pdf")
 
 ## 📄 License
 
-MIT © 2026 Edwin Abreu & FlowPDF Contributors.
+MIT © 2026 Edwin Abreu, Felix R. Benzan & FlowPDF Contributors.

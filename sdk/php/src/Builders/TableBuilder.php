@@ -60,6 +60,65 @@ class TableBuilder
         return $this;
     }
 
+    public function repeatHeader(bool $enabled = true): self
+    {
+        $this->table['repeat_header'] = $enabled;
+        return $this;
+    }
+
+    /** Tamaño de letra de las celdas (pt). Por defecto 9. */
+    public function fontSize(float $size): self
+    {
+        $this->table['font_size'] = $size;
+        return $this;
+    }
+
+    /** Relleno de cada celda (pt): horizontal y vertical. Por defecto 8 y 5.5. */
+    public function padding(float $horizontal, float $vertical): self
+    {
+        $this->table['padding_x'] = $horizontal;
+        $this->table['padding_y'] = $vertical;
+        return $this;
+    }
+
+    /** Color del texto de la cabecera. */
+    public function headerColor(string $color): self
+    {
+        $this->table['header_color'] = $color;
+        return $this;
+    }
+
+    /** Color del texto de las celdas. */
+    public function textColor(string $color): self
+    {
+        $this->table['text_color'] = $color;
+        return $this;
+    }
+
+    /** Filas alternas con fondo de este color (activa zebra). */
+    public function zebraColor(string $color): self
+    {
+        $this->table['zebra'] = true;
+        $this->table['zebra_color'] = $color;
+        return $this;
+    }
+
+    /**
+     * Agrupa las filas por un campo: cada vez que cambia su valor se intercala un título a todo el ancho
+     * (las filas deben venir ordenadas por ese campo).
+     */
+    public function groupBy(string $field, ?string $background = null, ?string $color = null): self
+    {
+        $this->table['group_by'] = $field;
+        if ($background !== null) {
+            $this->table['group_background'] = $background;
+        }
+        if ($color !== null) {
+            $this->table['group_color'] = $color;
+        }
+        return $this;
+    }
+
     public function build(): array
     {
         return $this->table;

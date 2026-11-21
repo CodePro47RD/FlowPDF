@@ -5,7 +5,16 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "Edwin Abreu & FlowPDF Contributors"
+      "name": "Edwin Abreu",
+      "homepage": "https://edwin.cpro47.com"
+    },
+    {
+      "name": "Felix R. Benzan",
+      "homepage": "https://www.felixbenzan.com.do"
+    },
+    {
+      "name": "FlowPDF Contributors",
+      "homepage": "https://github.com/CodePro47RD/FlowPDF/graphs/contributors"
     }
   ],
   "require": {

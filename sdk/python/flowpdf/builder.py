@@ -160,6 +160,31 @@ class TableColumnBuilder:
     def left(self) -> TableColumnBuilder:
         return self.align("left")
 
+    def auto(self, enabled: bool = True) -> TableColumnBuilder:
+        """Ancho según el contenido (texto más ancho de la columna, cabecera incluida). Su texto no se parte."""
+        self._col["auto"] = bool(enabled)
+        return self
+
+    def format(self, fmt: str) -> TableColumnBuilder:
+        """Formateador del valor: currency, number, percentage, date, uppercase, lowercase."""
+        self._col["format"] = fmt
+        return self
+
+    def currency(self) -> TableColumnBuilder:
+        return self.format("currency")
+
+    def number(self) -> TableColumnBuilder:
+        return self.format("number")
+
+    def percentage(self) -> TableColumnBuilder:
+        return self.format("percentage")
+
+    def date(self) -> TableColumnBuilder:
+        return self.format("date")
+
+    def uppercase(self) -> TableColumnBuilder:
+        return self.format("uppercase")
+
     def build(self) -> Dict[str, Any]:
         return dict(self._col)
 
@@ -209,6 +234,49 @@ class TableBuilder:
     def border(self, color: str, width: float = 0.5) -> TableBuilder:
         self._table["border_color"] = color
         self._table["border_width"] = float(width)
+        return self
+
+    def repeat_header(self, enabled: bool = True) -> TableBuilder:
+        self._table["repeat_header"] = enabled
+        return self
+
+    def font_size(self, size: float) -> TableBuilder:
+        """Tamaño de letra de las celdas (pt). Por defecto 9."""
+        self._table["font_size"] = float(size)
+        return self
+
+    def padding(self, horizontal: float, vertical: float) -> TableBuilder:
+        """Relleno de cada celda (pt): horizontal y vertical. Por defecto 8 y 5.5."""
+        self._table["padding_x"] = float(horizontal)
+        self._table["padding_y"] = float(vertical)
+        return self
+
+    def header_color(self, color: str) -> TableBuilder:
+        """Color del texto de la cabecera."""
+        self._table["header_color"] = color
+        return self
+
+    def text_color(self, color: str) -> TableBuilder:
+        """Color del texto de las celdas."""
+        self._table["text_color"] = color
+        return self
+
+    def zebra_color(self, color: str) -> TableBuilder:
+        """Filas alternas con fondo de este color (activa zebra)."""
+        self._table["zebra"] = True
+        self._table["zebra_color"] = color
+        return self
+
+    def group_by(
+        self, field: str, background: Optional[str] = None, color: Optional[str] = None
+    ) -> TableBuilder:
+        """Agrupa las filas por un campo: cada vez que cambia su valor se intercala un título a todo el
+        ancho. Las filas deben venir ordenadas por ese campo."""
+        self._table["group_by"] = field
+        if background is not None:
+            self._table["group_background"] = background
+        if color is not None:
+            self._table["group_color"] = color
         return self
 
     def build(self) -> Dict[str, Any]:

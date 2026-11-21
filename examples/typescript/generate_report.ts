@@ -156,7 +156,7 @@ async function main(): Promise<void> {
                     { type: 'spacer', height: 10 },
                     {
                         type: 'qr',
-                        value: 'https://github.com/edwin-abreu/flowpdf',
+                        value: 'https://github.com/CodePro47RD/FlowPDF',
                         size: 80
                     }
                 ]

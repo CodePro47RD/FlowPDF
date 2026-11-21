@@ -36,6 +36,24 @@ public class TableColumnBuilder {
     public TableColumnBuilder center() { return align("center"); }
     public TableColumnBuilder left() { return align("left"); }
 
+    /** Ancho según el contenido (texto más ancho de la columna, cabecera incluida). Su texto no se parte. */
+    public TableColumnBuilder auto() {
+        column.put("auto", true);
+        return this;
+    }
+
+    /** Formateador del valor: currency, number, percentage, date, uppercase, lowercase. */
+    public TableColumnBuilder format(String format) {
+        column.put("format", format);
+        return this;
+    }
+
+    public TableColumnBuilder currency() { return format("currency"); }
+    public TableColumnBuilder number() { return format("number"); }
+    public TableColumnBuilder percentage() { return format("percentage"); }
+    public TableColumnBuilder date() { return format("date"); }
+    public TableColumnBuilder uppercase() { return format("uppercase"); }
+
     public Map<String, Object> build() {
         return new LinkedHashMap<>(column);
     }

@@ -103,4 +103,4 @@ File.WriteAllBytes("factura_remota.pdf", pdf);
 
 ## 📄 License
 
-MIT © Edwin Abreu & FlowPDF Contributors
+MIT © Edwin Abreu, Felix R. Benzan & FlowPDF Contributors

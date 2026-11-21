@@ -162,6 +162,49 @@ export class TableBuilder {
         return this;
     }
 
+    /** Tamaño de letra de las celdas (pt). */
+    fontSize(size: number): this {
+        this._table.font_size = size;
+        return this;
+    }
+
+    /** Relleno de cada celda (pt): horizontal y vertical. */
+    padding(horizontal: number, vertical: number): this {
+        this._table.padding_x = horizontal;
+        this._table.padding_y = vertical;
+        return this;
+    }
+
+    /** Color del texto de la cabecera. */
+    headerColor(color: string): this {
+        this._table.header_color = color;
+        return this;
+    }
+
+    /** Color del texto de las celdas. */
+    textColor(color: string): this {
+        this._table.text_color = color;
+        return this;
+    }
+
+    /** Filas alternas con fondo de este color (activa zebra). */
+    zebraColor(color: string): this {
+        this._table.zebra = true;
+        this._table.zebra_color = color;
+        return this;
+    }
+
+    /**
+     * Agrupa las filas por un campo: cada vez que cambia su valor se intercala un título a todo el ancho
+     * (las filas deben venir ordenadas por ese campo).
+     */
+    groupBy(field: string, background?: string, color?: string): this {
+        this._table.group_by = field;
+        if (background !== undefined) this._table.group_background = background;
+        if (color !== undefined) this._table.group_color = color;
+        return this;
+    }
+
     columns(fn: (b: TableColumnsBuilder) => void): this {
         const b = new TableColumnsBuilder();
         fn(b);

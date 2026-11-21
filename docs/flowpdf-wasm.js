@@ -2,7 +2,7 @@
  * FlowPDF WebAssembly SDK
  * Motor de Generación y Extracción de PDFs en WebAssembly (Wasm)
  * Funciona 100% offline y tanto en servidor HTTP como directamente en file://
- * Copyright (c) 2026 Edwin Abreu & FlowPDF Contributors
+ * Copyright (c) 2026 Edwin Abreu, Felix R. Benzan & FlowPDF Contributors
  */
 
 class FlowPdfWasm {
