@@ -8,6 +8,7 @@
 ---
 
 ## 📑 Índice de Contenidos
+0. [Novedades de FlowPDF 1.0](#-novedades-de-flowpdf-10)
 1. [Visión General y Propuesta de Valor](#1-visión-general-y-propuesta-de-valor)
 2. [Arquitectura del Motor y Modelo Matemático de Composición](#2-arquitectura-del-motor-y-modelo-matemático-de-composición)
 3. [Catálogo Exhaustivo de Componentes con Ejemplos en los 6 Lenguajes](#3-catálogo-exhaustivo-de-componentes-con-ejemplos-en-los-6-lenguajes)
@@ -32,14 +33,28 @@
 8. [Motor Nativo de Extracción y Parsing de PDFs (Texto y Metadatos)](#8-motor-nativo-de-extracción-y-parsing-de-pdfs-texto-y-metadatos)
 9. [Motor WebAssembly (Wasm) de Ejecución en Navegador (Client-Side Rendering)](#9-motor-webassembly-wasm-de-ejecución-en-navegador-client-side-rendering)
 10. [Implementación Completa de Casos de Producción por Lenguaje](#10-implementación-completa-de-casos-de-producción-por-lenguaje)
-   - [10.1 C# (.NET 8, 9, 10)](#91-c-net-8-9-10)
-   - [10.2 TypeScript / JavaScript (Node.js & Bun)](#92-typescript--javascript-nodejs--bun)
-   - [10.3 Java (Java 11+)](#93-java-java-11)
-   - [10.4 PHP (PHP 8+)](#94-php-php-8)
-   - [10.5 Python (Python 3.9+)](#95-python-python-39)
-   - [10.6 Rust Puro](#96-rust-puro)
-11. [Guía de Compilación, Despliegue y Empaquetado](#10-guía-de-compilación-despliegue-y-empaquetado)
-12. [Matriz de Resolución de Problemas (Troubleshooting)](#11-matriz-de-resolución-de-problemas-troubleshooting)
+   - [10.1 C# (.NET 8, 9, 10)](#101-c-net-8-9-10)
+   - [10.2 TypeScript / JavaScript (Node.js & Bun)](#102-typescript--javascript-nodejs--bun)
+   - [10.3 Java (Java 11+)](#103-java-java-11)
+   - [10.4 PHP (PHP 8+)](#104-php-php-80)
+   - [10.5 Python (Python 3.9+)](#105-python-python-39)
+   - [10.6 Rust Puro](#106-rust-puro)
+11. [Guía de Compilación, Despliegue y Empaquetado](#11-guía-de-compilación-despliegue-y-empaquetado)
+12. [Matriz de Resolución de Problemas (Troubleshooting)](#12-matriz-de-resolución-de-problemas-troubleshooting)
+
+---
+
+## 🆕 Novedades de FlowPDF 1.0
+
+FlowPDF 1.0 es la primera versión pública. Es una librería dominicana 🇩🇴 de código abierto (antes desarrollada internamente como *ReportForge*).
+
+- **Instalación desde los registros oficiales**: `dotnet add package FlowPDF`, `npm install flowpdf`, `pip install flowpdf`, `composer require codepro47rd/flowpdf`, Maven `io.github.codepro47rd:flowpdf`, `cargo add flowpdf`.
+- **Paginación robusta**: el contenido largo y los contenedores más altos que una página se reparten entre páginas conservando el pie; las tablas repiten la cabecera y su título nunca queda huérfano al final de una página.
+- **Tablas**: texto de celda en varias líneas, columnas `auto` (ancho según su contenido), `font_size`, `padding_x`/`padding_y`, colores (`header_color`, `text_color`, `zebra_color`) y **agrupación de filas** con `group_by` (ver [3.5](#35-table-tablas-corporativas-repetición-de-cabeceras-y-zebra-striping)).
+- **Imágenes**: JPEG y PNG con transparencia, desde *data URI*, base64 o ruta de archivo (ver [3.11](#311-image-imágenes-embebidas-y-ajuste)).
+- **Métricas tipográficas reales**: anchos AFM de Helvetica / Helvetica-Bold para medir texto, alinear a la derecha y calcular columnas `auto` sin aproximaciones.
+
+> **Disponibilidad por SDK**: todas las novedades funcionan en **todos los lenguajes** enviando el AST JSON a `renderPdf`. Los métodos fluidos de las nuevas propiedades de tabla existen por ahora **solo en C#**; en TypeScript, Java, PHP y Python se usan vía JSON.
 
 ---
 
@@ -86,6 +101,12 @@ Reglas de resolución:
 ### 2.3 Algoritmo de Medición y Paginación en Dos Pasadas
 1. **Fase 1 (Measure Pass)**: Cada componente calcula sus dimensiones ideales (`Size { width, height }`) recursivamente sin emitir bytes PDF. En tablas, calcula el alto de cada celda y determina en qué fila se agota el presupuesto vertical restante de la página (`remaining_page_height`).
 2. **Fase 2 (Layout & Draw Pass)**: Se emiten los comandos vectoriales en los streams de contenido de cada página de lopdf (`BT`, `ET`, `Tf`, `Tj`, `re`, `f`, `m`, `l`, `S`).
+
+**Reglas de paginación:**
+- Un contenedor o columna más alto que el espacio restante se reparte entre páginas; el `footer` se conserva en todas.
+- Las tablas repiten la cabecera en cada página (`repeat_header`, activo por defecto) y nunca dejan su título solo al final de una página.
+- El texto de las celdas se parte en varias líneas según el ancho de la columna; las filas no se cortan a la mitad.
+- Los anchos de texto se miden con las métricas AFM reales de Helvetica y Helvetica-Bold.
 
 ---
 
@@ -460,11 +481,20 @@ Componente de alto desempeño diseñado para facturas, listados de inventario y 
 | :--- | :--- | :--- | :--- | :--- |
 | `columns` | `columns` | `TableColumn[]` | *(Requerido)* | Definiciones de cada columna. |
 | `data` | `data` | `Object[]` | `[]` | Colección de registros a renderizar. |
+| `source` | `source` | `string` | `null` | Nombre de la colección en los datos de la plantilla (alternativa a `data`). |
 | `repeatHeader` | `repeat_header` | `bool` | `true` | Repite automáticamente la cabecera en cada nueva página. |
-| `zebra` | `zebra` | `bool` | `true` | Alterna fondo gris claro (`#F8FAFC`) en filas pares. |
-| `headerBackground` | `header_background`| `string` | `"#0066FF"` | Color de fondo de los encabezados de tabla. |
-| `borderColor` | `border_color` | `string` | `"#E2E8F0"` | Color de las cuadrículas de la tabla. |
-| `borderWidth` | `border_width` | `float` | `0.5` | Grosor de las líneas de la cuadrícula. |
+| `zebra` | `zebra` | `bool` | `true` | Alterna el fondo de las filas pares. |
+| `zebraColor` | `zebra_color` | `string` | `"#F5F7FA"` | **Nuevo.** Fondo de las filas alternas. |
+| `headerBackground` | `header_background`| `string` | `"#1F3B8A"` | Color de fondo de la cabecera. |
+| `headerColor` | `header_color` | `string` | `"#FFFFFF"` | **Nuevo.** Color del texto de la cabecera. |
+| `textColor` | `text_color` | `string` | `"#262626"` | **Nuevo.** Color del texto de las celdas. |
+| `fontSize` | `font_size` | `float` | `9` | **Nuevo.** Tamaño de letra de las celdas (pt). |
+| `paddingX` / `paddingY` | `padding_x` / `padding_y` | `float` | `8` / `5.5` | **Nuevo.** Relleno horizontal y vertical de cada celda (pt). |
+| `groupBy` | `group_by` | `string` | `null` | **Nuevo.** Campo que agrupa las filas: cada vez que cambia su valor se intercala una fila de título a todo el ancho. Las filas deben venir **ordenadas** por ese campo. |
+| `groupBackground` | `group_background` | `string` | `"#F0F5FA"` | **Nuevo.** Fondo de la fila de grupo. |
+| `groupColor` | `group_color` | `string` | `"#1F3B8A"` | **Nuevo.** Color del texto de la fila de grupo. |
+| `borderColor` | `border_color` | `string` | `null` (sin borde) | Color de la cuadrícula; si no se indica, la tabla no dibuja bordes. |
+| `borderWidth` | `border_width` | `float` | `0.5` | Grosor de las líneas de la cuadrícula (si hay `border_color`). |
 
 #### Definición de Columnas (`TableColumn`)
 - `title`: Texto del encabezado.
@@ -472,6 +502,50 @@ Componente de alto desempeño diseñado para facturas, listados de inventario y 
 - `width`: Ancho fijo en puntos (opcional).
 - `flex`: Proporción del ancho flexible restante (opcional).
 - `align`: Alineación del texto (`"left"`, `"center"`, `"right"`).
+- `format`: Formateador del valor (ver [sección 5](#5-sistema-de-plantillas-y-formateadores-seguros)).
+- `auto` **(nuevo)**: `true` para que el ancho sea el del texto más ancho de la columna (cabecera incluida) más el relleno, medido con métricas reales de Helvetica. Su texto no se parte; las columnas `flex` toman el espacio restante. Ideal para montos, fechas y códigos.
+
+#### Agrupación de filas y estilo (nuevo en 1.0)
+
+```json
+// AST / JSON (funciona en todos los SDKs con renderPdf)
+{
+  "type": "table",
+  "group_by": "categoria",
+  "group_background": "#E8F0FE",
+  "font_size": 8.5,
+  "padding_x": 6, "padding_y": 4,
+  "zebra_color": "#F8FAFC",
+  "border_color": "#CBD5E1",
+  "columns": [
+    { "title": "Código", "field": "sku", "auto": true },
+    { "title": "Descripción", "field": "descripcion", "flex": 1 },
+    { "title": "Monto", "field": "monto", "auto": true, "align": "right", "format": "currency" }
+  ],
+  "data": [
+    { "categoria": "Servidores", "sku": "SRV-01", "descripcion": "Servidor 32GB RAM", "monto": 3850.00 },
+    { "categoria": "Servidores", "sku": "SRV-02", "descripcion": "Servidor 64GB RAM", "monto": 5200.00 },
+    { "categoria": "Redes", "sku": "SW-48P", "descripcion": "Switch 48 puertos PoE+", "monto": 1450.00 }
+  ]
+}
+```
+
+```csharp
+// C# (API fluida)
+.Table(t => t
+    .GroupBy("categoria", background: "#E8F0FE")
+    .FontSize(8.5).Padding(6, 4)
+    .ZebraColor("#F8FAFC")
+    .Columns(cols =>
+    {
+        cols.Column("sku", "Código").Auto();
+        cols.Column("descripcion", "Descripción").Flex(1);
+        cols.Add("monto", "Monto", c => c.Auto().Currency().AlignRight());
+    })
+    .Rows(items))
+```
+
+> En TypeScript, Java, PHP y Python estas propiedades nuevas aún no tienen métodos en el builder fluido: envía el AST JSON a `renderPdf`.
 
 #### Ejemplos en Todos los Lenguajes
 
@@ -847,13 +921,20 @@ f.page_number("Página {page} de {total}", alignment="right", style="caption")
 ### 3.11 Image (Imágenes Embebidas y Ajuste)
 Inserta logotipos, firmas o fotografías desde rutas locales en disco o cadenas en base64 (`Data URI`).
 
+**Formatos soportados:**
+- **JPEG**: se incrusta tal cual (filtro `DCTDecode`), sin recomprimir.
+- **PNG**: se decodifica e incrusta conservando la **transparencia** (canal alfa como `SMask`).
+- Otros formatos (GIF, WebP, SVG, BMP) devuelven error: conviértelos a PNG o JPEG.
+
+**Origen (`source`)**: un *data URI* en base64 (`data:image/png;base64,...`), base64 sin prefijo o una ruta de archivo accesible por el proceso.
+
 #### Tabla de Propiedades
 | Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | `source` | `source` | `string` | *(Requerido)* | Ruta de archivo local o cadena Base64 (`data:image/png;base64,...`). |
 | `width` | `width` | `float` | `null` | Ancho deseado en puntos. |
 | `height` | `height` | `float` | `null` | Alto deseado en puntos. |
-| `fit` | `fit` | `string` | `"contain"` | Modo de ajuste: `"contain"`, `"cover"`, `"fill"`. |
+| `fit` | `fit` | `string` | `"contain"` | Modo de ajuste: `"contain"` (cabe completa), `"cover"` (llena la caja y recorta) o `"fill"` (estira). |
 | `alignment` | `alignment` | `string` | `"center"` | Alineación dentro de la caja disponible. |
 
 #### Ejemplos en Todos los Lenguajes
@@ -1461,7 +1542,7 @@ document.getElementById('pdfViewer').src = URL.createObjectURL(blob);
 
 ## 10. Implementación Completa de Casos de Producción por Lenguaje
 
-### 9.1 C# (.NET 8, 9, 10)
+### 10.1 C# (.NET 8, 9, 10)
 **Paquete**: [NuGet `FlowPDF`](https://www.nuget.org/packages/FlowPDF)  
 **Instalación**: `dotnet add package FlowPDF`
 
@@ -1502,7 +1583,7 @@ byte[] pdfBytes = doc.GeneratePdf();
 File.WriteAllBytes("reporte_csharp.pdf", pdfBytes);
 ```
 
-### 9.2 TypeScript / JavaScript (Node.js & Bun)
+### 10.2 TypeScript / JavaScript (Node.js & Bun)
 **Paquete**: [npm `flowpdf`](https://www.npmjs.com/package/flowpdf)  
 **Instalación**: `npm install flowpdf`
 
@@ -1532,7 +1613,7 @@ const pdfBuffer: Buffer = doc.generatePdf();
 fs.writeFileSync("factura_ts.pdf", pdfBuffer);
 ```
 
-### 9.3 Java (Java 11+)
+### 10.3 Java (Java 11+)
 **Paquete**: [Maven Central `io.github.codepro47rd:flowpdf`](https://central.sonatype.com/artifact/io.github.codepro47rd/flowpdf)  
 **Instalación**: Maven: `io.github.codepro47rd:flowpdf:1.0.0`
 
@@ -1567,7 +1648,7 @@ public class GenerarReporte {
 }
 ```
 
-### 9.4 PHP (PHP 8.0+)
+### 10.4 PHP (PHP 8.0+)
 **Paquete**: [Packagist `codepro47rd/flowpdf`](https://packagist.org/packages/codepro47rd/flowpdf)  
 **Requisito**: Habilitar `extension=ffi` en `php.ini`.
 
@@ -1603,7 +1684,7 @@ $pdf = $doc->generatePdf();
 file_put_contents("factura_php.pdf", $pdf);
 ```
 
-### 9.5 Python (Python 3.9+)
+### 10.5 Python (Python 3.9+)
 **Paquete**: [PyPI `flowpdf`](https://pypi.org/project/flowpdf/)  
 **Instalación**: `pip install flowpdf`
 
@@ -1629,7 +1710,7 @@ with open("factura_python.pdf", "wb") as f:
     f.write(doc.generate_pdf())
 ```
 
-### 9.6 Rust Puro
+### 10.6 Rust Puro
 ```rust
 use flowpdf::ast::DocumentDefinitionAst;
 use flowpdf::pdf_engine::PdfEngine;
@@ -1655,7 +1736,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ---
 
-## 10. Guía de Compilación, Despliegue y Empaquetado
+## 11. Guía de Compilación, Despliegue y Empaquetado
 
 ### Compilación desde el Código Fuente
 ```bash
@@ -1678,7 +1759,7 @@ docker run --rm -v ${PWD}:/usr/src/flowpdf -w /usr/src/flowpdf rust:1-alpine car
 
 ---
 
-## 11. Matriz de Resolución de Problemas (Troubleshooting)
+## 12. Matriz de Resolución de Problemas (Troubleshooting)
 
 | Síntoma / Error | Causa Probable | Solución Oficial |
 | :--- | :--- | :--- |
