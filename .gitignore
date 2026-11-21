@@ -35,3 +35,6 @@ engine-rust/target/
 !sdk/**/*.whl
 !sdk/**/*.jar
 
+
+# Validación local de CI (scripts/ci/validate-local.sh)
+.ci-local/

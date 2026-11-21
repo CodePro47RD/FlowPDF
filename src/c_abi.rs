@@ -157,6 +157,7 @@ pub unsafe extern "C" fn reportforge_free_result(result: ReportForgeResult) {
 
 #[no_mangle]
 pub extern "C" fn reportforge_version() -> *const c_char {
-    static VERSION: &[u8] = b"ReportForge Rust Core v2.1.0\0";
+    // La versión sale de Cargo.toml (en CI, la del tag del release)
+    static VERSION: &str = concat!("ReportForge Rust Core v", env!("CARGO_PKG_VERSION"), "\0");
     VERSION.as_ptr() as *const c_char
 }
