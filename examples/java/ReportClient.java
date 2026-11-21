@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * ReportForge Java 11+ HttpClient Integration Example.
+ * FlowPDF Java 11+ HttpClient Integration Example.
  */
 public class ReportClient {
 

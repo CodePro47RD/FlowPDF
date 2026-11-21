@@ -1,2 +1,2 @@
 include README.md
-recursive-include reportforge/runtimes *
+recursive-include flowpdf/runtimes *

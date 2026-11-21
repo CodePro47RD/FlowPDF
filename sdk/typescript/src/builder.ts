@@ -427,8 +427,8 @@ export class ReportDocument {
     }
 
     static registerFont(name: string, fontBytes: Uint8Array | Buffer): boolean {
-        const { ReportForgeEngine } = require('./native');
-        return ReportForgeEngine.registerFont(name, fontBytes);
+        const { FlowPdfEngine } = require('./native');
+        return FlowPdfEngine.registerFont(name, fontBytes);
     }
 
     build(): DocumentDefinition {
@@ -436,17 +436,17 @@ export class ReportDocument {
     }
 
     renderPdf(data?: object | string): Uint8Array {
-        const { ReportForgeEngine } = require('./native');
-        return ReportForgeEngine.renderPdf(this.build(), data);
+        const { FlowPdfEngine } = require('./native');
+        return FlowPdfEngine.renderPdf(this.build(), data);
     }
 
     static extractText(pdfBytes: Uint8Array | Buffer): string {
-        const { ReportForgeEngine } = require('./native');
-        return ReportForgeEngine.extractText(pdfBytes);
+        const { FlowPdfEngine } = require('./native');
+        return FlowPdfEngine.extractText(pdfBytes);
     }
 
     static extractDocument(pdfBytes: Uint8Array | Buffer, options?: object): any {
-        const { ReportForgeEngine } = require('./native');
-        return ReportForgeEngine.extractDocument(pdfBytes, options);
+        const { FlowPdfEngine } = require('./native');
+        return FlowPdfEngine.extractDocument(pdfBytes, options);
     }
 }

@@ -1,13 +1,13 @@
 // Prueba de humo del paquete NuGet: carga el motor nativo empaquetado, genera un PDF
 // y lo vuelve a leer. Sale con código != 0 si algo falla.
 using System.Runtime.InteropServices;
-using ReportForge.Fluent;
-using ReportForge.Native;
+using FlowPdf.Fluent;
+using FlowPdf.Native;
 
-const string Marker = "ReportForge smoke test OK";
+const string Marker = "FlowPDF smoke test OK";
 
 Console.WriteLine($"Plataforma: {RuntimeInformation.OSDescription} ({RuntimeInformation.ProcessArchitecture})");
-string engineVersion = ReportForgeEngine.GetVersion();
+string engineVersion = FlowPdfEngine.GetVersion();
 Console.WriteLine($"Motor nativo: {engineVersion}");
 // El motor debe ser el compilado para esta versión del paquete (no un binario viejo)
 string? expected = typeof(ReportDocument).Assembly

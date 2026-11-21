@@ -1,18 +1,18 @@
 import { ClientOptions, DocumentDefinition, ReportJobResponse, ReportPayload } from './types';
 import { ReportDocument } from './builder';
 
-export class ReportForgeError extends Error {
+export class FlowPdfError extends Error {
     constructor(
         message: string,
         public readonly statusCode?: number,
         public readonly responseBody?: string
     ) {
         super(message);
-        this.name = 'ReportForgeError';
+        this.name = 'FlowPdfError';
     }
 }
 
-export class ReportForgeClient {
+export class FlowPdfClient {
     private readonly baseUrl: string;
     private readonly apiKey: string;
     private readonly timeoutMs: number;
@@ -85,7 +85,7 @@ export class ReportForgeClient {
 
             if (!res.ok) {
                 const errorText = await res.text();
-                throw new ReportForgeError(
+                throw new FlowPdfError(
                     `Report generation failed with HTTP ${res.status}: ${errorText}`,
                     res.status,
                     errorText
@@ -114,7 +114,7 @@ export class ReportForgeClient {
 
         if (!res.ok) {
             const errorText = await res.text();
-            throw new ReportForgeError(
+            throw new FlowPdfError(
                 `Failed to create report job (HTTP ${res.status}): ${errorText}`,
                 res.status,
                 errorText
@@ -136,7 +136,7 @@ export class ReportForgeClient {
 
         if (!res.ok) {
             const errorText = await res.text();
-            throw new ReportForgeError(
+            throw new FlowPdfError(
                 `Failed to retrieve job status (HTTP ${res.status}): ${errorText}`,
                 res.status,
                 errorText
@@ -158,7 +158,7 @@ export class ReportForgeClient {
 
         if (!res.ok) {
             const errorText = await res.text();
-            throw new ReportForgeError(
+            throw new FlowPdfError(
                 `Failed to download report from ${fullUrl} (HTTP ${res.status}): ${errorText}`,
                 res.status,
                 errorText
@@ -184,17 +184,17 @@ export class ReportForgeClient {
             const status = await this.getJobStatus(jobId);
             if (status.status === 'completed') {
                 if (!status.download_url) {
-                    throw new ReportForgeError('Job completed without a download URL.');
+                    throw new FlowPdfError('Job completed without a download URL.');
                 }
                 return this.downloadReport(status.download_url);
             }
             if (status.status === 'failed') {
-                throw new ReportForgeError(`Report job failed: ${status.error_message ?? 'Unknown error'}`);
+                throw new FlowPdfError(`Report job failed: ${status.error_message ?? 'Unknown error'}`);
             }
 
             await new Promise((r) => setTimeout(r, interval));
         }
 
-        throw new ReportForgeError(`Timeout waiting for job ${jobId} to complete.`);
+        throw new FlowPdfError(`Timeout waiting for job ${jobId} to complete.`);
     }
 }

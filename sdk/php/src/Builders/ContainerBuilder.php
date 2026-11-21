@@ -1,6 +1,6 @@
 <?php
 
-namespace ReportForge\Builders;
+namespace FlowPdf\Builders;
 
 class ContainerBuilder
 {

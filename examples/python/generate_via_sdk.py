@@ -1,17 +1,17 @@
 """
-Example: Consuming ReportForge via the official Python SDK.
+Example: Consuming FlowPDF via the official Python SDK.
 """
 
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../sdk/python")))
 
-from reportforge_sdk import ReportForgeClient
+from flowpdf import FlowPdfClient
 
 
 def main():
     # 1. Initialize client with credentials
-    client = ReportForgeClient(
+    client = FlowPdfClient(
         base_url="http://localhost:8000",
         api_key="rf_live_sample_key_here",
     )

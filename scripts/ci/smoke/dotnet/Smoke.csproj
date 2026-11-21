@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Consume el .nupkg generado (no el proyecto) para probar el paquete tal como lo recibe un usuario.
-       Uso: dotnet run -p:ReportForgeVersion=<version> -p:ReportForgeFeed=<carpeta con el .nupkg> -->
+       Uso: dotnet run -p:FlowPdfVersion=<version> -p:FlowPdfFeed=<carpeta con el .nupkg> -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RestoreAdditionalProjectSources>$(ReportForgeFeed)</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources>$(FlowPdfFeed)</RestoreAdditionalProjectSources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ReportForge" Version="$(ReportForgeVersion)" />
+    <PackageReference Include="FlowPDF" Version="$(FlowPdfVersion)" />
   </ItemGroup>
 </Project>

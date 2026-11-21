@@ -16,7 +16,7 @@ function getKoffi() {
     return koffiInstance;
 }
 
-export class ReportForgeEngine {
+export class FlowPdfEngine {
     private static cachedKoffiLib: any = null;
 
     public static getLibraryPath(): string {
@@ -24,10 +24,10 @@ export class ReportForgeEngine {
         const isMac = process.platform === 'darwin';
         const rid = isWindows ? 'win-x64' : isMac ? 'osx-x64' : 'linux-x64';
         const filename = isWindows
-            ? 'reportforge_native.dll'
+            ? 'flowpdf_native.dll'
             : isMac
-            ? 'libreportforge_native.dylib'
-            : 'libreportforge_native.so';
+            ? 'libflowpdf_native.dylib'
+            : 'libflowpdf_native.so';
 
         const candidates = [
             path.resolve(__dirname, '../runtimes', rid, 'native', filename),
@@ -35,7 +35,7 @@ export class ReportForgeEngine {
             path.resolve(__dirname, 'runtimes', rid, 'native', filename),
             path.resolve(__dirname, filename),
             path.resolve(process.cwd(), 'runtimes', rid, 'native', filename),
-            path.resolve(process.cwd(), 'node_modules/reportforge/runtimes', rid, 'native', filename),
+            path.resolve(process.cwd(), 'node_modules/flowpdf/runtimes', rid, 'native', filename),
             filename
         ];
 
@@ -54,23 +54,23 @@ export class ReportForgeEngine {
         if (typeof (globalThis as any).Bun !== 'undefined') {
             const { dlopen, FFIType } = (globalThis as any).Bun.FFI;
             const lib = dlopen(libPath, {
-                reportforge_version: {
+                flowpdf_version: {
                     args: [],
                     returns: FFIType.cstring,
                 }
             });
-            return lib.symbols.reportforge_version() as string;
+            return lib.symbols.flowpdf_version() as string;
         }
 
         // 2. Check Node.js koffi
         const koffi = getKoffi();
         if (koffi) {
             const lib = koffi.load(libPath);
-            const getVersionFn = lib.func('reportforge_version', 'str', []);
+            const getVersionFn = lib.func('flowpdf_version', 'str', []);
             return getVersionFn();
         }
 
-        return 'ReportForge Rust Core v2.0 (Native runtime not initialized)';
+        return 'FlowPDF Rust Core (Native runtime not initialized)';
     }
 
     public static renderPdf(document: object | string, data?: object | string): Uint8Array {
@@ -81,7 +81,7 @@ export class ReportForgeEngine {
         // 1. If running in Bun, execute zero-overhead FFI
         if (typeof (globalThis as any).Bun !== 'undefined') {
             const { dlopen, FFIType, ptr, toArrayBuffer } = (globalThis as any).Bun.FFI;
-            // Memory layout of ReportForgeResult:
+            // Memory layout of FlowPdfResult:
             // [data: ptr (8), length: size_t (8), success: bool (1), padding (7), error_message: cstring (8)]
             // Alternatively use Koffi or Node API
         }
@@ -90,7 +90,7 @@ export class ReportForgeEngine {
         const koffi = getKoffi();
         if (koffi) {
             if (!this.cachedKoffiLib) {
-                const ReportForgeResult = koffi.struct('ReportForgeResult', {
+                const FlowPdfResult = koffi.struct('FlowPdfResult', {
                     data: 'uint8_t *',
                     length: 'size_t',
                     success: 'bool',
@@ -99,8 +99,8 @@ export class ReportForgeEngine {
 
                 const lib = koffi.load(libPath);
                 this.cachedKoffiLib = {
-                    render: lib.func('reportforge_render_pdf', ReportForgeResult, ['str', 'str']),
-                    free: lib.func('reportforge_free_result', 'void', [ReportForgeResult]),
+                    render: lib.func('flowpdf_render_pdf', FlowPdfResult, ['str', 'str']),
+                    free: lib.func('flowpdf_free_result', 'void', [FlowPdfResult]),
                 };
             }
 
@@ -108,7 +108,7 @@ export class ReportForgeEngine {
             try {
                 if (!res.success) {
                     const err = res.error_message || 'Unknown native render error';
-                    throw new Error(`ReportForge Native Error: ${err}`);
+                    throw new Error(`FlowPDF Native Error: ${err}`);
                 }
 
                 if (res.length > 0 && res.data) {
@@ -122,9 +122,9 @@ export class ReportForgeEngine {
         }
 
         throw new Error(
-            'ReportForge in-process native rendering in Node.js requires "koffi" for C-ABI FFI. ' +
+            'FlowPDF in-process native rendering in Node.js requires "koffi" for C-ABI FFI. ' +
             'Install it with: npm install koffi\n' +
-            'Alternatively, use ReportForgeClient for HTTP/REST server rendering.'
+            'Alternatively, use FlowPdfClient for HTTP/REST server rendering.'
         );
     }
 
@@ -132,20 +132,20 @@ export class ReportForgeEngine {
         const libPath = this.getLibraryPath();
         const koffi = getKoffi();
         if (koffi) {
-            const ReportForgeResult = koffi.struct('ReportForgeResultExtractText', {
+            const FlowPdfResult = koffi.struct('FlowPdfResultExtractText', {
                 data: 'uint8_t *',
                 length: 'size_t',
                 success: 'bool',
                 error_message: 'char *'
             });
             const lib = koffi.load(libPath);
-            const extractFn = lib.func('reportforge_extract_text', ReportForgeResult, ['uint8_t *', 'size_t']);
-            const freeFn = lib.func('reportforge_free_result', 'void', [ReportForgeResult]);
+            const extractFn = lib.func('flowpdf_extract_text', FlowPdfResult, ['uint8_t *', 'size_t']);
+            const freeFn = lib.func('flowpdf_free_result', 'void', [FlowPdfResult]);
 
             const res = extractFn(pdfBytes, pdfBytes.length);
             try {
                 if (!res.success) {
-                    throw new Error(`ReportForge Extraction Error: ${res.error_message || 'Unknown error'}`);
+                    throw new Error(`FlowPDF Extraction Error: ${res.error_message || 'Unknown error'}`);
                 }
                 if (res.length > 0 && res.data) {
                     const decoded = koffi.decode(res.data, 'uint8_t', res.length);
@@ -156,28 +156,28 @@ export class ReportForgeEngine {
                 freeFn(res);
             }
         }
-        throw new Error('ReportForge native extraction requires "koffi" in Node.js.');
+        throw new Error('FlowPDF native extraction requires "koffi" in Node.js.');
     }
 
     public static extractDocument(pdfBytes: Uint8Array | Buffer, options?: object): any {
         const libPath = this.getLibraryPath();
         const koffi = getKoffi();
         if (koffi) {
-            const ReportForgeResult = koffi.struct('ReportForgeResultExtractJson', {
+            const FlowPdfResult = koffi.struct('FlowPdfResultExtractJson', {
                 data: 'uint8_t *',
                 length: 'size_t',
                 success: 'bool',
                 error_message: 'char *'
             });
             const lib = koffi.load(libPath);
-            const extractJsonFn = lib.func('reportforge_extract_json', ReportForgeResult, ['uint8_t *', 'size_t', 'str']);
-            const freeFn = lib.func('reportforge_free_result', 'void', [ReportForgeResult]);
+            const extractJsonFn = lib.func('flowpdf_extract_json', FlowPdfResult, ['uint8_t *', 'size_t', 'str']);
+            const freeFn = lib.func('flowpdf_free_result', 'void', [FlowPdfResult]);
 
             const optStr = options ? JSON.stringify(options) : null;
             const res = extractJsonFn(pdfBytes, pdfBytes.length, optStr);
             try {
                 if (!res.success) {
-                    throw new Error(`ReportForge Extraction Error: ${res.error_message || 'Unknown error'}`);
+                    throw new Error(`FlowPDF Extraction Error: ${res.error_message || 'Unknown error'}`);
                 }
                 if (res.length > 0 && res.data) {
                     const decoded = koffi.decode(res.data, 'uint8_t', res.length);
@@ -189,7 +189,7 @@ export class ReportForgeEngine {
                 freeFn(res);
             }
         }
-        throw new Error('ReportForge native extraction requires "koffi" in Node.js.');
+        throw new Error('FlowPDF native extraction requires "koffi" in Node.js.');
     }
 
     public static registerFont(fontName: string, fontBytes: Uint8Array | Buffer): boolean {
@@ -197,10 +197,10 @@ export class ReportForgeEngine {
         const koffi = getKoffi();
         if (koffi) {
             const lib = koffi.load(libPath);
-            const regFn = lib.func('reportforge_register_font', 'int', ['str', 'uint8_t *', 'size_t']);
+            const regFn = lib.func('flowpdf_register_font', 'int', ['str', 'uint8_t *', 'size_t']);
             const res = regFn(fontName, fontBytes, fontBytes.length);
             return res === 0;
         }
-        throw new Error('ReportForge native font registration requires "koffi" in Node.js.');
+        throw new Error('FlowPDF native font registration requires "koffi" in Node.js.');
     }
 }

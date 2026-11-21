@@ -1,26 +1,26 @@
 /**
- * ReportForge TypeScript Client Example
+ * FlowPDF TypeScript Client Example
  * Demonstrates Strongly Typed Models & Fluent Document Builder
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-    ReportForgeClient,
+    FlowPdfClient,
     ReportDocument,
     DocumentDefinition,
     ReportPayload
-} from '@reportforge/client';
+} from '@flowpdf/client';
 
 async function main(): Promise<void> {
     console.log('==========================================================');
-    console.log(' ReportForge TypeScript Client SDK - Typed & Fluent Demo  ');
+    console.log(' FlowPDF TypeScript Client SDK - Typed & Fluent Demo  ');
     console.log('==========================================================\n');
 
     const baseUrl = 'http://localhost:8080';
     const apiKey = 'rf_live_docker_demo_12345';
 
-    const client = new ReportForgeClient({
+    const client = new FlowPdfClient({
         baseUrl,
         apiKey
     });
@@ -125,7 +125,7 @@ async function main(): Promise<void> {
     };
 
     try {
-        console.log('Enviando petición a ReportForge desde TypeScript...');
+        console.log('Enviando petición a FlowPDF desde TypeScript...');
         const pdfBytes = await client.generatePdf(fluentDoc, reportData);
         const outputPath = path.resolve(__dirname, 'informe_fluent_typescript.pdf');
         fs.writeFileSync(outputPath, Buffer.from(pdfBytes));
@@ -156,7 +156,7 @@ async function main(): Promise<void> {
                     { type: 'spacer', height: 10 },
                     {
                         type: 'qr',
-                        value: 'https://github.com/edwin-abreu/reportforge',
+                        value: 'https://github.com/edwin-abreu/flowpdf',
                         size: 80
                     }
                 ]

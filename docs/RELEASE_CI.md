@@ -5,14 +5,13 @@ empaqueta los SDKs con esos binarios y los publica en los registros públicos.
 
 | SDK | Registro | Nombre del paquete | Instalación |
 |---|---|---|---|
-| C# | NuGet | `ReportForge` | `dotnet add package ReportForge` |
-| TypeScript/JS | npm | `reportforge` | `npm install reportforge` |
-| Python | PyPI | `reportforge-sdk` (import: `reportforge`) | `pip install reportforge-sdk` |
-| Java | Maven Central | `io.github.codepro47rd:reportforge` | ver abajo |
-| PHP | Packagist (vía repo espejo) | `reportforge/reportforge` | `composer require reportforge/reportforge` |
-| Rust | crates.io | `reportforge` | `cargo add reportforge` |
+| C# | NuGet | `FlowPDF` | `dotnet add package FlowPDF` |
+| TypeScript/JS | npm | `flowpdf` | `npm install flowpdf` |
+| Python | PyPI | `flowpdf` | `pip install flowpdf` |
+| Java | Maven Central | `io.github.codepro47rd:flowpdf` | ver abajo |
+| PHP | Packagist (vía repo espejo) | `codepro47rd/flowpdf` | `composer require codepro47rd/flowpdf` |
+| Rust | crates.io | `flowpdf` | `cargo add flowpdf` |
 
-> `reportforge` ya está tomado en PyPI por otro proyecto, por eso la distribución Python se llama `reportforge-sdk`.
 
 ## Cómo funciona
 
@@ -26,22 +25,22 @@ empaqueta los SDKs con esos binarios y los publica en los registros públicos.
 ## Cómo lanzar un release
 
 ```bash
-git tag v2.1.1
-git push origin v2.1.1          # compila y publica 2.1.1 en todos los registros
+git tag v1.0.0
+git push origin v1.0.0          # compila y publica 1.0.0 en todos los registros
 ```
 
-Prueba sin publicar: **Actions → Release Packages → Run workflow**, versión `2.1.1`, `publish` desmarcado.
+Prueba sin publicar: **Actions → Release Packages → Run workflow**, versión `1.0.0`, `publish` desmarcado.
 Los paquetes quedan como artefactos descargables del run.
 
-Pre-releases: solo `-alpha`, `-beta` o `-rc` con número opcional (`v2.2.0-beta.1`), porque es el único formato
-válido a la vez en SemVer y en PEP 440 (PyPI lo publica como `2.2.0b1`). Se publican en npm con el dist-tag `next`
+Pre-releases: solo `-alpha`, `-beta` o `-rc` con número opcional (`v1.1.0-beta.1`), porque es el único formato
+válido a la vez en SemVer y en PEP 440 (PyPI lo publica como `1.1.0b1`). Se publican en npm con el dist-tag `next`
 y se marcan como pre-release en GitHub. Algo como `-preview` o `-test` se rechaza al inicio del workflow.
 
 ### Validar en local antes de etiquetar (Docker)
 
 ```bash
 bash scripts/ci/validate-local.sh                 # todo, con versión 0.0.0-rc.1
-bash scripts/ci/validate-local.sh 2.1.1 pypi php  # solo algunos pasos
+bash scripts/ci/validate-local.sh 1.0.0 pypi php  # solo algunos pasos
 ```
 
 Corre en contenedores los mismos pasos de los jobs `pack-*` (más `actionlint` sobre los workflows) sobre una copia
@@ -73,17 +72,17 @@ Se requiere rol admin. No se usan *environments*: en repos privados solo existen
 | Variable | Valor |
 |---|---|
 | `NUGET_USER` | usuario (nombre de perfil, no email) de nuget.org dueño de la política de Trusted Publishing |
-| `PHP_MIRROR_REPO` | ej. `CodePro47RD/reportforge-php` |
+| `PHP_MIRROR_REPO` | ej. `CodePro47RD/flowpdf-php` |
 | `PACKAGIST_USERNAME` *(opcional)* | usuario de Packagist |
 
 ### Por registro
 
 - **NuGet (Trusted Publishing, sin API key)**: nuget.org → tu usuario → *Trusted Publishing* → *Create*:
-  Package Owner = la organización de NuGet, Repository Owner = `CodePro47RD`, Repository `ReportForge`,
+  Package Owner = la organización de NuGet, Repository Owner = `CodePro47RD`, Repository `FlowPDF`,
   Workflow File `release.yml`, **Environment vacío**, scope *Push new packages and package versions*,
-  glob `ReportForge`. En repos privados la política queda temporal (7 días) hasta el primer publish exitoso.
+  glob `FlowPDF`. En repos privados la política queda temporal (7 días) hasta el primer publish exitoso.
 - **PyPI (Trusted Publishing, sin token)**: pypi.org → *Your projects* → *Publishing* → *Add a new pending publisher*:
-  proyecto `reportforge-sdk`, owner `CodePro47RD`, repo `ReportForge`, workflow `release.yml`, **environment vacío**.
+  proyecto `flowpdf`, owner `CodePro47RD`, repo `FlowPDF`, workflow `release.yml`, **environment vacío**.
 - **Maven Central**: en central.sonatype.com → *Namespaces* → *Add Namespace* `io.github.codepro47rd`. Sonatype
   da una clave de verificación: crear en la org un repo **público** temporal con ese nombre exacto, pulsar
   *Verify* y luego borrarlo. Publicar la clave GPG pública en un keyserver:
@@ -98,6 +97,6 @@ Se requiere rol admin. No se usan *environments*: en repos privados solo existen
 ## Agregar macOS
 
 En `release.yml`, descomenta las entradas `osx-x64` / `osx-arm64` de la matriz `native`. Los SDKs ya buscan
-`libreportforge_native.dylib`; el de C# hoy solo resuelve `osx-x64`, así que para Apple Silicon hay que
-agregar `osx-arm64` en `sdk/csharp/ReportForge/Native/ReportForgeEngine.cs`. Los runners macOS consumen
+`libflowpdf_native.dylib`; el de C# hoy solo resuelve `osx-x64`, así que para Apple Silicon hay que
+agregar `osx-arm64` en `sdk/csharp/FlowPdf/Native/FlowPdfEngine.cs`. Los runners macOS consumen
 10× minutos en repos privados.

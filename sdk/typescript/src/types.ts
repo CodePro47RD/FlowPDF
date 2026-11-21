@@ -1,6 +1,6 @@
 /**
- * ReportForge TypeScript Strong Types & Schema Definitions
- * Fully aligned with ReportForge Pydantic v2 AST Specifications.
+ * FlowPDF TypeScript Strong Types & Schema Definitions
+ * Fully aligned with FlowPDF Pydantic v2 AST Specifications.
  */
 
 export type PageSize = 'A4' | 'Letter' | 'Legal' | 'A3' | 'A5' | string;

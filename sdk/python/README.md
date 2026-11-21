@@ -1,16 +1,16 @@
-# ReportForge Python SDK v2.0.0
+# FlowPDF Python SDK
 
-Universal Document Engine and Fluent Report Builder SDK for Python, powered by in-process **Rust Core v2.0** and high-throughput remote HTTP rendering.
+Universal Document Engine and Fluent Report Builder SDK for Python, powered by in-process **Rust Core** and high-throughput remote HTTP rendering.
 
-[![PyPI](https://img.shields.io/badge/pypi-v2.0.0-blue.svg)](https://pypi.org/project/reportforge/)
+[![PyPI](https://img.shields.io/pypi/v/flowpdf)](https://pypi.org/project/flowpdf/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## ⚡ Key Highlights
 
-- **Ultra-Fast In-Process Generation**: Renders complete PDF documents in **~15ms - 40ms** with zero network latency using native Rust Core v2.0.
-- **Embedded Multi-Platform Runtimes**: Bundles precompiled `win-x64` (`reportforge_native.dll`) and `linux-x64` (`libreportforge_native.so`) runtimes automatically loaded via `ctypes`.
+- **Ultra-Fast In-Process Generation**: Renders complete PDF documents in **~15ms - 40ms** with zero network latency using native Rust Core.
+- **Embedded Multi-Platform Runtimes**: Bundles precompiled `win-x64` (`flowpdf_native.dll`) and `linux-x64` (`libflowpdf_native.so`) runtimes automatically loaded via `ctypes`.
 - **Full Unicode & Spanish Accents Support**: Flawlessly renders Spanish accents (`á, é, í, ó, ú, ñ, Ñ`), inverted marks (`¿, ¡`), and currency symbols (`€, $, £`) with WinAnsi hexadecimal encoding.
 - **Fluent Report Builder**: Declarative, composable, type-safe API for headers, tables, barcodes, QR codes, columns, rows, and cards.
 - **Hybrid Architecture**: Switch between local in-process microsecond execution or cloud HTTP worker rendering with the exact same document definition.
@@ -21,12 +21,12 @@ Universal Document Engine and Fluent Report Builder SDK for Python, powered by i
 
 ```bash
 # Install from wheel or PyPI
-pip install reportforge
+pip install flowpdf
 ```
 
 Or install locally from wheel:
 ```bash
-pip install dist/reportforge-2.0.0-py3-none-any.whl
+pip install flowpdf
 ```
 
 ---
@@ -34,7 +34,7 @@ pip install dist/reportforge-2.0.0-py3-none-any.whl
 ## 🚀 Quickstart: In-Process Native PDF Generation
 
 ```python
-from reportforge import ReportDocument, ReportForgeEngine
+from flowpdf import ReportDocument, FlowPdfEngine
 
 # 1. Build document declaratively with Fluent API
 doc = (
@@ -44,11 +44,11 @@ doc = (
     .header(lambda h: (
         h.row(lambda r: (
             r.column(lambda c: (
-                c.text("REPORTFORGE ENTERPRISE").style("h2").bold().color("#1E40AF"),
+                c.text("FLOWPDF ENTERPRISE").style("h2").bold().color("#1E40AF"),
                 c.text("Facturación Electrónica en Español: á é í ó ú ñ Ñ ¿ ¡ €").style("caption").color("#4B5563"),
             ), flex=3),
             r.column(lambda c: (
-                c.qr_code("https://reportforge.io/verify/FAC-2026-9901", size=60),
+                c.qr_code("https://example.com/verify/FAC-2026-9901", size=60),
             ), flex=1),
         ))
     ))
@@ -63,7 +63,7 @@ doc = (
             t.header_background("#1E40AF"),
             t.zebra(True),
             t.data([
-                {"sku": "SRV-01", "description": "Licencia Enterprise ReportForge Anual", "quantity": 1, "price": "€ 1,200.00", "total": "€ 1,200.00"},
+                {"sku": "SRV-01", "description": "Licencia Enterprise FlowPDF Anual", "quantity": 1, "price": "€ 1,200.00", "total": "€ 1,200.00"},
                 {"sku": "SUP-02", "description": "Soporte Técnico 24/7 y Consultoría", "quantity": 2, "price": "€ 150.00", "total": "€ 300.00"},
                 {"sku": "TRN-03", "description": "Capacitación de Ingeniería Avanzada", "quantity": 1, "price": "€ 450.00", "total": "€ 450.00"},
             ])
@@ -83,7 +83,7 @@ doc = (
         )),
     ))
     .footer(lambda f: (
-        f.text("Documento generado in-process con ReportForge Rust Core v2.0").style("caption").center()
+        f.text("Documento generado in-process con FlowPDF Rust Core").style("caption").center()
     ))
 )
 
@@ -101,9 +101,9 @@ print(f"✅ PDF generado exitosamente ({len(pdf_bytes)} bytes)!")
 ## 🌐 Remote HTTP Rendering (Cloud / Server)
 
 ```python
-from reportforge import ReportForgeClient, ReportDocument
+from flowpdf import FlowPdfClient, ReportDocument
 
-client = ReportForgeClient(base_url="http://localhost:8000", api_key="secret-api-key")
+client = FlowPdfClient(base_url="http://localhost:8000", api_key="secret-api-key")
 
 doc = (
     ReportDocument()
@@ -120,4 +120,4 @@ response.save("reporte_remoto.pdf")
 
 ## 📄 License
 
-MIT © 2026 Edwin Abreu & ReportForge Contributors.
+MIT © 2026 Edwin Abreu & FlowPDF Contributors.

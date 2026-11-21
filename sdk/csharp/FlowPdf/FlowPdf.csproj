@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FlowPdf</RootNamespace>
+    <AssemblyName>FlowPdf</AssemblyName>
+    
+    <!-- Package metadata -->
+    <PackageId>FlowPDF</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Edwin Abreu &amp; FlowPDF Contributors</Authors>
+    <Company>FlowPDF</Company>
+    <Product>FlowPDF</Product>
+    <Title>FlowPDF - High-Performance Document Engine for .NET</Title>
+    <Description>Enterprise reporting and document generation engine for .NET. Features a Fluent Builder API, strongly-typed AST, remote HTTP client, native vector charts, custom TTF font embedding, and ultra-fast in-process native rendering powered by the Rust core with embedded win-x64 and linux-x64 runtimes.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/CodePro47RD/FlowPDF</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CodePro47RD/FlowPDF</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>flowpdf;pdf;reports;reporting;fluent;rust;inprocess;high-performance;csharp;charts;ttf;extraction</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    
+    <!-- Build & packing options -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <!-- Todos los runtimes nativos presentes (win-x64, linux-x64 y los que se agreguen, ej. osx-*) -->
+    <Content Include="runtimes\**\*_native.*">
+      <PackagePath>runtimes</PackagePath>
+      <Pack>true</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

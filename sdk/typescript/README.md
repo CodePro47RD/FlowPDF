@@ -1,8 +1,8 @@
-# ReportForge TypeScript / JavaScript SDK v2.0.0
+# FlowPDF TypeScript / JavaScript SDK
 
-Universal Document Engine and Fluent Report Builder SDK for **TypeScript**, **JavaScript**, **Node.js**, and **Bun**, powered by in-process **Rust Core v2.0**.
+Universal Document Engine and Fluent Report Builder SDK for **TypeScript**, **JavaScript**, **Node.js**, and **Bun**, powered by in-process **Rust Core**.
 
-[![npm](https://img.shields.io/badge/npm-v2.0.0-cb3837.svg)](https://www.npmjs.com/package/reportforge)
+[![npm](https://img.shields.io/npm/v/flowpdf)](https://www.npmjs.com/package/flowpdf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
@@ -10,10 +10,10 @@ Universal Document Engine and Fluent Report Builder SDK for **TypeScript**, **Ja
 ## ⚡ Highlights
 
 - **Ultra-Fast In-Process Execution**: Generates complete PDFs in **~15ms - 35ms** with zero network latency.
-- **Embedded Native Runtimes**: Precompiled `reportforge_native.dll` (`win-x64`) and `libreportforge_native.so` (`linux-x64`) included directly in the npm package.
+- **Embedded Native Runtimes**: Precompiled `flowpdf_native.dll` (`win-x64`) and `libflowpdf_native.so` (`linux-x64`) included directly in the npm package.
 - **Fluent Report Builder**: Declarative, composable, strictly-typed API for pages, tables, barcodes, QR codes, headers, and footers.
 - **Full Unicode & Spanish Accents**: Native WinAnsi hex encoding for `á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`.
-- **Bun & Node.js Support**: Instant native execution via Bun FFI or Node.js (`koffi`), plus `ReportForgeClient` for HTTP/REST server rendering.
+- **Bun & Node.js Support**: Instant native execution via Bun FFI or Node.js (`koffi`), plus `FlowPdfClient` for HTTP/REST server rendering.
 
 ---
 
@@ -21,19 +21,19 @@ Universal Document Engine and Fluent Report Builder SDK for **TypeScript**, **Ja
 
 ```bash
 # Using npm
-npm install reportforge
+npm install flowpdf
 
 # Optional: For in-process native rendering in Node.js
 npm install koffi
 
 # Using yarn
-yarn add reportforge
+yarn add flowpdf
 
 # Using pnpm
-pnpm add reportforge
+pnpm add flowpdf
 
 # Using Bun
-bun add reportforge
+bun add flowpdf
 ```
 
 ---
@@ -41,7 +41,7 @@ bun add reportforge
 ## 🚀 Quickstart: In-Process Native PDF Generation
 
 ```typescript
-import { ReportDocument, ReportForgeEngine } from 'reportforge';
+import { ReportDocument, FlowPdfEngine } from 'flowpdf';
 import * as fs from 'fs';
 
 // 1. Build document declaratively with Fluent API
@@ -50,12 +50,12 @@ const doc = ReportDocument.create(page => page.a4().portrait().margin(15))
         h.row(r => {
             r.relativeItem(3, col => {
                 col.column(c => {
-                    c.text('REPORTFORGE ENTERPRISE', t => t.h2().bold().color('#1E40AF'));
+                    c.text('FLOWPDF ENTERPRISE', t => t.h2().bold().color('#1E40AF'));
                     c.text('Facturación Electrónica en Español: á é í ó ú ñ Ñ ¿ ¡ €', t => t.caption().color('#4B5563'));
                 });
             });
             r.relativeItem(1, col => {
-                col.qr('https://reportforge.io/verify/FAC-2026-9901', 60);
+                col.qr('https://example.com/verify/FAC-2026-9901', 60);
             });
         });
     })
@@ -70,7 +70,7 @@ const doc = ReportDocument.create(page => page.a4().portrait().margin(15))
             t.headerBackground('#1E40AF');
             t.zebra(true);
             t.data([
-                { sku: 'SRV-01', description: 'Licencia ReportForge Enterprise', qty: 1, price: '€ 1,200.00', total: '€ 1,200.00' },
+                { sku: 'SRV-01', description: 'Licencia FlowPDF Enterprise', qty: 1, price: '€ 1,200.00', total: '€ 1,200.00' },
                 { sku: 'SUP-02', description: 'Soporte Técnico 24/7 Dedicado', qty: 2, price: '€ 150.00', total: '€ 300.00' },
             ]);
         });
@@ -91,7 +91,7 @@ const doc = ReportDocument.create(page => page.a4().portrait().margin(15))
         });
     })
     .footer(f => {
-        f.text('Generado in-process con ReportForge TypeScript SDK & Rust Core v2.0', t => t.caption().align('center'));
+        f.text('Generado in-process con FlowPDF TypeScript SDK & Rust Core', t => t.caption().align('center'));
     });
 
 // 2. Render directly in-process to PDF
@@ -106,10 +106,10 @@ console.log(`✅ PDF generado exitosamente (${pdfBytes.length} bytes) en ~25ms!`
 ## 🌐 Remote HTTP Rendering (Cloud / Server)
 
 ```typescript
-import { ReportForgeClient, ReportDocument } from 'reportforge';
+import { FlowPdfClient, ReportDocument } from 'flowpdf';
 import * as fs from 'fs';
 
-const client = new ReportForgeClient({
+const client = new FlowPdfClient({
     baseUrl: 'http://localhost:8000',
     apiKey: 'your-api-key'
 });
@@ -128,4 +128,4 @@ main();
 
 ## 📄 License
 
-MIT © 2026 Edwin Abreu & ReportForge Contributors.
+MIT © 2026 Edwin Abreu & FlowPDF Contributors.

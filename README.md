@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/logo-dark.png" alt="ReportForge" width="380" />
+<img src="docs/assets/logo-dark.png" alt="FlowPDF" width="380" />
 
 ### Motor Universal de Composición y Generación de Documentos y Reportes en Rust
 **Composición matemática vectorial • Renderizado in-process en microsegundos • Cero Chromium**
@@ -52,9 +52,9 @@ cargo build --release
 ```
 
 Esto compilará el código en modo release ultra-optimizado (con LTO y strip habilitado) y generará los binarios nativos en `target/release/`:
-* **Windows**: `reportforge.dll` y `reportforge.lib`
-* **Linux**: `libreportforge.so` y `libreportforge.a`
-* **macOS**: `libreportforge.dylib`
+* **Windows**: `flowpdf.dll` y `flowpdf.lib`
+* **Linux**: `libflowpdf.so` y `libflowpdf.a`
+* **macOS**: `libflowpdf.dylib`
 
 ### B) Ejecutar las pruebas unitarias y de integración
 ```powershell
@@ -64,47 +64,34 @@ cargo test
 Ejecuta las **7 pruebas nativas** (Unicode, tablas, repetición de cabeceras, códigos QR, códigos de barra Code128 y gestión de memoria C-ABI) en **menos de 0.1 segundos**.
 
 ### C) ¿Cómo lo consumen tus proyectos?
-Tus aplicaciones en **C#, TypeScript, Java, PHP o Python** simplemente importan su respectivo paquete precompilado desde la carpeta [`docs/packages/`](docs/packages/) y llaman a la librería directamente en su código.
+Tus aplicaciones en **C#, TypeScript, Java, PHP o Python** instalan el paquete de su ecosistema desde el registro oficial y llaman a la librería directamente en su código. Cada paquete trae el motor nativo precompilado para Windows x64 y Linux x64.
 
 ---
 
 ## 🚀 Guía de Instalación y Despliegue por Lenguaje
 
-Todos los paquetes listos para producción se encuentran en [`docs/packages/`](docs/packages/). A continuación se detalla cómo instalarlos, desplegarlos y utilizarlos en cada plataforma:
+| Lenguaje | Registro | Instalación |
+|---|---|---|
+| C# (.NET 8/9/10) | [NuGet](https://www.nuget.org/packages/FlowPDF) | `dotnet add package FlowPDF` |
+| TypeScript / JavaScript | [npm](https://www.npmjs.com/package/flowpdf) | `npm install flowpdf` |
+| Java 11+ | Maven Central | `io.github.codepro47rd:flowpdf` |
+| PHP 8+ | [Packagist](https://packagist.org/packages/codepro47rd/flowpdf) | `composer require codepro47rd/flowpdf` |
+| Python 3.9+ | [PyPI](https://pypi.org/project/flowpdf/) | `pip install flowpdf` |
+| Rust | [crates.io](https://crates.io/crates/flowpdf) | `cargo add flowpdf` |
 
-```text
-docs/packages/
-├── ReportForge.2.0.0.nupkg                 (1.65 MB, C# .NET 8/9/10)
-├── reportforge-2.0.0.tgz                   (1.58 MB, TypeScript / Node.js)
-├── reportforge-2.0.0.jar                   (1.55 MB, Java 11+)
-├── reportforge-php-2.0.0.zip               (1.54 MB, PHP 8+)
-├── reportforge-2.0.0-py3-none-any.whl      (1.55 MB, Python 3.9+)
-└── ReportForge_Manual_Oficial_Completo.pdf (144 KB, Manual Maestro 13 págs)
-```
+Los paquetes se publican automáticamente desde GitHub Actions en cada versión (ver [`docs/RELEASE_CI.md`](docs/RELEASE_CI.md)).
 
 ---
 
 ### 🔵 1. C# (.NET 8, 9, 10)
 
 #### Instalación
-Puedes instalar el paquete NuGet local directamente desde la terminal de tu solución:
-
 ```bash
-dotnet add package ReportForge --source ./docs/packages
-```
-
-O agregando un archivo `nuget.config` en la raíz de tu solución:
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="LocalReportForge" value="./docs/packages" />
-  </packageSources>
-</configuration>
+dotnet add package FlowPDF
 ```
 
 #### Cómo se despliega
-El paquete `ReportForge.2.0.0.nupkg` incluye las carpetas `runtimes/win-x64/native/reportforge.dll` y `runtimes/linux-x64/native/libreportforge.so`. Al ejecutar:
+El paquete NuGet `FlowPDF` incluye las carpetas `runtimes/win-x64/native/flowpdf_native.dll` y `runtimes/linux-x64/native/libflowpdf_native.so`. Al ejecutar:
 ```bash
 dotnet publish -c Release -r linux-x64 --self-contained
 # o para Windows:
@@ -114,7 +101,7 @@ El SDK de .NET copia automáticamente el binario nativo adecuado dentro de la ca
 
 #### Código de Ejemplo (API Fluida)
 ```csharp
-using ReportForge;
+using FlowPdf;
 
 // 1. Construir el documento con tipado fuerte
 var doc = ReportDocument.Create(page => page.Size("A4").Margin(36))
@@ -134,7 +121,7 @@ var doc = ReportDocument.Create(page => page.Size("A4").Margin(36))
                 cols.Add("Total", width: 100);
             });
             t.AddRow("Servidor Cloud Dedicado", "1", "$ 350.00", "$ 350.00");
-            t.AddRow("Licencia ReportForge v2.0", "1", "$ 999.00", "$ 999.00");
+            t.AddRow("Licencia FlowPDF", "1", "$ 999.00", "$ 999.00");
         });
         c.Spacer(15);
         c.Row(r => {
@@ -153,24 +140,23 @@ File.WriteAllBytes("factura_csharp.pdf", pdfBytes);
 ### 🟨 2. TypeScript / JavaScript (Node.js, Bun, Deno)
 
 #### Instalación
-Instala el tarball npm compilado:
 ```bash
 # Con npm
-npm install ./docs/packages/reportforge-2.0.0.tgz
+npm install flowpdf
 
 # Con Bun
-bun add ./docs/packages/reportforge-2.0.0.tgz
+bun add flowpdf
 
 # Con pnpm o yarn
-pnpm add ./docs/packages/reportforge-2.0.0.tgz
+pnpm add flowpdf
 ```
 
 #### Cómo se despliega
-El paquete contiene un cargador nativo FFI que detecta automáticamente el sistema operativo (`process.platform === 'win32'` o `'linux'`) y vincula las llamadas nativas de forma transparente. Para entornos contenerizados (como AWS Lambda, Vercel Serverless o contenedores Docker en Alpine/Debian), el archivo `libreportforge.so` viene preempaquetado dentro de `node_modules/reportforge/runtimes/`.
+El paquete contiene un cargador nativo FFI que detecta automáticamente el sistema operativo (`process.platform === 'win32'` o `'linux'`) y vincula las llamadas nativas de forma transparente. Para entornos contenerizados (como AWS Lambda, Vercel Serverless o contenedores Docker en Alpine/Debian), el archivo `libflowpdf.so` viene preempaquetado dentro de `node_modules/flowpdf/runtimes/`.
 
 #### Código de Ejemplo
 ```typescript
-import { ReportDocument } from "reportforge";
+import { ReportDocument } from "flowpdf";
 import * as fs from "fs";
 
 const doc = ReportDocument.create({ size: "A4", margin: 36 })
@@ -190,7 +176,7 @@ const doc = ReportDocument.create({ size: "A4", margin: 36 })
         { "Métrica": "Consumo de Memoria", "Valor": "14 MB", "Estado": "Aprobado" }
       ]
     });
-    c.qr("https://reportforge.dev/docs", { size: 65 });
+    c.qr("https://example.com/docs", { size: 65 });
   });
 
 // Generar Buffer del PDF directamente en Node/Bun
@@ -203,31 +189,23 @@ fs.writeFileSync("reporte_typescript.pdf", pdfBuffer);
 ### ☕ 3. Java (Java 11+)
 
 #### Instalación
-Instala el artefacto JAR en tu repositorio local Maven:
-```bash
-mvn install:install-file \
-  -Dfile=docs/packages/reportforge-2.0.0.jar \
-  -DgroupId=dev.reportforge \
-  -DartifactId=reportforge \
-  -Dversion=2.0.0 \
-  -Dpackaging=jar
-```
-
-O agrégalo en tu `pom.xml`:
+Agrégalo en tu `pom.xml` (desde Maven Central):
 ```xml
 <dependency>
-    <groupId>dev.reportforge</groupId>
-    <artifactId>reportforge</artifactId>
-    <version>2.0.0</version>
+    <groupId>io.github.codepro47rd</groupId>
+    <artifactId>flowpdf</artifactId>
+    <version>1.0.0</version>
 </dependency>
 ```
 
+O en Gradle: `implementation("io.github.codepro47rd:flowpdf:1.0.0")`
+
 #### Cómo se despliega
-El JAR integra internamente **JNA (Java Native Access)** y contiene los runtimes para Windows (`reportforge_native.dll`) y Linux (`libreportforge_native.so`) dentro de su classpath. Al invocar el generador por primera vez, JNA extrae el binario a una carpeta temporal protegida del sistema operativo y lo mapea en memoria. Funciona de manera idéntica en Spring Boot, Quarkus o aplicaciones de consola en Windows o Linux.
+El JAR integra internamente **JNA (Java Native Access)** y contiene los runtimes para Windows (`flowpdf_native.dll`) y Linux (`libflowpdf_native.so`) dentro de su classpath. Al invocar el generador por primera vez, JNA extrae el binario a una carpeta temporal protegida del sistema operativo y lo mapea en memoria. Funciona de manera idéntica en Spring Boot, Quarkus o aplicaciones de consola en Windows o Linux.
 
 #### Código de Ejemplo
 ```java
-import dev.reportforge.ReportDocument;
+import io.github.codepro47rd.flowpdf.ReportDocument;
 import java.io.FileOutputStream;
 
 public class GenerarFactura {
@@ -238,7 +216,7 @@ public class GenerarFactura {
                           .bold(true)
                           .color("#0066FF"))
             .content(c -> {
-                c.text("Documento emitido con ReportForge JAR v2.0").fontSize(11.0f);
+                c.text("Documento emitido con FlowPDF").fontSize(11.0f);
                 c.spacer(10.0f);
                 c.table(t -> {
                     t.repeatHeader(true);
@@ -246,7 +224,7 @@ public class GenerarFactura {
                     t.addColumn("Subtotal", 120.0f);
                     t.addRow("Suscripción Anual Cloud", "$ 1,200.00");
                 });
-                c.qr("https://reportforge.dev", 75.0f);
+                c.qr("https://example.com", 75.0f);
             });
 
         byte[] pdfBytes = doc.generatePdf();
@@ -262,29 +240,18 @@ public class GenerarFactura {
 ### 🐘 4. PHP (PHP 8.0+)
 
 #### Instalación
-Descomprime `docs/packages/reportforge-php-2.0.0.zip` en tu proyecto o regístralo en tu `composer.json`:
-```json
-{
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./docs/packages/reportforge-php-2.0.0"
-        }
-    ],
-    "require": {
-        "reportforge/reportforge": "2.0.0"
-    }
-}
+```bash
+composer require codepro47rd/flowpdf
 ```
 
 #### Cómo se despliega
-PHP interactúa con ReportForge a través de **PHP FFI** (Foreign Function Interface):
+PHP interactúa con FlowPDF a través de **PHP FFI** (Foreign Function Interface):
 1. Asegúrate de tener habilitada la extensión FFI en tu `php.ini`:
    ```ini
    extension=ffi
    ffi.enable=true
    ```
-2. El SDK detecta el sistema operativo y carga `reportforge_native.dll` (Windows) o `libreportforge_native.so` (Linux).
+2. El SDK detecta el sistema operativo y carga `flowpdf_native.dll` (Windows) o `libflowpdf_native.so` (Linux).
 3. En entornos PHP-FPM / Nginx, puedes configurar `ffi.preload` para cargar la librería nativa durante el inicio del servidor, reduciendo el tiempo de llamada a menos de **5 milisegundos**.
 
 #### Código de Ejemplo
@@ -292,7 +259,7 @@ PHP interactúa con ReportForge a través de **PHP FFI** (Foreign Function Inter
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-use ReportForge\ReportDocument;
+use FlowPdf\ReportDocument;
 
 $doc = ReportDocument::create(['size' => 'A4', 'margin' => 36])
     ->header(function($h) {
@@ -315,7 +282,7 @@ $doc = ReportDocument::create(['size' => 'A4', 'margin' => 36])
                 ['Mantenimiento Mensual', '$ 250.00']
             ]
         ]);
-        $c->qr("https://reportforge.dev/verify", 70);
+        $c->qr("https://example.com/verify", 70);
     });
 
 // Generar PDF binario
@@ -328,17 +295,16 @@ file_put_contents("factura_php.pdf", $pdfBytes);
 ### 🐍 5. Python (Python 3.9+)
 
 #### Instalación
-Instala el paquete wheel universal:
 ```bash
-pip install ./docs/packages/reportforge-2.0.0-py3-none-any.whl
+pip install flowpdf
 ```
 
 #### Cómo se despliega
-El paquete wheel incluye un adaptador ligero basado en la biblioteca estándar `ctypes`. Carga automáticamente `libreportforge_native.so` en Linux o `reportforge_native.dll` en Windows sin requerir compiladores C/C++ ni dependencias pesadas en el servidor de producción.
+El paquete wheel incluye un adaptador ligero basado en la biblioteca estándar `ctypes`. Carga automáticamente `libflowpdf_native.so` en Linux o `flowpdf_native.dll` en Windows sin requerir compiladores C/C++ ni dependencias pesadas en el servidor de producción.
 
 #### Código de Ejemplo
 ```python
-from reportforge import ReportDocument
+from flowpdf import ReportDocument
 
 doc = (
     ReportDocument.create(size="A4", margin=36)
@@ -351,7 +317,7 @@ doc = (
             rows=[["Licencia Rust Core", "$ 999.00"]],
             repeat_header=True
         ),
-        c.qr("https://reportforge.dev", size=60)
+        c.qr("https://example.com", size=60)
     ])
 )
 
@@ -364,7 +330,7 @@ with open("factura_python.pdf", "wb") as f:
 
 ## 📊 Comparativa de Rendimiento
 
-| Métrica / Capacidad | Motores Chromium (Puppeteer/Playwright) | Motores Tradicionales (WeasyPrint / Python) | **ReportForge v2.0 (Rust Core)** 🚀 |
+| Métrica / Capacidad | Motores Chromium (Puppeteer/Playwright) | Motores Tradicionales (WeasyPrint / Python) | **FlowPDF (Rust Core)** 🚀 |
 | :--- | :--- | :--- | :--- |
 | **Tiempo de Generación (1 pág)** | 🔴 2,500 ms – 4,500 ms | 🟡 850 ms – 1,800 ms | 🟢 **15 ms – 35 ms** |
 | **Uso de Memoria RAM** | 🔴 350 MB – 650 MB por worker | 🟡 120 MB – 220 MB | 🟢 **14 MB – 24 MB** |
@@ -378,11 +344,11 @@ with open("factura_python.pdf", "wb") as f:
 
 ## 🦀 Uso Directo en Rust
 
-Si estás construyendo una aplicación en Rust, puedes importar ReportForge directamente como crate:
+Si estás construyendo una aplicación en Rust, puedes importar FlowPDF directamente como crate:
 
 ```rust
-use reportforge::ast::DocumentDefinitionAst;
-use reportforge::pdf_engine::PdfEngine;
+use flowpdf::ast::DocumentDefinitionAst;
+use flowpdf::pdf_engine::PdfEngine;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let json_template = r#"{
@@ -422,7 +388,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## 🔌 Interfaz C ABI / FFI
 
-ReportForge expone funciones nativas con convención de llamada C para permitir integración in-process de ultra alta velocidad desde cualquier lenguaje:
+FlowPDF expone funciones nativas con convención de llamada C para permitir integración in-process de ultra alta velocidad desde cualquier lenguaje:
 
 ```c
 // Estructura de respuesta de memoria C
@@ -431,38 +397,38 @@ typedef struct {
     size_t length;
     bool success;
     char* error_message;
-} ReportForgeResult;
+} FlowPdfResult;
 
 // Renderizar documento desde JSON a PDF
-ReportForgeResult reportforge_render_pdf(const char* doc_json, const char* data_json);
+FlowPdfResult flowpdf_render_pdf(const char* doc_json, const char* data_json);
 
 // Liberar memoria asignada por Rust
-void reportforge_free_result(ReportForgeResult result);
+void flowpdf_free_result(FlowPdfResult result);
 
 // Obtener versión oficial del motor
-const char* reportforge_version(void);
+const char* flowpdf_version(void);
 ```
 
 ---
 
 ## 🐳 Uso Opcional con Docker
 
-Aunque para usar ReportForge en tus proyectos **no necesitas Docker**, si deseas compilar binarios para entornos Linux (`libreportforge.so`) desde una máquina Windows, puedes compilar usando una imagen de Rust oficial:
+Aunque para usar FlowPDF en tus proyectos **no necesitas Docker**, si deseas compilar binarios para entornos Linux (`libflowpdf.so`) desde una máquina Windows, puedes compilar usando una imagen de Rust oficial:
 
 ```bash
-docker run --rm -v ${PWD}:/usr/src/reportforge -w /usr/src/reportforge rust:1-alpine cargo build --release
+docker run --rm -v ${PWD}:/usr/src/flowpdf -w /usr/src/flowpdf rust:1-alpine cargo build --release
 ```
 
-Esto generará el archivo `target/release/libreportforge.so` compatible con Alpine, Debian, Ubuntu y Red Hat.
+Esto generará el archivo `target/release/libflowpdf.so` compatible con Alpine, Debian, Ubuntu y Red Hat.
 
 ---
 
 ## 📑 Documentación y Manuales
 
 * **Landing Page y Descargas**: Abre [`docs/index.html`](docs/index.html) en tu navegador para probar el Playground interactivo y descargar paquetes.
-* **Manual Maestro Oficial**: [`ReportForge_Manual_Oficial_Completo.pdf`](docs/packages/ReportForge_Manual_Oficial_Completo.pdf) (13 páginas) con arquitectura, componentes y especificación técnica.
+* **Manual Maestro Oficial**: [`FlowPDF_Manual_Oficial_Completo.pdf`](docs/FlowPDF_Manual_Oficial_Completo.pdf) (13 páginas) con arquitectura, componentes y especificación técnica.
 * **Catálogo de Componentes**: [`docs/COMPONENTS_REFERENCE.md`](docs/COMPONENTS_REFERENCE.md).
-* **Especificación del Motor**: [`docs/RUST_CORE_V2.md`](docs/RUST_CORE_V2.md).
+* **Especificación del Motor**: [`docs/RUST_CORE.md`](docs/RUST_CORE.md).
 
 ---
 

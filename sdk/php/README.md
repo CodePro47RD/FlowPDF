@@ -1,29 +1,29 @@
-# ReportForge PHP SDK v2.0.0
+# FlowPDF PHP SDK
 
-Universal Document Engine and Fluent Report Builder SDK for **PHP (8.0+)**, powered by in-process **Rust Core v2.0** and high-throughput remote HTTP rendering.
+Universal Document Engine and Fluent Report Builder SDK for **PHP (8.0+)**, powered by in-process **Rust Core** and high-throughput remote HTTP rendering.
 
-[![Packagist](https://img.shields.io/badge/packagist-v2.0.0-orange.svg)](https://packagist.org/packages/reportforge/reportforge)
+[![Packagist](https://img.shields.io/packagist/v/codepro47rd/flowpdf)](https://packagist.org/packages/codepro47rd/flowpdf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## ⚡ Key Highlights
 
-- **Ultra-Fast In-Process Generation**: Generates complete PDFs in **~15ms - 35ms** with zero network latency using PHP FFI (`ext-ffi`) and native Rust Core v2.0.
-- **Embedded Multi-Platform Runtimes**: Bundles precompiled `win-x64` (`reportforge_native.dll`) and `linux-x64` (`libreportforge_native.so`) runtimes automatically loaded via FFI.
+- **Ultra-Fast In-Process Generation**: Generates complete PDFs in **~15ms - 35ms** with zero network latency using PHP FFI (`ext-ffi`) and native Rust Core.
+- **Embedded Multi-Platform Runtimes**: Bundles precompiled `win-x64` (`flowpdf_native.dll`) and `linux-x64` (`libflowpdf_native.so`) runtimes automatically loaded via FFI.
 - **Full Unicode & Spanish Accents**: Native WinAnsi hex encoding for `á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`.
 - **Fluent Declarative Builder**: Composable, chainable, type-safe API for tables, barcodes, QR codes, multi-column layouts, headers, and footers.
-- **Hybrid Support**: Run in-process via FFI or use `ReportForgeClient` with cURL for asynchronous background worker rendering.
+- **Hybrid Support**: Run in-process via FFI or use `FlowPdfClient` with cURL for asynchronous background worker rendering.
 
 ---
 
 ## 📦 Installation
 
 ```bash
-composer require reportforge/reportforge
+composer require codepro47rd/flowpdf
 ```
 
-To enable in-process ultra-fast rendering with Rust Core v2.0, ensure `ext-ffi` is enabled in `php.ini`:
+To enable in-process ultra-fast rendering with Rust Core, ensure `ext-ffi` is enabled in `php.ini`:
 ```ini
 extension=ffi
 ffi.enable=true
@@ -38,13 +38,13 @@ ffi.enable=true
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use ReportForge\ReportDocument;
-use ReportForge\Builders\PageConfigBuilder;
-use ReportForge\Builders\ColumnBuilder;
-use ReportForge\Builders\RowBuilder;
-use ReportForge\Builders\TableBuilder;
-use ReportForge\Builders\TableColumnBuilder;
-use ReportForge\Builders\TextBuilder;
+use FlowPdf\ReportDocument;
+use FlowPdf\Builders\PageConfigBuilder;
+use FlowPdf\Builders\ColumnBuilder;
+use FlowPdf\Builders\RowBuilder;
+use FlowPdf\Builders\TableBuilder;
+use FlowPdf\Builders\TableColumnBuilder;
+use FlowPdf\Builders\TextBuilder;
 
 // 1. Build document declaratively with Fluent API
 $doc = ReportDocument::create(fn(PageConfigBuilder $p) => $p->a4()->portrait()->margin(15))
@@ -52,11 +52,11 @@ $doc = ReportDocument::create(fn(PageConfigBuilder $p) => $p->a4()->portrait()->
     ->header(fn($h) => (
         $h->row(fn(RowBuilder $r) => (
             $r->column(fn(ColumnBuilder $c) => (
-                $c->text("REPORTFORGE ENTERPRISE", fn(TextBuilder $t) => $t->h2()->bold()->color("#1E40AF")),
+                $c->text("FLOWPDF ENTERPRISE", fn(TextBuilder $t) => $t->h2()->bold()->color("#1E40AF")),
                 $c->text("Facturación Electrónica en Español: á é í ó ú ñ Ñ ¿ ¡ €", fn(TextBuilder $t) => $t->caption()->color("#4B5563"))
             ), flex: 3),
             $r->column(fn(ColumnBuilder $c) => (
-                $c->qrCode("https://reportforge.io/verify/FAC-PHP-2026", size: 60)
+                $c->qrCode("https://example.com/verify/FAC-PHP-2026", size: 60)
             ), flex: 1)
         ))
     ))
@@ -71,7 +71,7 @@ $doc = ReportDocument::create(fn(PageConfigBuilder $p) => $p->a4()->portrait()->
             $t->headerBackground("#1E40AF"),
             $t->zebra(true),
             $t->data([
-                ["sku" => "SRV-01", "description" => "Licencia ReportForge Enterprise Anual", "qty" => 1, "price" => "€ 1,200.00", "total" => "€ 1,200.00"],
+                ["sku" => "SRV-01", "description" => "Licencia FlowPDF Enterprise Anual", "qty" => 1, "price" => "€ 1,200.00", "total" => "€ 1,200.00"],
                 ["sku" => "SUP-02", "description" => "Soporte Técnico 24/7 y Consultoría", "qty" => 2, "price" => "€ 150.00", "total" => "€ 300.00"],
             ])
         )),
@@ -90,7 +90,7 @@ $doc = ReportDocument::create(fn(PageConfigBuilder $p) => $p->a4()->portrait()->
         ))
     ))
     ->footer(fn($f) => (
-        $f->text("Documento generado in-process con ReportForge PHP SDK & Rust Core v2.0", fn(TextBuilder $t) => $t->caption()->center())
+        $f->text("Documento generado in-process con FlowPDF PHP SDK & Rust Core", fn(TextBuilder $t) => $t->caption()->center())
     ));
 
 // 2. Render directly in-process to PDF in ~30 ms!
@@ -107,10 +107,10 @@ echo "✅ PDF generado exitosamente (" . strlen($pdfBytes) . " bytes)!\n";
 ```php
 <?php
 
-use ReportForge\ReportForgeClient;
-use ReportForge\ReportDocument;
+use FlowPdf\FlowPdfClient;
+use FlowPdf\ReportDocument;
 
-$client = new ReportForgeClient('http://localhost:8000', 'your-api-key');
+$client = new FlowPdfClient('http://localhost:8000', 'your-api-key');
 
 $doc = ReportDocument::create()
     ->content(fn($c) => $c->text("Generado en worker asíncrono con Celery y Redis", fn($t) => $t->h1()));
@@ -123,4 +123,4 @@ file_put_contents("reporte_remoto_php.pdf", $pdf);
 
 ## 📄 License
 
-MIT © 2026 Edwin Abreu & ReportForge Contributors.
+MIT © 2026 Edwin Abreu & FlowPDF Contributors.

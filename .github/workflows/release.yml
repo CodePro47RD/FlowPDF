@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Versión a empaquetar (ej. 2.1.1)"
+        description: "Versión a empaquetar (ej. 1.0.1)"
         required: true
       publish:
         description: "Publicar en los registros (si no, solo genera los paquetes)"
@@ -75,7 +75,7 @@ jobs:
             echo "prerelease=$PRE"
             echo "targets=$TARGETS"
           } >> "$GITHUB_OUTPUT"
-          echo "### ReportForge $VERSION (publicar: $PUBLISH, registros: $TARGETS)" >> "$GITHUB_STEP_SUMMARY"
+          echo "### FlowPDF $VERSION (publicar: $PUBLISH, registros: $TARGETS)" >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   # FASE 1 — Compilación
@@ -91,29 +91,29 @@ jobs:
           - rid: win-x64
             os: windows-latest
             target: x86_64-pc-windows-msvc
-            lib: reportforge.dll
-            out: reportforge_native.dll
+            lib: flowpdf.dll
+            out: flowpdf_native.dll
             # CRT estático: la DLL no depende de vcruntime140.dll en la máquina del usuario
             rustflags: "-C target-feature=+crt-static"
           - rid: linux-x64
             # 22.04 => glibc 2.35, compatible con más distribuciones que 24.04
             os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            lib: libreportforge.so
-            out: libreportforge_native.so
+            lib: libflowpdf.so
+            out: libflowpdf_native.so
             rustflags: ""
           # --- macOS (habilitar cuando se necesite; C# solo busca osx-x64 hoy) ---
           # - rid: osx-x64
           #   os: macos-13
           #   target: x86_64-apple-darwin
-          #   lib: libreportforge.dylib
-          #   out: libreportforge_native.dylib
+          #   lib: libflowpdf.dylib
+          #   out: libflowpdf_native.dylib
           #   rustflags: ""
           # - rid: osx-arm64
           #   os: macos-latest
           #   target: aarch64-apple-darwin
-          #   lib: libreportforge.dylib
-          #   out: libreportforge_native.dylib
+          #   lib: libflowpdf.dylib
+          #   out: libflowpdf_native.dylib
           #   rustflags: ""
     env:
       RUSTFLAGS: ${{ matrix.rustflags }}
@@ -125,7 +125,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}
-      - name: Estampar versión (la reporta reportforge_version())
+      - name: Estampar versión (la reporta flowpdf_version())
         shell: bash
         run: sed -i -E '0,/^version = "[^"]*"/s//version = "${{ needs.meta.outputs.version }}"/' Cargo.toml
       - name: Tests
@@ -160,9 +160,9 @@ jobs:
             9.0.x
             10.0.x
       # GeneratePackageOnBuild=true del csproj choca con dotnet pack multi-target (NU5026)
-      - run: dotnet pack sdk/csharp/ReportForge/ReportForge.csproj -c Release -o out -p:GeneratePackageOnBuild=false
+      - run: dotnet pack sdk/csharp/FlowPdf/FlowPdf.csproj -c Release -o out -p:GeneratePackageOnBuild=false
       - name: Verificar binarios en el paquete
-        run: unzip -l out/*.nupkg | grep 'runtimes/linux-x64/native/libreportforge_native.so'
+        run: unzip -l out/*.nupkg | grep 'runtimes/linux-x64/native/libflowpdf_native.so'
       - uses: actions/upload-artifact@v4
         with: { name: pkg-nuget, path: out/*.nupkg, if-no-files-found: error }
 
@@ -185,7 +185,7 @@ jobs:
       - run: npm run build
       - run: mkdir -p ../../out && npm pack --pack-destination ../../out
       - name: Verificar binarios en el paquete
-        run: tar -tzf ../../out/*.tgz | grep 'package/runtimes/linux-x64/native/libreportforge_native.so'
+        run: tar -tzf ../../out/*.tgz | grep 'package/runtimes/linux-x64/native/libflowpdf_native.so'
       - uses: actions/upload-artifact@v4
         with: { name: pkg-npm, path: out/*.tgz, if-no-files-found: error }
 
@@ -204,7 +204,7 @@ jobs:
       - run: python -m build sdk/python --outdir out
       - run: twine check out/*
       - name: Verificar binarios en el wheel
-        run: unzip -l out/*.whl | grep 'reportforge/runtimes/linux-x64/native/libreportforge_native.so'
+        run: unzip -l out/*.whl | grep 'flowpdf/runtimes/linux-x64/native/libflowpdf_native.so'
       - uses: actions/upload-artifact@v4
         with: { name: pkg-pypi, path: out/*, if-no-files-found: error }
 
@@ -222,7 +222,7 @@ jobs:
       # Perfil release sin firma: valida que sources/javadoc también se generen
       - run: mvn -B -f sdk/java/pom.xml -Prelease -Dgpg.skip verify
       - name: Verificar binarios en el jar
-        run: unzip -l sdk/java/target/reportforge-${{ needs.meta.outputs.version }}.jar | grep 'runtimes/linux-x64/native/libreportforge_native.so'
+        run: unzip -l sdk/java/target/flowpdf-${{ needs.meta.outputs.version }}.jar | grep 'runtimes/linux-x64/native/libflowpdf_native.so'
       - uses: actions/upload-artifact@v4
         with: { name: pkg-maven, path: sdk/java/target/*.jar, if-no-files-found: error }
 
@@ -257,7 +257,7 @@ jobs:
           cp LICENSE out/php/
           # Packagist toma la versión del tag; quitamos el campo "version"
           jq 'del(.version)' sdk/php/composer.json > out/php/composer.json
-          (cd out/php && zip -qr "../reportforge-php-${{ needs.meta.outputs.version }}.zip" .)
+          (cd out/php && zip -qr "../flowpdf-php-${{ needs.meta.outputs.version }}.zip" .)
       - uses: shivammathur/setup-php@v2
         with: { php-version: "8.2", tools: composer }
       - run: composer validate --strict --no-check-publish

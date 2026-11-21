@@ -8,17 +8,16 @@ if os.path.exists(readme_path):
         long_description = f.read()
 
 setup(
-    name="reportforge-sdk",
-    version="2.1.0",
-    description="Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly",
+    name="flowpdf",
+    version="1.0.0",
+    description="Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Edwin Abreu & ReportForge Contributors",
-    author_email="dev@reportforge.io",
-    url="https://github.com/CodePro47RD/ReportForge",
+    author="Edwin Abreu & FlowPDF Contributors",
+    url="https://github.com/CodePro47RD/FlowPDF",
     packages=find_packages(),
     package_data={
-        "reportforge": [
+        "flowpdf": [
             "runtimes/**/*",
             "runtimes/win-x64/native/*",
             "runtimes/linux-x64/native/*",

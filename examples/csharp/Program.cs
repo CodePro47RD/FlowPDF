@@ -2,26 +2,26 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using ReportForge.Client;
-using ReportForge.Fluent;
-using ReportForge.Models;
-using ReportForge.Native;
+using FlowPdf.Client;
+using FlowPdf.Fluent;
+using FlowPdf.Models;
+using FlowPdf.Native;
 
-namespace ReportForge.Examples
+namespace FlowPdf.Examples
 {
     class Program
     {
         static async Task Main(string[] args)
         {
             Console.WriteLine("==================================================================");
-            Console.WriteLine("    ReportForge v2.0 - .NET NuGet Package & Hybrid Engine Demo    ");
+            Console.WriteLine("    FlowPDF - .NET NuGet Package & Hybrid Engine Demo    ");
             Console.WriteLine("==================================================================\n");
 
             // -------------------------------------------------------------
             // VERIFICACIÓN DEL MOTOR NATIVO RUST CORE
             // -------------------------------------------------------------
-            string nativeVersion = ReportForgeEngine.GetVersion();
-            Console.WriteLine($"[Core] ReportForge Native Engine Version: {nativeVersion}\n");
+            string nativeVersion = FlowPdfEngine.GetVersion();
+            Console.WriteLine($"[Core] FlowPDF Native Engine Version: {nativeVersion}\n");
 
             // -------------------------------------------------------------
             // CONSTRUCCIÓN DEL REPORTE FLUENT (API FLUIDA)
@@ -81,14 +81,14 @@ namespace ReportForge.Examples
                             .Text("ITBIS (18%): RD$ 2,367.00", t => t.AlignRight())
                             .Text("TOTAL A PAGAR: RD$ 15,517.00", t => t.H2().Color("#1E3A8A").AlignRight().Bold()))))
                     .Spacer(15)
-                    .QrCode("https://reportforge.dev/verify/OC-2026-9901", 80))
+                    .QrCode("https://example.com/verify/OC-2026-9901", 80))
                 .Footer(footer => footer
-                    .Text("Generado por ReportForge v2.0 - www.reportforge.dev", t => t.AlignCenter().Color("#64748B")));
+                    .Text("Generado por FlowPDF - www.flowpdf.dev", t => t.AlignCenter().Color("#64748B")));
 
             // -------------------------------------------------------------
             // TEST 1: RENDER IN-PROCESS CON MOTOR NATIVO RUST
             // -------------------------------------------------------------
-            Console.WriteLine("[2/3] Generando PDF IN-PROCESS con motor nativo Rust (reportforge.dll)...");
+            Console.WriteLine("[2/3] Generando PDF IN-PROCESS con motor nativo Rust (flowpdf.dll)...");
             var sw = Stopwatch.StartNew();
             byte[] nativePdf = invoiceDoc.GeneratePdf();
             sw.Stop();
@@ -106,7 +106,7 @@ namespace ReportForge.Examples
             string baseUrl = "http://localhost:8080";
             string apiKey = "rf_live_docker_demo_12345";
 
-            using var client = new ReportForgeClient(baseUrl, apiKey);
+            using var client = new FlowPdfClient(baseUrl, apiKey);
             try
             {
                 sw.Restart();
@@ -128,7 +128,7 @@ namespace ReportForge.Examples
             }
 
             Console.WriteLine("\n==================================================================");
-            Console.WriteLine("    ¡Demostración de ReportForge para C# finalizada con éxito!    ");
+            Console.WriteLine("    ¡Demostración de FlowPDF para C# finalizada con éxito!    ");
             Console.WriteLine("==================================================================");
         }
     }

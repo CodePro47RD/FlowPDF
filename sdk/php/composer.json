@@ -1,13 +1,11 @@
 {
-  "name": "reportforge/reportforge",
-  "description": "Universal Document Engine and Fluent Report Builder SDK for PHP with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly",
-  "version": "2.1.0",
+  "name": "codepro47rd/flowpdf",
+  "description": "Universal Document Engine and Fluent Report Builder SDK for PHP with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
   "type": "library",
   "license": "MIT",
   "authors": [
     {
-      "name": "Edwin Abreu & ReportForge Contributors",
-      "email": "dev@reportforge.io"
+      "name": "Edwin Abreu & FlowPDF Contributors"
     }
   ],
   "require": {
@@ -16,20 +14,21 @@
     "ext-curl": "*"
   },
   "suggest": {
-    "ext-ffi": "Allows ultra-fast in-process native PDF rendering via Rust Core v2.0"
+    "ext-ffi": "Allows ultra-fast in-process native PDF rendering via Rust Core"
   },
   "autoload": {
     "psr-4": {
-      "ReportForge\\": "src/"
+      "FlowPdf\\": "src/"
     }
   },
   "keywords": [
-    "reportforge",
+    "flowpdf",
     "pdf",
     "reports",
     "document-engine",
     "rust",
     "fluent",
     "php"
-  ]
+  ],
+  "homepage": "https://github.com/CodePro47RD/FlowPDF"
 }

@@ -1,6 +1,6 @@
-# Arquitectura del Sistema ReportForge
+# Arquitectura del Sistema FlowPDF
 
-ReportForge es un motor profesional de composición y generación de documentos para entornos corporativos y aplicaciones multiplataforma.
+FlowPDF es un motor profesional de composición y generación de documentos para entornos corporativos y aplicaciones multiplataforma.
 
 Está diseñado con estricta separación de responsabilidades: el **Motor de Composición (Document Engine)** opera como una biblioteca pura de Python, desacoplada de la capa web de **Django REST Framework (DRF)**.
 
@@ -45,7 +45,7 @@ El documento se describe de forma declarativa, no con coordenadas:
 ### B. Sistema de Coordenadas Top-Down
 ReportLab nativamente utiliza un sistema cartesiano con origen `(0, 0)` en la esquina inferior izquierda (creciendo hacia arriba). Esto suele generar errores matemáticos complejos en diseños modernos.
 
-ReportForge introduce `DrawContext` que normaliza todas las coordenadas al estándar moderno **Top-Left**:
+FlowPDF introduce `DrawContext` que normaliza todas las coordenadas al estándar moderno **Top-Left**:
 - `(0, 0)` está en la esquina superior izquierda del área de contenido.
 - `x` crece hacia la derecha.
 - `y` crece hacia abajo.
@@ -66,7 +66,7 @@ ReportForge introduce `DrawContext` que normaliza todas las coordenadas al está
 
 ## 2. Aislamiento Multi-Tenancy
 
-Cada cliente o microservicio que consume ReportForge se identifica mediante un encabezado HTTP:
+Cada cliente o microservicio que consume FlowPDF se identifica mediante un encabezado HTTP:
 ```http
 X-API-Key: rf_live_...
 ```

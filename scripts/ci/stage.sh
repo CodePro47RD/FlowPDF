@@ -5,15 +5,18 @@
 #   2. Estampa la versión del release en todos los manifiestos.
 #
 # Uso: scripts/ci/stage.sh <version> [carpeta-nativos]
-#   <version>         ej. 2.1.0 o 2.2.0-beta.1
+#      scripts/ci/stage.sh --natives-only [carpeta-nativos]   (solo paso 1; desarrollo local)
+#   <version>         ej. 1.0.0 o 1.1.0-beta.1
 #   [carpeta-nativos] carpeta con <rid>/native/<archivo> (por defecto: natives)
 set -euo pipefail
 
+NATIVES_ONLY=false
+if [[ "${1:-}" == --natives-only ]]; then NATIVES_ONLY=true; shift; set -- 0.0.0 "$@"; fi
 VERSION="${1:?Uso: stage.sh <version> [carpeta-nativos]}"
 NATIVE_DIR="${2:-natives}"
 
 # Pre-releases limitados a alpha/beta/rc: es lo que entienden a la vez SemVer (npm, NuGet,
-# Cargo, Maven) y PEP 440 (PyPI normaliza 2.2.0-beta.1 -> 2.2.0b1). Algo como -test o -preview
+# Cargo, Maven) y PEP 440 (PyPI normaliza 1.1.0-beta.1 -> 1.1.0b1). Algo como -test o -preview
 # rompería el build de Python.
 if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)(\.?[0-9]+)?)?$ ]]; then
   echo "::error::Versión inválida '$VERSION' (se esperaba X.Y.Z o X.Y.Z-alpha|beta|rc[.N])" >&2
@@ -32,9 +35,9 @@ if ! find "$NATIVE_DIR" -type f -path '*/native/*' | grep -q .; then
 fi
 
 RUNTIME_DIRS=(
-  sdk/csharp/ReportForge/runtimes
+  sdk/csharp/FlowPdf/runtimes
   sdk/typescript/runtimes
-  sdk/python/reportforge/runtimes
+  sdk/python/flowpdf/runtimes
   sdk/php/runtimes
   sdk/java/src/main/resources/runtimes
 )
@@ -44,6 +47,7 @@ for dir in "${RUNTIME_DIRS[@]}"; do
   cp -R "$NATIVE_DIR"/. "$dir"/
   echo "runtimes -> $dir"
 done
+$NATIVES_ONLY && exit 0
 
 # ---------------------------------------------------------------------------
 # 2. Versiones (solo la primera coincidencia de cada archivo = versión del proyecto)
@@ -57,10 +61,14 @@ stamp() { # archivo  regex-sed  reemplazo
 }
 
 stamp Cargo.toml                                '^version = "[^"]*"'          "version = \"$VERSION\""
-stamp sdk/csharp/ReportForge/ReportForge.csproj '<Version>[^<]*<\/Version>'   "<Version>$VERSION<\/Version>"
+stamp sdk/csharp/FlowPdf/FlowPdf.csproj '<Version>[^<]*<\/Version>'   "<Version>$VERSION<\/Version>"
 stamp sdk/typescript/package.json               '"version": "[^"]*"'          "\"version\": \"$VERSION\""
 stamp sdk/python/pyproject.toml                 '^version = "[^"]*"'          "version = \"$VERSION\""
 stamp sdk/python/setup.py                       'version="[^"]*"'             "version=\"$VERSION\""
 stamp sdk/java/pom.xml                          '<version>[^<]*<\/version>'   "<version>$VERSION<\/version>"
-# PHP: Packagist toma la versión del tag git; el campo "version" en composer.json
-# se elimina en el job del espejo para que no haya conflicto.
+# Versiones visibles en tiempo de ejecución (User-Agent de los clientes HTTP, __version__)
+stamp sdk/python/flowpdf/__init__.py            '^__version__ = "[^"]*"'      "__version__ = \"$VERSION\""
+stamp sdk/python/flowpdf/client.py              'FlowPDF-Python-SDK\/[0-9A-Za-z.-]*' "FlowPDF-Python-SDK\/$VERSION"
+stamp sdk/java/src/main/java/io/github/codepro47rd/flowpdf/FlowPdfClient.java 'FlowPDF-Java-SDK\/[0-9A-Za-z.-]*' "FlowPDF-Java-SDK\/$VERSION"
+stamp sdk/php/src/FlowPdfClient.php             'FlowPDF-PHP-SDK\/[0-9A-Za-z.-]*' "FlowPDF-PHP-SDK\/$VERSION"
+# PHP: Packagist toma la versión del tag git (composer.json no declara "version").

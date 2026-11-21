@@ -3,7 +3,7 @@ use crate::pdf_engine::PdfEngine;
 use std::slice;
 
 #[no_mangle]
-pub extern "C" fn reportforge_wasm_alloc(size: usize) -> *mut u8 {
+pub extern "C" fn flowpdf_wasm_alloc(size: usize) -> *mut u8 {
     let mut buf = Vec::with_capacity(size);
     let ptr = buf.as_mut_ptr();
     std::mem::forget(buf);
@@ -11,7 +11,7 @@ pub extern "C" fn reportforge_wasm_alloc(size: usize) -> *mut u8 {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_wasm_dealloc(ptr: *mut u8, size: usize) {
+pub unsafe extern "C" fn flowpdf_wasm_dealloc(ptr: *mut u8, size: usize) {
     if !ptr.is_null() && size > 0 {
         let _ = Vec::from_raw_parts(ptr, size, size);
     }
@@ -21,7 +21,7 @@ pub unsafe extern "C" fn reportforge_wasm_dealloc(ptr: *mut u8, size: usize) {
 /// Retorna un u64 empaquetado: (out_ptr << 32) | out_len.
 /// Si ocurre un error, retorna 0.
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_wasm_render(json_ptr: *const u8, json_len: usize) -> u64 {
+pub unsafe extern "C" fn flowpdf_wasm_render(json_ptr: *const u8, json_len: usize) -> u64 {
     if json_ptr.is_null() || json_len == 0 {
         return 0;
     }
@@ -53,7 +53,7 @@ pub unsafe extern "C" fn reportforge_wasm_render(json_ptr: *const u8, json_len: 
 /// Extrae texto plano de un PDF en WebAssembly.
 /// Retorna un u64 empaquetado: (out_ptr << 32) | out_len (UTF-8).
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_wasm_extract_text(pdf_ptr: *const u8, pdf_len: usize) -> u64 {
+pub unsafe extern "C" fn flowpdf_wasm_extract_text(pdf_ptr: *const u8, pdf_len: usize) -> u64 {
     if pdf_ptr.is_null() || pdf_len == 0 {
         return 0;
     }
@@ -75,7 +75,7 @@ pub unsafe extern "C" fn reportforge_wasm_extract_text(pdf_ptr: *const u8, pdf_l
 /// Registra una fuente TTF global en WebAssembly.
 /// Retorna 0 en éxito, -1 en error.
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_wasm_register_font(
+pub unsafe extern "C" fn flowpdf_wasm_register_font(
     name_ptr: *const u8,
     name_len: usize,
     font_ptr: *const u8,

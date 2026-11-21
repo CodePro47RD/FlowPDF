@@ -1,5 +1,5 @@
 /**
- * ReportForge Client Example in Node.js / Modern JavaScript (Fetch API)
+ * FlowPDF Client Example in Node.js / Modern JavaScript (Fetch API)
  */
 
 const fs = require('fs');
@@ -31,7 +31,7 @@ async function generateReport() {
                 { type: 'spacer', height: 20 },
                 {
                     type: 'qr',
-                    value: 'https://cert.reportforge.io/verify/{{ cert_code }}',
+                    value: 'https://example.com/verify/{{ cert_code }}',
                     size: 80
                 }
             ],
@@ -50,7 +50,7 @@ async function generateReport() {
         response_type: 'binary'
     };
 
-    console.log('Solicitando generación de certificado a ReportForge...');
+    console.log('Solicitando generación de certificado a FlowPDF...');
 
     const response = await fetch(url, {
         method: 'POST',
@@ -63,7 +63,7 @@ async function generateReport() {
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error en ReportForge (${response.status}): ${errorText}`);
+        throw new Error(`Error en FlowPDF (${response.status}): ${errorText}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
