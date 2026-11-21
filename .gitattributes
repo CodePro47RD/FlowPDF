@@ -1,0 +1,2 @@
+# Los scripts de shell deben tener LF (se ejecutan en Linux/Docker y en runners de CI)
+*.sh text eol=lf

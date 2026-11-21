@@ -4,7 +4,7 @@
 > **Target Frameworks:** `.NET 8.0`, `.NET 9.0`, `.NET 10.0`  
 > **Licencia:** MIT  
 > **Plataformas Nativas Soportadas:** Windows x64 (`reportforge_native.dll`), Linux x64 (`libreportforge_native.so`)  
-> **Repositorio:** [github.com/reportforge/reportforge](https://github.com/reportforge/reportforge)
+> **Repositorio:** [github.com/CodePro47RD/ReportForge](https://github.com/CodePro47RD/ReportForge)
 
 ---
 

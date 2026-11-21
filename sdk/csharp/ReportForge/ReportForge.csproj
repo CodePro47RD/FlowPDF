@@ -16,8 +16,8 @@
     <Title>ReportForge - High-Performance Document Engine for .NET</Title>
     <Description>Enterprise reporting and document generation engine for .NET. Features a Fluent Builder API, strongly-typed AST, remote HTTP client, native vector charts, custom TTF font embedding, and ultra-fast in-process native rendering powered by the Rust Core (v2.1) with embedded win-x64 and linux-x64 runtimes.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/reportforge/reportforge</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/reportforge/reportforge</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/CodePro47RD/ReportForge</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CodePro47RD/ReportForge</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>reportforge;pdf;reports;reporting;fluent;rust;inprocess;high-performance;csharp;charts;ttf;extraction</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -30,13 +30,9 @@
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
-    <Content Include="runtimes\win-x64\native\reportforge_native.dll">
-      <PackagePath>runtimes/win-x64/native/reportforge_native.dll</PackagePath>
-      <Pack>true</Pack>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="runtimes\linux-x64\native\libreportforge_native.so">
-      <PackagePath>runtimes/linux-x64/native/libreportforge_native.so</PackagePath>
+    <!-- Todos los runtimes nativos presentes (win-x64, linux-x64 y los que se agreguen, ej. osx-*) -->
+    <Content Include="runtimes\**\*_native.*">
+      <PackagePath>runtimes</PackagePath>
       <Pack>true</Pack>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

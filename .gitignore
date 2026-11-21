@@ -36,5 +36,5 @@ engine-rust/target/
 !sdk/**/*.jar
 
 
-# Artefactos de CI local
+# Validación local de CI (scripts/ci/validate-local.sh)
 .ci-local/

@@ -5,6 +5,12 @@ edition = "2021"
 authors = ["Edwin Abreu & ReportForge Contributors"]
 description = "Universal Document Composition and PDF Engine in Rust"
 license = "MIT"
+repository = "https://github.com/CodePro47RD/ReportForge"
+readme = "README.md"
+keywords = ["pdf", "report", "document", "barcode", "chart"]
+categories = ["text-processing", "rendering"]
+# Solo el código del motor: sin docs/, sdk/ ni binarios (límite de 10 MB en crates.io)
+include = ["/src/**", "/tests/**", "/Cargo.toml", "/README.md", "/LICENSE"]
 
 [lib]
 name = "reportforge"

@@ -136,7 +136,8 @@ fn test_c_abi_version() {
     let version_ptr = reportforge_version();
     assert!(!version_ptr.is_null());
     let version_str = unsafe { CStr::from_ptr(version_ptr).to_str().unwrap() };
-    assert!(version_str.contains("v2.1.0"), "Version must contain v2.1.0, got: {}", version_str);
+    let expected = format!("v{}", env!("CARGO_PKG_VERSION"));
+    assert!(version_str.ends_with(&expected), "Version must end with {}, got: {}", expected, version_str);
 }
 
 #[test]
