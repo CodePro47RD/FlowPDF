@@ -35,3 +35,6 @@ engine-rust/target/
 !sdk/**/*.whl
 !sdk/**/*.jar
 
+
+# Artefactos de CI local
+.ci-local/
