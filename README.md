@@ -436,7 +436,7 @@ Esto generará el archivo `target/release/libflowpdf.so` compatible con Alpine, 
 
 ## 🇩🇴 Hecho en República Dominicana
 
-FlowPDF es una librería dominicana de código abierto para la generación de reportes, desarrollada en República Dominicana por Edwin Abreu y la comunidad de [CodePro47RD](https://github.com/CodePro47RD).
+FlowPDF es una librería dominicana de código abierto para la generación de reportes, desarrollada en República Dominicana por [Edwin Abreu](https://edwin.cpro47.com) y [Felix R. Benzan](https://www.felixbenzan.com.do), junto a la comunidad de [CodePro47RD](https://github.com/CodePro47RD).
 
 Nació para resolver los documentos que las empresas generan a diario —facturas, recibos, órdenes de compra, estados de cuenta y reportes multipágina— con un motor rápido, sin dependencias pesadas y con soporte completo para el español (acentos, `ñ`, `¿`, `¡`) y formato de montos. Las contribuciones son bienvenidas: consulta [CONTRIBUTING.md](CONTRIBUTING.md).
 

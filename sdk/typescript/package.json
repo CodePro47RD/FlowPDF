@@ -23,7 +23,16 @@
     "bun",
     "rust"
   ],
-  "author": "Edwin Abreu & FlowPDF Contributors",
+  "author": {
+    "name": "Edwin Abreu",
+    "url": "https://edwin.cpro47.com"
+  },
+  "contributors": [
+    {
+      "name": "Felix R. Benzan",
+      "url": "https://www.felixbenzan.com.do"
+    }
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

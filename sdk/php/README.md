@@ -125,4 +125,4 @@ file_put_contents("reporte_remoto_php.pdf", $pdf);
 
 ## 📄 License
 
-MIT © 2026 Edwin Abreu & FlowPDF Contributors.
+MIT © 2026 Edwin Abreu, Felix R. Benzan & FlowPDF Contributors.

@@ -2,7 +2,7 @@
 name = "flowpdf"
 version = "1.0.0"
 edition = "2021"
-authors = ["Edwin Abreu & FlowPDF Contributors"]
+authors = ["Edwin Abreu", "Felix R. Benzan", "FlowPDF Contributors"]
 description = "Dominican open-source report and PDF generation engine in Rust (made in the Dominican Republic)"
 license = "MIT"
 repository = "https://github.com/CodePro47RD/FlowPDF"

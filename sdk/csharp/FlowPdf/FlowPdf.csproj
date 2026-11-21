@@ -10,7 +10,7 @@
     <!-- Package metadata -->
     <PackageId>FlowPDF</PackageId>
     <Version>1.0.0</Version>
-    <Authors>Edwin Abreu &amp; FlowPDF Contributors</Authors>
+    <Authors>Edwin Abreu, Felix R. Benzan &amp; FlowPDF Contributors</Authors>
     <Company>FlowPDF</Company>
     <Product>FlowPDF</Product>
     <Title>FlowPDF - High-Performance Document Engine for .NET</Title>

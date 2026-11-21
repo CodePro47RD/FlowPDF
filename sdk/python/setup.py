@@ -13,7 +13,7 @@ setup(
     description="Open-source report generation library made in the Dominican Republic. Universal document engine and fluent report builder SDK for Python with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Edwin Abreu & FlowPDF Contributors",
+    author="Edwin Abreu, Felix R. Benzan & FlowPDF Contributors",
     url="https://github.com/CodePro47RD/FlowPDF",
     packages=find_packages(),
     package_data={
