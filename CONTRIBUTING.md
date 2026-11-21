@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to **FlowPDF**! 🎉
 
+FlowPDF is an open-source report generation library made in the Dominican Republic 🇩🇴, and contributions from anywhere are welcome.
+
 We welcome contributions from the community, whether it's fixing bugs, improving documentation, adding new components to the document engine, or building SDK client libraries in other programming languages.
 
 ---

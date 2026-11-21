@@ -2,6 +2,8 @@
 
 Universal Document Engine and Fluent Report Builder SDK for Python, powered by in-process **Rust Core** and high-throughput remote HTTP rendering.
 
+🇩🇴 **Made in the Dominican Republic** — FlowPDF is an open-source Dominican library for report and PDF generation.
+
 [![PyPI](https://img.shields.io/pypi/v/flowpdf)](https://pypi.org/project/flowpdf/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

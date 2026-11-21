@@ -1,7 +1,7 @@
 {
   "name": "flowpdf",
   "version": "1.0.0",
-  "description": "Universal Document Engine and Fluent Report Builder SDK for TypeScript, JavaScript, Bun and Node.js with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
+  "description": "Open-source report generation library made in the Dominican Republic. Universal document engine and fluent report builder SDK for TypeScript, JavaScript, Bun and Node.js with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

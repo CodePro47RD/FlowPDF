@@ -13,7 +13,7 @@ def main():
     # 1. Initialize client with credentials
     client = FlowPdfClient(
         base_url="http://localhost:8000",
-        api_key="rf_live_sample_key_here",
+        api_key="fp_live_sample_key_here",
     )
 
     # 2. Define document payload

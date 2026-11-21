@@ -10,7 +10,7 @@ if os.path.exists(readme_path):
 setup(
     name="flowpdf",
     version="1.0.0",
-    description="Universal Document Engine and Fluent Report Builder SDK for Python with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
+    description="Open-source report generation library made in the Dominican Republic. Universal document engine and fluent report builder SDK for Python with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Edwin Abreu & FlowPDF Contributors",

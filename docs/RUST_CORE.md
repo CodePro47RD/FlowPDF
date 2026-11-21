@@ -2,7 +2,7 @@
 
 ## 📌 Visión General
 
-**FlowPDF (Rust Core)** es la evolución de ultra-alto rendimiento del motor de composición de documentos de FlowPDF.
+**FlowPDF (Rust Core)** es el motor de ultra-alto rendimiento de FlowPDF, la librería dominicana 🇩🇴 de código abierto para la generación de reportes y documentos.
 
 A diferencia de la primera generación del proyecto (un microservicio HTTP en Django / Celery / Python), el **núcleo actual** está escrito 100% en **Rust puro**, se compila a una librería nativa compartida (`.dll` en Windows, `.so` en Linux, `.dylib` en macOS) y puede ejecutarse **embebido en el mismo proceso (In-Process)** en cualquier lenguaje con soporte para Foreign Function Interface (FFI) o C-ABI.
 

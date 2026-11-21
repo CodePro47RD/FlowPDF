@@ -1,5 +1,7 @@
 # Catálogo de Componentes FlowPDF
 
+> FlowPDF es una librería dominicana 🇩🇴 de código abierto para la generación de reportes y documentos PDF.
+
 Referencia exhaustiva de todos los componentes disponibles tanto en la API fluida de Python como en el esquema declarativo JSON.
 
 ---

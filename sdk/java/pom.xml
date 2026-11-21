@@ -11,7 +11,7 @@
     <packaging>jar</packaging>
 
     <name>FlowPDF Java SDK</name>
-    <description>Universal Document Engine and Fluent Report Builder SDK for Java with native Rust Core, vector charts, custom TTF fonts, and WebAssembly</description>
+    <description>Open-source report generation library made in the Dominican Republic. Universal document engine and fluent report builder SDK for Java with native Rust Core, vector charts, custom TTF fonts, and WebAssembly</description>
     <url>https://github.com/CodePro47RD/FlowPDF</url>
 
     <scm>

@@ -2,6 +2,8 @@
 
 Universal Document Engine and Fluent Report Builder SDK for **PHP (8.0+)**, powered by in-process **Rust Core** and high-throughput remote HTTP rendering.
 
+🇩🇴 **Made in the Dominican Republic** — FlowPDF is an open-source Dominican library for report and PDF generation.
+
 [![Packagist](https://img.shields.io/packagist/v/codepro47rd/flowpdf)](https://packagist.org/packages/codepro47rd/flowpdf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

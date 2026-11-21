@@ -6,7 +6,7 @@ const fs = require('fs');
 
 async function generateReport() {
     const url = 'http://localhost:8000/api/v1/reports/generate/';
-    const apiKey = 'rf_live_your_tenant_api_key_here';
+    const apiKey = 'fp_live_your_tenant_api_key_here';
 
     const payload = {
         document: {

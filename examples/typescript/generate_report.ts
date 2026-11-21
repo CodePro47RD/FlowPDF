@@ -18,7 +18,7 @@ async function main(): Promise<void> {
     console.log('==========================================================\n');
 
     const baseUrl = 'http://localhost:8080';
-    const apiKey = 'rf_live_docker_demo_12345';
+    const apiKey = 'fp_live_docker_demo_12345';
 
     const client = new FlowPdfClient({
         baseUrl,
@@ -26,7 +26,7 @@ async function main(): Promise<void> {
     });
 
     // -------------------------------------------------------------
-    // OPCIÓN 1: Construcción usando la API Fluent (API fluida)
+    // OPCIÓN 1: Construcción usando la API Fluent
     // -------------------------------------------------------------
     console.log('[1/2] Construyendo reporte con Fluent Builder en TypeScript...');
 
@@ -86,7 +86,7 @@ async function main(): Promise<void> {
                             c.column((col) =>
                                 col
                                     .text('Código de Validación Blockchain:', (t) => t.caption().italic())
-                                    .barcode('DOC-RF-2026-TS-998', 'code128', 180, 40)
+                                    .barcode('DOC-FP-2026-TS-998', 'code128', 180, 40)
                             )
                         )
                         .relativeItem(1.0, (c) =>

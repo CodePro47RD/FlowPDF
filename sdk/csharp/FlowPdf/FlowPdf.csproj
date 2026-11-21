@@ -14,7 +14,7 @@
     <Company>FlowPDF</Company>
     <Product>FlowPDF</Product>
     <Title>FlowPDF - High-Performance Document Engine for .NET</Title>
-    <Description>Enterprise reporting and document generation engine for .NET. Features a Fluent Builder API, strongly-typed AST, remote HTTP client, native vector charts, custom TTF font embedding, and ultra-fast in-process native rendering powered by the Rust core with embedded win-x64 and linux-x64 runtimes.</Description>
+    <Description>Open-source report generation library made in the Dominican Republic. Enterprise reporting and document generation engine for .NET. Features a Fluent Builder API, strongly-typed AST, remote HTTP client, native vector charts, custom TTF font embedding, and ultra-fast in-process native rendering powered by the Rust core with embedded win-x64 and linux-x64 runtimes.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/CodePro47RD/FlowPDF</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CodePro47RD/FlowPDF</RepositoryUrl>
