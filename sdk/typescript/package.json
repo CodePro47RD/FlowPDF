@@ -39,7 +39,7 @@
     "url": "git+https://github.com/CodePro47RD/FlowPDF.git",
     "directory": "sdk/typescript"
   },
-  "homepage": "https://github.com/CodePro47RD/FlowPDF#readme",
+  "homepage": "https://codepro47rd.github.io/FlowPDF/",
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.4.5"
