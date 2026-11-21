@@ -101,6 +101,21 @@ pub enum ComponentAst {
         border_width: Option<f32>,
         #[serde(default = "default_true")]
         repeat_header: bool,
+        /// Tamaño de letra de las celdas (pt). Sin él, 9 pt con las alturas mínimas de siempre.
+        font_size: Option<f32>,
+        /// Relleno horizontal y vertical de cada celda (pt).
+        padding_x: Option<f32>,
+        padding_y: Option<f32>,
+        /// Color del texto de la cabecera y de las celdas.
+        header_color: Option<String>,
+        text_color: Option<String>,
+        /// Fondo de las filas alternas (con `zebra`).
+        zebra_color: Option<String>,
+        /// Campo que agrupa las filas: cada vez que cambia su valor se intercala una fila de título que
+        /// ocupa todo el ancho. Las filas deben venir ordenadas por ese campo.
+        group_by: Option<String>,
+        group_background: Option<String>,
+        group_color: Option<String>,
     },
     #[serde(rename = "qr")]
     Qr {
@@ -195,6 +210,10 @@ pub struct TableColumnAst {
     pub flex: Option<f32>,
     pub format: Option<String>,
     pub align: Option<String>,
+    /// Ancho según el contenido: el del texto más ancho de la columna (cabecera incluida) más el relleno.
+    /// Su texto no se parte; las columnas flexibles toman lo que quede.
+    #[serde(default)]
+    pub auto: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

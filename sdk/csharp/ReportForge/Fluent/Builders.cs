@@ -317,6 +317,53 @@ namespace ReportForge.Fluent
             return this;
         }
 
+        /// <summary>Tamaño de letra de las celdas (pt).</summary>
+        public TableBuilder FontSize(double size)
+        {
+            _table.FontSize = size;
+            return this;
+        }
+
+        /// <summary>Relleno de cada celda (pt): horizontal y vertical.</summary>
+        public TableBuilder Padding(double horizontal, double vertical)
+        {
+            _table.PaddingX = horizontal;
+            _table.PaddingY = vertical;
+            return this;
+        }
+
+        public TableBuilder HeaderColor(string color)
+        {
+            _table.HeaderColor = color;
+            return this;
+        }
+
+        public TableBuilder TextColor(string color)
+        {
+            _table.TextColor = color;
+            return this;
+        }
+
+        /// <summary>Filas alternas con fondo de este color.</summary>
+        public TableBuilder ZebraColor(string color)
+        {
+            _table.Zebra = true;
+            _table.ZebraColor = color;
+            return this;
+        }
+
+        /// <summary>
+        /// Agrupa las filas por un campo: cada vez que cambia su valor se intercala un título a todo el ancho
+        /// (las filas deben venir ordenadas por ese campo).
+        /// </summary>
+        public TableBuilder GroupBy(string field, string? background = null, string? color = null)
+        {
+            _table.GroupBy = field;
+            _table.GroupBackground = background;
+            _table.GroupColor = color;
+            return this;
+        }
+
         public TableBuilder Columns(Action<TableColumnsBuilder> configure)
         {
             var builder = new TableColumnsBuilder();
@@ -376,6 +423,8 @@ namespace ReportForge.Fluent
         }
 
         public TableColumnBuilder Width(double width) { _col.Width = width; return this; }
+        /// <summary>Ancho según el contenido, medido por el motor (montos, fechas, códigos).</summary>
+        public TableColumnBuilder Auto() { _col.Auto = true; return this; }
         public TableColumnBuilder Flex(double flex) { _col.Flex = flex; return this; }
         public TableColumnBuilder Format(string format) { _col.Format = format; return this; }
         public TableColumnBuilder Currency() => Format("currency");

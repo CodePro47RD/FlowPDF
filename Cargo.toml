@@ -17,6 +17,7 @@ lopdf = { version = "0.33", default-features = false, features = ["nom_parser"] 
 qrcode = { version = "0.14", default-features = false }
 ttf-parser = "0.25.1"
 base64 = "0.23.1"
+png = { version = "0.18.1", default-features = false }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.130"
