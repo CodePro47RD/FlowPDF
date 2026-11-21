@@ -359,13 +359,23 @@ jobs:
       MIRROR_REPO: ${{ vars.PHP_MIRROR_REPO }}
       PACKAGIST_USERNAME: ${{ vars.PACKAGIST_USERNAME }}
       PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+      # git ejecuta esto vía shell, así que $HOME se expande ahí
+      GIT_SSH_COMMAND: ssh -i $HOME/.ssh/mirror_key -o IdentitiesOnly=yes
     steps:
       - uses: actions/download-artifact@v4
         with: { name: pkg-php, path: pkg }
-      - name: Clonar espejo
+      - name: Configurar deploy key del espejo
+        env:
+          DEPLOY_KEY: ${{ secrets.PHP_MIRROR_DEPLOY_KEY }}
         run: |
           if [ -z "$MIRROR_REPO" ]; then echo "::error::Falta la variable PHP_MIRROR_REPO"; exit 1; fi
-          git clone "https://x-access-token:${{ secrets.PHP_MIRROR_TOKEN }}@github.com/${MIRROR_REPO}.git" mirror
+          if [ -z "$DEPLOY_KEY" ]; then echo "::error::Falta el secret PHP_MIRROR_DEPLOY_KEY"; exit 1; fi
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/mirror_key && chmod 600 ~/.ssh/mirror_key
+          # Host key publicada por GitHub (docs: "GitHub's SSH key fingerprints")
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" >> ~/.ssh/known_hosts
+      - name: Clonar espejo
+        run: git clone "git@github.com:${MIRROR_REPO}.git" mirror
       - name: Actualizar, etiquetar y subir
         working-directory: mirror
         run: |

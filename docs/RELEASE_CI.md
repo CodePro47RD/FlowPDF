@@ -65,7 +65,7 @@ Se requiere rol admin. No se usan *environments*: en repos privados solo existen
 | `MAVEN_CENTRAL_USERNAME` / `MAVEN_CENTRAL_PASSWORD` | central.sonatype.com → *View Account* → *Generate User Token* |
 | `MAVEN_GPG_PRIVATE_KEY` | `gpg --armor --export-secret-keys <KEY_ID>` (bloque completo) |
 | `MAVEN_GPG_PASSPHRASE` | passphrase de esa clave |
-| `PHP_MIRROR_TOKEN` | GitHub fine-grained PAT con *Contents: Read and write* **solo** sobre el repo espejo |
+| `PHP_MIRROR_DEPLOY_KEY` | Clave **privada** SSH (ed25519) cuya pública está como *deploy key* con escritura en el repo espejo (ver abajo) |
 | `PACKAGIST_TOKEN` *(opcional)* | packagist.org → Profile → API Token (solo si no usas la integración de GitHub) |
 
 ### Variables (Settings → Secrets and variables → Actions → *Variables*)
@@ -88,7 +88,9 @@ Se requiere rol admin. No se usan *environments*: en repos privados solo existen
   da una clave de verificación: crear en la org un repo **público** temporal con ese nombre exacto, pulsar
   *Verify* y luego borrarlo. Publicar la clave GPG pública en un keyserver:
   `gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>`.
-- **PHP / Packagist**: crear el repo **público** vacío `PHP_MIRROR_REPO` (con un commit inicial, ej. un README).
+- **PHP / Packagist**: repo **público** `PHP_MIRROR_REPO` con un commit inicial. El push usa una *deploy key* (requiere
+  *Deploy keys* habilitadas en la org): `ssh-keygen -t ed25519 -N "" -f k`, luego
+  `gh repo deploy-key add k.pub --repo <espejo> --allow-write` y `gh secret set PHP_MIRROR_DEPLOY_KEY < k`; borrar `k`.
   Tras el primer release, registrarlo en packagist.org → *Submit* y conectar la integración de GitHub para que
   cada tag nuevo se actualice solo.
 - **npm / crates.io**: el primer publish crea el paquete; no hace falta registrarlo antes.
