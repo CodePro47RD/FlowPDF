@@ -20,6 +20,9 @@ on:
         description: "Publicar en los registros (si no, solo genera los paquetes)"
         type: boolean
         default: false
+      targets:
+        description: "Registros a publicar: all, o lista separada por comas (nuget,npm,pypi,maven,crate,php)"
+        default: all
 
 permissions:
   contents: read
@@ -40,16 +43,26 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       publish: ${{ steps.v.outputs.publish }}
       prerelease: ${{ steps.v.outputs.prerelease }}
+      targets: ${{ steps.v.outputs.targets }}
     steps:
       - id: v
         env:
           INPUT_VERSION: ${{ inputs.version }}
           INPUT_PUBLISH: ${{ inputs.publish }}
+          INPUT_TARGETS: ${{ inputs.targets }}
         run: |
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
-            VERSION="${GITHUB_REF_NAME#v}"; PUBLISH=true
+            VERSION="${GITHUB_REF_NAME#v}"; PUBLISH=true; TARGETS=all
           else
-            VERSION="${INPUT_VERSION#v}"; PUBLISH="$INPUT_PUBLISH"
+            VERSION="${INPUT_VERSION#v}"; PUBLISH="$INPUT_PUBLISH"; TARGETS="${INPUT_TARGETS:-all}"
+          fi
+          # Normaliza "nuget, npm" -> ",nuget,npm," para comparar con contains(',x,')
+          TARGETS="$(echo "$TARGETS" | tr -d ' ' | tr '[:upper:]' '[:lower:]')"
+          if [ "$TARGETS" != all ]; then
+            for t in ${TARGETS//,/ }; do
+              case "$t" in nuget|npm|pypi|maven|crate|php) ;; *) echo "::error::Registro desconocido: $t"; exit 1;; esac
+            done
+            TARGETS=",$TARGETS,"
           fi
           # Pre-release solo alpha/beta/rc (válido en SemVer y PEP 440 a la vez)
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)(\.?[0-9]+)?)?$ ]]; then
@@ -60,8 +73,9 @@ jobs:
             echo "version=$VERSION"
             echo "publish=$PUBLISH"
             echo "prerelease=$PRE"
+            echo "targets=$TARGETS"
           } >> "$GITHUB_OUTPUT"
-          echo "### ReportForge $VERSION (publicar: $PUBLISH)" >> "$GITHUB_STEP_SUMMARY"
+          echo "### ReportForge $VERSION (publicar: $PUBLISH, registros: $TARGETS)" >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   # FASE 1 — Compilación
@@ -264,7 +278,7 @@ jobs:
   publish-nuget:
     name: Publicar NuGet
     needs: [meta, pack-nuget, pack-npm, pack-pypi, pack-maven, pack-crate, pack-php]
-    if: needs.meta.outputs.publish == 'true'
+    if: needs.meta.outputs.publish == 'true' && (needs.meta.outputs.targets == 'all' || contains(needs.meta.outputs.targets, ',nuget,'))
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Trusted Publishing: canjea el token OIDC por una API key temporal
@@ -285,7 +299,7 @@ jobs:
   publish-npm:
     name: Publicar npm
     needs: [meta, pack-nuget, pack-npm, pack-pypi, pack-maven, pack-crate, pack-php]
-    if: needs.meta.outputs.publish == 'true'
+    if: needs.meta.outputs.publish == 'true' && (needs.meta.outputs.targets == 'all' || contains(needs.meta.outputs.targets, ',npm,'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -301,7 +315,7 @@ jobs:
   publish-pypi:
     name: Publicar PyPI
     needs: [meta, pack-nuget, pack-npm, pack-pypi, pack-maven, pack-crate, pack-php]
-    if: needs.meta.outputs.publish == 'true'
+    if: needs.meta.outputs.publish == 'true' && (needs.meta.outputs.targets == 'all' || contains(needs.meta.outputs.targets, ',pypi,'))
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Trusted Publishing (sin token)
@@ -313,7 +327,7 @@ jobs:
   publish-maven:
     name: Publicar Maven Central
     needs: [meta, pack-nuget, pack-npm, pack-pypi, pack-maven, pack-crate, pack-php]
-    if: needs.meta.outputs.publish == 'true'
+    if: needs.meta.outputs.publish == 'true' && (needs.meta.outputs.targets == 'all' || contains(needs.meta.outputs.targets, ',maven,'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -339,7 +353,7 @@ jobs:
   publish-crate:
     name: Publicar crates.io
     needs: [meta, pack-nuget, pack-npm, pack-pypi, pack-maven, pack-crate, pack-php]
-    if: needs.meta.outputs.publish == 'true'
+    if: needs.meta.outputs.publish == 'true' && (needs.meta.outputs.targets == 'all' || contains(needs.meta.outputs.targets, ',crate,'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -352,7 +366,7 @@ jobs:
   publish-php:
     name: Publicar PHP (espejo + Packagist)
     needs: [meta, pack-nuget, pack-npm, pack-pypi, pack-maven, pack-crate, pack-php]
-    if: needs.meta.outputs.publish == 'true'
+    if: needs.meta.outputs.publish == 'true' && (needs.meta.outputs.targets == 'all' || contains(needs.meta.outputs.targets, ',php,'))
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.meta.outputs.version }}
