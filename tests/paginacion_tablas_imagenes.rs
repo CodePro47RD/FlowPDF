@@ -1,8 +1,8 @@
 //! Paginación, tablas con celdas de varias líneas e imágenes reales (JPEG y PNG).
 
 use lopdf::{Document, Object};
-use reportforge::ast::DocumentDefinitionAst;
-use reportforge::pdf_engine::PdfEngine;
+use flowpdf::ast::DocumentDefinitionAst;
+use flowpdf::pdf_engine::PdfEngine;
 use serde_json::json;
 
 fn render(doc: serde_json::Value) -> Vec<u8> {

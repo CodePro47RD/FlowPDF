@@ -1,30 +1,30 @@
-# Manual Oficial de ReportForge para .NET (Paquete NuGet `ReportForge`)
+# Manual Oficial de FlowPDF para .NET (Paquete NuGet `FlowPDF`)
 
-> **Versión del Paquete:** `2.0.0`  
+> **Versión del Paquete:** `1.0.0`  
 > **Target Frameworks:** `.NET 8.0`, `.NET 9.0`, `.NET 10.0`  
 > **Licencia:** MIT  
-> **Plataformas Nativas Soportadas:** Windows x64 (`reportforge_native.dll`), Linux x64 (`libreportforge_native.so`)  
-> **Repositorio:** [github.com/CodePro47RD/ReportForge](https://github.com/CodePro47RD/ReportForge)
+> **Plataformas Nativas Soportadas:** Windows x64 (`flowpdf_native.dll`), Linux x64 (`libflowpdf_native.so`)  
+> **Repositorio:** [github.com/CodePro47RD/FlowPDF](https://github.com/CodePro47RD/FlowPDF)
 
 ---
 
 ## 1. Visión General y Propuesta de Valor
 
-**ReportForge** es un motor de composición y renderizado de documentos empresariales de alto rendimiento para el ecosistema .NET moderno. ReportForge introduce un **modelo híbrido de renderizado dual**:
+**FlowPDF** es un motor de composición y renderizado de documentos empresariales de alto rendimiento para el ecosistema .NET moderno. FlowPDF introduce un **modelo híbrido de renderizado dual**:
 
-1. **Renderizado Nativo In-Process (Rust Core v2.0):** Compilado en Rust con enlace nativo C-ABI (P/Invoke). Genera documentos PDF de calidad de imprenta en **5 a 25 milisegundos** sin dependencias externas (sin WebKit, sin Node, sin Chromium, sin Python en tiempo de ejecución).
-2. **Cliente Remoto de Microservicio (`ReportForgeClient`):** Conector HTTP asíncrono para delegar procesamiento masivo de lotes (batch processing de millones de reportes) a un clúster distribuido de ReportForge (Django + Celery + Redis + S3).
+1. **Renderizado Nativo In-Process (Rust Core):** Compilado en Rust con enlace nativo C-ABI (P/Invoke). Genera documentos PDF de calidad de imprenta en **5 a 25 milisegundos** sin dependencias externas (sin WebKit, sin Node, sin Chromium, sin Python en tiempo de ejecución).
+2. **Cliente Remoto de Microservicio (`FlowPdfClient`):** Conector HTTP asíncrono para delegar procesamiento masivo de lotes (batch processing de millones de reportes) a un clúster distribuido de FlowPDF (Django + Celery + Redis + S3).
 
 ### Comparativa frente a otras soluciones en .NET
 
-| Característica | ReportForge .NET | Otras librerías .NET | iTextSharp / iText 7 | WeasyPrint / wkhtmltopdf |
+| Característica | FlowPDF .NET | Otras librerías .NET | iTextSharp / iText 7 | WeasyPrint / wkhtmltopdf |
 |---|---|---|---|---|
 | **Licencia** | **MIT (100% Libre y Comercial)** | Comercial / PolyForm Noncommercial | AGPL / Comercial de alto costo | BSD / LGPL |
 | **Tiempo de Render (Factura Estándar)** | **~5 - 35 ms** | ~20 - 60 ms | ~80 - 200 ms | ~600 - 2,500 ms |
 | **Consumo de Memoria** | **< 15 MB** | ~30 - 80 MB | ~50 - 120 MB | > 150 MB (Headless browser) |
 | **API Fluent Declarativa** | **Sí** | Sí | No (Imperativa verbosa) | No (HTML / CSS estricto) |
 | **Códigos QR y Barcodes Nativos** | **Sí (Zero-dependency en Core)** | Requiere SkiaSharp externo | Requiere módulos adicionales | Requiere librerías JS/Python |
-| **Capacidad de Delegación Cloud** | **Nativa (`ReportForgeClient`)** | No (Solo local) | No | Requiere wrappers custom |
+| **Capacidad de Delegación Cloud** | **Nativa (`FlowPdfClient`)** | No (Solo local) | No | Requiere wrappers custom |
 | **Binarios Nativos Embebidos** | **Win-x64 y Linux-x64 incluidos** | Solo SkiaSharp | No | No |
 | **Soporte Unicode / Acentos / Símbolos** | **Nativo Hexadecimal (WinAnsi/Latin-1)** | Sí | Sí | Sí |
 
@@ -37,30 +37,30 @@
 - **Sistemas Operativos:**
   - Windows x64 (Windows 10, 11, Windows Server 2016 o superior).
   - Linux x64 (glibc 2.31+, Ubuntu 20.04+, Debian 11+, Red Hat Enterprise Linux 8+, Alpine con compatibilidad gnu).
-  - macOS (Soporte en roadmap v2.1).
+  - macOS (en el roadmap).
 
 ### Instalación vía .NET CLI
 
 ```bash
-dotnet add package ReportForge --version 2.0.0
+dotnet add package FlowPDF --version 1.0.0
 ```
 
 ### Instalación vía Package Manager Console (Visual Studio)
 
 ```powershell
-Install-Package ReportForge -Version 2.0.0
+Install-Package FlowPDF -Version 1.0.0
 ```
 
 ### Configuración en `.csproj`
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ReportForge" Version="2.0.0" />
+  <PackageReference Include="FlowPDF" Version="1.0.0" />
 </ItemGroup>
 ```
 
 > [!NOTE]
-> El paquete NuGet incluye automáticamente en su interior los binarios nativos bajo la ruta `runtimes/win-x64/native/reportforge_native.dll` y `runtimes/linux-x64/native/libreportforge_native.so`. Al compilar o publicar tu proyecto, el SDK de .NET copia el binario correspondiente al directorio de salida automáticamente.
+> El paquete NuGet incluye automáticamente en su interior los binarios nativos bajo la ruta `runtimes/win-x64/native/flowpdf_native.dll` y `runtimes/linux-x64/native/libflowpdf_native.so`. Al compilar o publicar tu proyecto, el SDK de .NET copia el binario correspondiente al directorio de salida automáticamente.
 
 ---
 
@@ -69,12 +69,12 @@ Install-Package ReportForge -Version 2.0.0
 El paquete está estructurado en 4 espacios de nombres cohesivos:
 
 ```
-ReportForge
+FlowPDF
 │
-├── ReportForge.Fluent       -> API Fluent declarativa para diseño ágil (ReportDocument)
-├── ReportForge.Models       -> Modelos POCO fuertemente tipados del AST (DocumentDefinition)
-├── ReportForge.Native       -> Motor nativo in-process P/Invoke en Rust (ReportForgeEngine)
-└── ReportForge.Client       -> Cliente HTTP para conexión a clusters distribuidos
+├── FlowPdf.Fluent       -> API Fluent declarativa para diseño ágil (ReportDocument)
+├── FlowPdf.Models       -> Modelos POCO fuertemente tipados del AST (DocumentDefinition)
+├── FlowPdf.Native       -> Motor nativo in-process P/Invoke en Rust (FlowPdfEngine)
+└── FlowPdf.Client       -> Cliente HTTP para conexión a clusters distribuidos
 ```
 
 ```mermaid
@@ -83,14 +83,14 @@ flowchart TD
     B --> C{"¿Dónde se Renderiza?"}
     
     C -->|"In-Process (Local / Ultrarrápido)"| D["doc.GeneratePdf()"]
-    D --> E["ReportForge.Native.ReportForgeEngine"]
+    D --> E["FlowPdf.Native.FlowPdfEngine"]
     E --> F["NativeLibraryResolver (Windows/Linux)"]
-    F --> G["Rust Core v2.0 (reportforge_native.dll / .so)"]
+    F --> G["Rust Core (flowpdf_native.dll / .so)"]
     G --> H["Salida Binaria PDF (~5-25 ms)"]
 
     C -->|"Remoto (Cluster Asíncrono)"| I["doc.GeneratePdfRemoteAsync(client)"]
-    I --> J["ReportForgeClient (HTTP REST)"]
-    J --> K["Cluster ReportForge (Django + Celery)"]
+    I --> J["FlowPdfClient (HTTP REST)"]
+    J --> K["Cluster FlowPDF (Django + Celery)"]
     K --> L["Descarga S3 / Streaming"]
 ```
 
@@ -101,15 +101,15 @@ flowchart TD
 Crea un archivo `Program.cs` y ejecuta:
 
 ```csharp
-using ReportForge.Fluent;
+using FlowPdf.Fluent;
 
 var pdf = ReportDocument.Create(page => page.A4().Margins(30, 30, 30, 30))
-    .Header(h => h.Text("¡HOLA MUNDO REPORTFORGE!", t => t.H1().Bold().Color("#1E3A8A").AlignCenter()))
+    .Header(h => h.Text("¡HOLA MUNDO FLOWPDF!", t => t.H1().Bold().Color("#1E3A8A").AlignCenter()))
     .Content(col =>
     {
-        col.Text("Documento generado con el paquete NuGet oficial de ReportForge.").FontSize(12);
+        col.Text("Documento generado con el paquete NuGet oficial de FlowPDF.").FontSize(12);
         col.Spacer(15);
-        col.QrCode("https://reportforge.dev", 80);
+        col.QrCode("https://example.com", 80);
     })
     .Footer(f => f.Text("Página 1 de 1", t => t.AlignCenter().Color("#94A3B8")))
     .GeneratePdf("hola_mundo.pdf");
@@ -210,7 +210,7 @@ col.Text("Nota aclaratoria pequeña", t => t.Caption().Italic());
 
 #### Soporte Completo para Unicode, Acentos y Caracteres Internacionales
 
-El motor nativo de ReportForge (v2.0) incorpora un encoder hexadecimal ISO 32000-1 para WinAnsi / Latin-1. Esto garantiza que todos los caracteres y símbolos se dibujen con máxima nitidez y sin errores de codificación (mojibake como `Ã³` o `Ã±`):
+El motor nativo de FlowPDF incorpora un encoder hexadecimal ISO 32000-1 para WinAnsi / Latin-1. Esto garantiza que todos los caracteres y símbolos se dibujen con máxima nitidez y sin errores de codificación (mojibake como `Ã³` o `Ã±`):
 - **Acentos y caracteres en español:** `á`, `é`, `í`, `ó`, `ú`, `Á`, `É`, `Í`, `Ó`, `Ú`, `ñ`, `Ñ`, `ü`, `Ü`, `¿`, `¡`
 - **Símbolos monetarios internacionales:** `€` (Euro), `$`, `£`, `¥`
 - **Signos tipográficos y comillas:** `—` (em-dash), `–` (en-dash), `“` `”` (curly quotes), `‘` `’`, `•` (bullet), `©`, `®`, `™`, `°`, `±`
@@ -252,7 +252,7 @@ Generados 100% vectorialmente sin rasterizado con pérdida:
 
 ```csharp
 // Código QR
-col.QrCode("https://reportforge.dev/verify/FAC-2026", size: 85);
+col.QrCode("https://example.com/verify/FAC-2026", size: 85);
 
 // Código de barras Code 128 (Subset B industrial)
 col.Barcode("FAC-2026-9901-VAL", barcodeType: "code128", width: 180, height: 40);
@@ -272,8 +272,8 @@ col.Divider(color: "#CBD5E1", thickness: 1.0, marginVertical: 8.0); // Línea ho
 Si prefieres construir documentos mediante estructuras puras de datos o serializarlos/deserializarlos a JSON desde una base de datos:
 
 ```csharp
-using ReportForge.Models;
-using ReportForge.Native;
+using FlowPdf.Models;
+using FlowPdf.Native;
 
 var document = new DocumentDefinition
 {
@@ -310,15 +310,15 @@ var document = new DocumentDefinition
 };
 
 // Renderizar directamente el objeto POCO con el motor nativo
-byte[] pdfBytes = ReportForgeEngine.RenderPdf(document);
+byte[] pdfBytes = FlowPdfEngine.RenderPdf(document);
 File.WriteAllBytes("informe_poco.pdf", pdfBytes);
 ```
 
 ---
 
-## 7. Renderizado In-Process con `ReportForgeEngine`
+## 7. Renderizado In-Process con `FlowPdfEngine`
 
-La clase `ReportForge.Native.ReportForgeEngine` expone métodos de alto nivel con P/Invoke ultra-optimizado:
+La clase `FlowPdf.Native.FlowPdfEngine` expone métodos de alto nivel con P/Invoke ultra-optimizado:
 
 ```csharp
 // Método 1: Renderizar desde instancia Fluent
@@ -330,10 +330,10 @@ doc.GeneratePdf("C:\\Reportes\\factura.pdf");
 // Método 3: Renderizar pasando JSON en crudo y datos dinámicos
 string templateJson = File.ReadAllText("template.json");
 string dataJson = File.ReadAllText("data.json");
-byte[] pdfFromRawJson = ReportForgeEngine.RenderPdf(templateJson, dataJson);
+byte[] pdfFromRawJson = FlowPdfEngine.RenderPdf(templateJson, dataJson);
 
 // Método 4: Consultar versión del core Rust embebido
-string version = ReportForgeEngine.GetVersion(); // "ReportForge Rust Core v2.0.0"
+string version = FlowPdfEngine.GetVersion(); // "FlowPDF Rust Core"
 ```
 
 ---
@@ -345,7 +345,7 @@ string version = ReportForgeEngine.GetVersion(); // "ReportForge Rust Core v2.0.
 ```csharp
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using ReportForge.Fluent;
+using FlowPdf.Fluent;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -370,7 +370,7 @@ app.MapGet("/api/facturas/{id}/pdf", (string id) =>
 app.Run();
 ```
 
-### 8.2. Inyección de Dependencias para `ReportForgeClient` (Cluster Remoto)
+### 8.2. Inyección de Dependencias para `FlowPdfClient` (Cluster Remoto)
 
 En `Program.cs`:
 
@@ -378,9 +378,9 @@ En `Program.cs`:
 builder.Services.AddSingleton(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    string baseUrl = config["ReportForge:BaseUrl"] ?? "http://reportforge-cluster:8080";
-    string apiKey = config["ReportForge:ApiKey"] ?? "rf_live_secret";
-    return new ReportForgeClient(baseUrl, apiKey);
+    string baseUrl = config["FlowPDF:BaseUrl"] ?? "http://flowpdf-cluster:8080";
+    string apiKey = config["FlowPDF:ApiKey"] ?? "rf_live_secret";
+    return new FlowPdfClient(baseUrl, apiKey);
 });
 ```
 
@@ -389,17 +389,17 @@ En tu Controlador o Servicio:
 ```csharp
 public class OrderService
 {
-    private readonly ReportForgeClient _reportForgeClient;
+    private readonly FlowPdfClient _flowPdfClient;
 
-    public OrderService(ReportForgeClient reportForgeClient)
+    public OrderService(FlowPdfClient flowPdfClient)
     {
-        _reportForgeClient = reportForgeClient;
+        _flowPdfClient = flowPdfClient;
     }
 
     public async Task<byte[]> ExportLargeInvoiceAsync(ReportDocument document)
     {
         // Se ejecuta en el cluster Celery/Redis de manera asíncrona
-        return await document.GeneratePdfRemoteAsync(_reportForgeClient);
+        return await document.GeneratePdfRemoteAsync(_flowPdfClient);
     }
 }
 ```
@@ -425,8 +425,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# El archivo libreportforge_native.so ya se encuentra dentro de runtimes/linux-x64/native/
-# ReportForge lo resuelve automáticamente sin ninguna configuración extra.
+# El archivo libflowpdf_native.so ya se encuentra dentro de runtimes/linux-x64/native/
+# FlowPDF lo resuelve automáticamente sin ninguna configuración extra.
 ENTRYPOINT ["dotnet", "MiApp.dll"]
 ```
 
@@ -437,7 +437,7 @@ ENTRYPOINT ["dotnet", "MiApp.dll"]
 ### Ejemplo 1: Factura Comercial Electrónica B2B
 
 ```csharp
-using ReportForge.Fluent;
+using FlowPdf.Fluent;
 
 var factura = ReportDocument.Create(page => page.A4().Margins(25, 25, 25, 25))
     .Header(header => header.Row(r =>
@@ -515,7 +515,7 @@ factura.GeneratePdf("factura_b2b.pdf");
 ### Ejemplo 2: Estado de Cuenta Bancario Mensual
 
 ```csharp
-using ReportForge.Fluent;
+using FlowPdf.Fluent;
 
 var estadoCuenta = ReportDocument.Create(page => page.Letter().Margins(20, 20, 20, 20))
     .Header(h => h.Row(r =>
@@ -558,7 +558,7 @@ estadoCuenta.GeneratePdf("estado_cuenta_bancario.pdf");
 ### Ejemplo 3: Etiqueta Logística Térmica de Despacho (Shipping Label)
 
 ```csharp
-using ReportForge.Fluent;
+using FlowPdf.Fluent;
 
 var etiqueta = ReportDocument.Create(page => page.A5().Portrait().Margins(15, 15, 15, 15))
     .Header(h => h.Row(r =>
@@ -610,7 +610,7 @@ var etiqueta = ReportDocument.Create(page => page.A5().Portrait().Margins(15, 15
 ### Ejemplo 4: Certificado de Acreditación / Diploma
 
 ```csharp
-using ReportForge.Fluent;
+using FlowPdf.Fluent;
 
 var diploma = ReportDocument.Create(page => page.A4().Landscape().Margins(40, 40, 40, 40))
     .Header(h => h.Text("INSTITUTO TECNOLÓGICO DE LAS AMÉRICAS", t => t.H2().Bold().AlignCenter().Color("#1E3A8A")))
@@ -658,7 +658,7 @@ Pruebas ejecutadas en entorno estándar Windows 11 x64 / Intel Core i7 / 32 GB R
 | **Factura Comercial B2B** | In-Process Rust Core | 1 | **12.4 ms** | 12 MB |
 | **Estado de Cuenta con 100 Filas** | In-Process Rust Core | 3 | **34.1 ms** | 18 MB |
 | **Lote de 1,000 Facturas** | Paralelo (Parallel.ForEach) | 1,000 | **2.8 segundos** | 65 MB |
-| **Factura vía HTTP Remoto** | `ReportForgeClient` | 1 | **829 ms** (Red + Celery) | Remoto |
+| **Factura vía HTTP Remoto** | `FlowPdfClient` | 1 | **829 ms** (Red + Celery) | Remoto |
 
 > [!TIP]
 > Para aplicaciones web con alto tráfico (por ejemplo, e-commerce generando comprobantes o pasarelas de pago generando recibos), utiliza siempre `doc.GeneratePdf()` in-process. Podrás despachar miles de solicitudes por segundo por nodo sin tocar la base de datos de reportes ni encolar tareas.
@@ -667,18 +667,18 @@ Pruebas ejecutadas en entorno estándar Windows 11 x64 / Intel Core i7 / 32 GB R
 
 ## 12. Preguntas Frecuentes y Solución de Problemas
 
-#### ¿Por qué el binario nativo se llama `reportforge_native.dll`?
-En Windows, el sistema de archivos NTFS no distingue mayúsculas de minúsculas. Si la DLL de C# se llama `ReportForge.dll` y la DLL nativa de C se llamase `reportforge.dll`, Windows intentaría cargar la biblioteca administrada de C# al invocar `DllImport`, causando un `EntryPointNotFoundException`. Al nombrarla `reportforge_native.dll`, se garantiza una resolución 100% limpia sin ninguna colisión.
+#### ¿Por qué el binario nativo se llama `flowpdf_native.dll`?
+En Windows, el sistema de archivos NTFS no distingue mayúsculas de minúsculas. Si la DLL de C# se llama `FlowPdf.dll` y la DLL nativa de C se llamase `flowpdf.dll`, Windows intentaría cargar la biblioteca administrada de C# al invocar `DllImport`, causando un `EntryPointNotFoundException`. Al nombrarla `flowpdf_native.dll`, se garantiza una resolución 100% limpia sin ninguna colisión.
 
 #### ¿Necesito instalar Rust en mis servidores de producción?
-**No.** Los binarios para Windows x64 (`reportforge_native.dll`) y Linux x64 (`libreportforge_native.so`) ya vienen compilados y firmados dentro del paquete NuGet. Solo necesitas el runtime estándar de .NET.
+**No.** Los binarios para Windows x64 (`flowpdf_native.dll`) y Linux x64 (`libflowpdf_native.so`) ya vienen compilados y firmados dentro del paquete NuGet. Solo necesitas el runtime estándar de .NET.
 
 #### ¿Cómo publico una aplicación Single-File (`--self-contained`)?
 Al ejecutar:
 ```bash
 dotnet publish -c Release -r win-x64 --self-contained
 ```
-El `NativeLibraryResolver` de ReportForge está programado para buscar en:
+El `NativeLibraryResolver` de FlowPDF está programado para buscar en:
 1. `AppContext.BaseDirectory`
 2. La subcarpeta `runtimes/win-x64/native/`
 3. El directorio de ensamblado
@@ -717,5 +717,5 @@ docs/
 │   └── certificate.md       -> Diploma Académico
 └── api-reference/
     ├── report-document.md   -> Clase ReportDocument
-    └── reportforge-engine.md -> Clase ReportForgeEngine
+    └── flowpdf-engine.md -> Clase FlowPdfEngine
 ```

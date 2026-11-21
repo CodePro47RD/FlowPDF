@@ -1,11 +1,11 @@
 [package]
-name = "reportforge"
-version = "2.1.0"
+name = "flowpdf"
+version = "1.0.0"
 edition = "2021"
-authors = ["Edwin Abreu & ReportForge Contributors"]
+authors = ["Edwin Abreu & FlowPDF Contributors"]
 description = "Universal Document Composition and PDF Engine in Rust"
 license = "MIT"
-repository = "https://github.com/CodePro47RD/ReportForge"
+repository = "https://github.com/CodePro47RD/FlowPDF"
 readme = "README.md"
 keywords = ["pdf", "report", "document", "barcode", "chart"]
 categories = ["text-processing", "rendering"]
@@ -13,7 +13,7 @@ categories = ["text-processing", "rendering"]
 include = ["/src/**", "/tests/**", "/Cargo.toml", "/README.md", "/LICENSE"]
 
 [lib]
-name = "reportforge"
+name = "flowpdf"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]

@@ -1,6 +1,6 @@
 <?php
 /**
- * ReportForge PHP Integration Example using cURL
+ * FlowPDF PHP Integration Example using cURL
  */
 
 $url = 'http://localhost:8000/api/v1/reports/generate/';
@@ -58,7 +58,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'X-API-Key: ' . $apiKey
 ]);
 
-echo "Enviando solicitud cURL a ReportForge...\n";
+echo "Enviando solicitud cURL a FlowPDF...\n";
 $pdfData = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 

@@ -1,6 +1,6 @@
-# ReportForge 2.0 — Especificación Técnica Exhaustiva (LLM Reference Manual)
+# FlowPDF — Especificación Técnica Exhaustiva (LLM Reference Manual)
 
-> **ReportForge v2.0**: Motor universal de composición y renderizado de documentos y PDFs en microsegundos, impulsado por **Rust Core v2.0**.
+> **FlowPDF**: Motor universal de composición y renderizado de documentos y PDFs en microsegundos, impulsado por **Rust Core**.
 > Renderizado in-process de ultra-alta velocidad, composición matemática declarativa, soporte nativo Unicode/WinAnsi y SDKs oficiales para C#, TypeScript/JavaScript, Java, PHP, Python y Rust.
 > Formato optimizado para LLMs, Agentes Autónomos y Asistentes de Código (Cursor, Claude Code, GitHub Copilot, ChatGPT, Gemini).
 
@@ -44,7 +44,7 @@
 
 ## 1. Visión General y Propuesta de Valor
 
-ReportForge sustituye los stacks tradicionales de generación de reportes (que ejecutan navegadores headless como Chromium/Puppeteer o servidores web pesados) por una **biblioteca nativa compartida in-process** escrita en **Rust puro**.
+FlowPDF sustituye los stacks tradicionales de generación de reportes (que ejecutan navegadores headless como Chromium/Puppeteer o servidores web pesados) por una **biblioteca nativa compartida in-process** escrita en **Rust puro**.
 
 ### Comparativa de Rendimiento
 - **Velocidad de Render**: 15 ms – 35 ms por página (vs 2,500 – 4,500 ms en Chromium; vs 850 – 1,800 ms en WeasyPrint).
@@ -53,7 +53,7 @@ ReportForge sustituye los stacks tradicionales de generación de reportes (que e
 - **Salto de Páginas en Tablas**: Medición exacta fila por fila; nunca corta una línea de texto a la mitad.
 - **Repetición de Cabeceras**: Soporte nativo (`repeat_header: true`), repite los encabezados de tabla en cada página nueva.
 - **Tipografía y Acentos**: Codificación WinAnsi CP1252 hexadecimal (ISO 32000-1) con soporte pleno para acentos en español y símbolos monetarios (`á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`).
-- **Modo de Ejecución**: In-process en la misma memoria RAM de la aplicación mediante enlaces binarios FFI (`reportforge.dll` en Windows, `libreportforge.so` en Linux, `libreportforge.dylib` en macOS).
+- **Modo de Ejecución**: In-process en la misma memoria RAM de la aplicación mediante enlaces binarios FFI (`flowpdf.dll` en Windows, `libflowpdf.so` en Linux, `libflowpdf.dylib` en macOS).
 
 ---
 
@@ -90,7 +90,7 @@ Reglas de resolución:
 
 ## 3. Catálogo Exhaustivo de Componentes con Ejemplos en los 6 Lenguajes
 
-A continuación se detalla cada componente del catálogo de ReportForge, sus propiedades admitidas y su invocación idéntica en los 6 entornos compatibles: **C# (.NET)**, **TypeScript / JavaScript (Node.js & Bun)**, **Java**, **PHP**, **Python** y **Rust / AST JSON**.
+A continuación se detalla cada componente del catálogo de FlowPDF, sus propiedades admitidas y su invocación idéntica en los 6 entornos compatibles: **C# (.NET)**, **TypeScript / JavaScript (Node.js & Bun)**, **Java**, **PHP**, **Python** y **Rust / AST JSON**.
 
 ---
 
@@ -490,7 +490,7 @@ c.Table(t => {
     });
     t.Rows(new[] {
         new { sku = "SVR-01", desc = "Servidor Dedicado Rust", qty = "1", price = "$ 450.00", total = "$ 450.00" },
-        new { sku = "LIC-02", desc = "Licencia ReportForge v2", qty = "1", price = "$ 999.00", total = "$ 999.00" }
+        new { sku = "LIC-02", desc = "Licencia FlowPDF v2", qty = "1", price = "$ 999.00", total = "$ 999.00" }
     });
 });
 ```
@@ -511,7 +511,7 @@ c.table(t => {
     });
     t.data([
         { sku: "SVR-01", desc: "Servidor Dedicado Rust", qty: "1", price: "$ 450.00", total: "$ 450.00" },
-        { sku: "LIC-02", desc: "Licencia ReportForge v2", qty: "1", price: "$ 999.00", total: "$ 999.00" }
+        { sku: "LIC-02", desc: "Licencia FlowPDF v2", qty: "1", price: "$ 999.00", total: "$ 999.00" }
     ]);
 });
 ```
@@ -529,7 +529,7 @@ c.table(t -> {
     t.addColumn("price", "Precio Unit.", 90.0f);
     t.addColumn("total", "Total", 90.0f);
     t.addRow("SVR-01", "Servidor Dedicado Rust", "1", "$ 450.00", "$ 450.00");
-    t.addRow("LIC-02", "Licencia ReportForge v2", "1", "$ 999.00", "$ 999.00");
+    t.addRow("LIC-02", "Licencia FlowPDF v2", "1", "$ 999.00", "$ 999.00");
 });
 ```
 
@@ -547,7 +547,7 @@ $c->table(function($t) {
     $t->column("total", "Total", 90.0, "right");
     $t->rows([
         ['sku' => 'SVR-01', 'desc' => 'Servidor Dedicado Rust', 'qty' => '1', 'price' => '$ 450.00', 'total' => '$ 450.00'],
-        ['sku' => 'LIC-02', 'desc' => 'Licencia ReportForge v2', 'qty' => '1', 'price' => '$ 999.00', 'total' => '$ 999.00']
+        ['sku' => 'LIC-02', 'desc' => 'Licencia FlowPDF v2', 'qty' => '1', 'price' => '$ 999.00', 'total' => '$ 999.00']
     ]);
 });
 ```
@@ -566,7 +566,7 @@ c.table(lambda t: (
      .column("Total", field="total", configure=lambda col: col.width(90).right())
      .data([
          {"sku": "SVR-01", "desc": "Servidor Dedicado Rust", "qty": "1", "price": "$ 450.00", "total": "$ 450.00"},
-         {"sku": "LIC-02", "desc": "Licencia ReportForge v2", "qty": "1", "price": "$ 999.00", "total": "$ 999.00"}
+         {"sku": "LIC-02", "desc": "Licencia FlowPDF v2", "qty": "1", "price": "$ 999.00", "total": "$ 999.00"}
      ])
 ))
 ```
@@ -589,7 +589,7 @@ c.table(lambda t: (
   ],
   "data": [
     { "sku": "SVR-01", "desc": "Servidor Dedicado Rust", "qty": "1", "price": "$ 450.00", "total": "$ 450.00" },
-    { "sku": "LIC-02", "desc": "Licencia ReportForge v2", "qty": "1", "price": "$ 999.00", "total": "$ 999.00" }
+    { "sku": "LIC-02", "desc": "Licencia FlowPDF v2", "qty": "1", "price": "$ 999.00", "total": "$ 999.00" }
   ]
 }
 ```
@@ -898,7 +898,7 @@ c.image("assets/logo.png", width=140.0, height=45.0, fit="contain", alignment="l
 
 ### 3.12 Sistema Integral de Alineación (Horizontal y Vertical)
 
-ReportForge incluye un modelo matemático bidimensional de alineación tanto para tipografía como para composición estructural de contenedores y layouts.
+FlowPDF incluye un modelo matemático bidimensional de alineación tanto para tipografía como para composición estructural de contenedores y layouts.
 
 #### 1. Alineación Horizontal de Texto (`Text`)
 Controla la justificación y anclaje del texto dentro de su caja de restricciones disponible:
@@ -1044,7 +1044,7 @@ c.chart(
 Permite incrustar tipografías corporativas personalizadas (Google Fonts como *Inter*, *Roboto*, *Montserrat*, *Poppins*) dentro del archivo PDF final. El motor extrae métricas de avance de glifos con `ttf-parser`, calcula el ancho de línea y genera automáticamente los diccionarios `/FontDescriptor`, `/FontFile2` y `/Widths` compatibles con ISO 32000-1.
 
 #### Modos de Registro
-1. **Global vía C-ABI**: `reportforge_register_font(name, bytes, len)` (disponible en todos los procesos de la aplicación).
+1. **Global vía C-ABI**: `flowpdf_register_font(name, bytes, len)` (disponible en todos los procesos de la aplicación).
 2. **Por Documento en JSON**: Lista `"fonts"` en la raíz del documento con `data_base64` o `path`.
 
 #### Ejemplo en JSON
@@ -1071,7 +1071,7 @@ Permite incrustar tipografías corporativas personalizadas (Google Fonts como *I
 
 ## 4. Especificación Formal del AST JSON (Esquema v2.0)
 
-Todo documento ReportForge se puede definir mediante un payload JSON puro validado por el motor:
+Todo documento FlowPDF se puede definir mediante un payload JSON puro validado por el motor:
 
 ```json
 {
@@ -1165,7 +1165,7 @@ Todo documento ReportForge se puede definir mediante un payload JSON puro valida
   "footer": {
     "type": "row",
     "items": [
-      { "item": { "type": "text", "value": "Emitido mediante ReportForge Rust Core v2.0", "style": "caption" } },
+      { "item": { "type": "text", "value": "Emitido mediante FlowPDF Rust Core", "style": "caption" } },
       { "item": { "type": "page_number", "format": "Página {page} de {total}", "alignment": "right" } }
     ]
   }
@@ -1176,7 +1176,7 @@ Todo documento ReportForge se puede definir mediante un payload JSON puro valida
 
 ## 5. Sistema de Plantillas y Formateadores Seguros
 
-ReportForge implementa un motor de resolución de plantillas **cero-eval** (sin intérprete dinámico que pueda ejecutar código malicioso), garantizando seguridad total en entornos multi-inquilino.
+FlowPDF implementa un motor de resolución de plantillas **cero-eval** (sin intérprete dinámico que pueda ejecutar código malicioso), garantizando seguridad total en entornos multi-inquilino.
 
 ### Sintaxis de Variables
 - `{{ nombre_variable }}`: Accede a valores de primer nivel en el objeto de datos.
@@ -1218,48 +1218,48 @@ typedef struct {
     size_t length;          // Longitud en bytes del documento generado
     bool success;           // true si el render fue exitoso, false en caso de error
     char* error_message;    // Mensaje descriptivo de error (NULL en caso de éxito)
-} ReportForgeResult;
+} FlowPdfResult;
 
 // 1. Renderiza a PDF desde cadenas JSON codificadas en UTF-8
-ReportForgeResult reportforge_render_pdf(
+FlowPdfResult flowpdf_render_pdf(
     const char* doc_json,
     const char* data_json
 );
 
 // 2. Libera de forma segura la memoria asignada por Rust
-void reportforge_free_result(ReportForgeResult result);
+void flowpdf_free_result(FlowPdfResult result);
 
 // 3. Registra una fuente TrueType (.ttf) en la memoria global del motor
-int32_t reportforge_register_font(
+int32_t flowpdf_register_font(
     const char* font_name,
     const uint8_t* font_bytes,
     size_t font_len
 );
 
 // 4. Retorna la cadena de versión oficial del motor
-const char* reportforge_version(void);
+const char* flowpdf_version(void);
 ```
 
 ### Reglas de Seguridad en Memoria
 * **Propiedad de la memoria**: La memoria asignada para `data` y `error_message` pertenece al asignador de Rust.
-* **Obligatoriedad de liberación**: Toda aplicación que invoque `reportforge_render_pdf` **DEBE** llamar a `reportforge_free_result` una vez procesados los bytes o capturado el error para evitar fugas de memoria (*memory leaks*).
+* **Obligatoriedad de liberación**: Toda aplicación que invoque `flowpdf_render_pdf` **DEBE** llamar a `flowpdf_free_result` una vez procesados los bytes o capturado el error para evitar fugas de memoria (*memory leaks*).
 
 ---
 
 ## 8. Motor Nativo de Extracción y Parsing de PDFs (Texto y Metadatos)
 
-ReportForge v2.0 integra un motor in-process de ultra-alta velocidad capaz de leer, inspeccionar y extraer el contenido textual y los metadatos de cualquier documento PDF en menos de 5 milisegundos, sin navegadores ni dependencias externas.
+FlowPDF integra un motor in-process de ultra-alta velocidad capaz de leer, inspeccionar y extraer el contenido textual y los metadatos de cualquier documento PDF en menos de 5 milisegundos, sin navegadores ni dependencias externas.
 
 ### 8.1 Símbolos Exportados en la Interfaz C-ABI FFI
 ```c
 // 1. Extrae el texto plano completo del PDF codificado en UTF-8
-ReportForgeResult reportforge_extract_text(
+FlowPdfResult flowpdf_extract_text(
     const uint8_t* pdf_data,
     size_t pdf_len
 );
 
 // 2. Extrae páginas, dimensiones y metadatos en un payload estructurado JSON
-ReportForgeResult reportforge_extract_json(
+FlowPdfResult flowpdf_extract_json(
     const uint8_t* pdf_data,
     size_t pdf_len,
     const char* options_json
@@ -1275,8 +1275,8 @@ ReportForgeResult reportforge_extract_json(
     "author": "EMPRESA MODELO S.R.L.",
     "subject": "Comprobante Fiscal Electrónico",
     "keywords": "factura, itbis, ncf",
-    "creator": "ReportForge v2.0 Rust Core",
-    "producer": "ReportForge v2.0",
+    "creator": "FlowPDF Rust Core",
+    "producer": "FlowPDF",
     "creation_date": "D:20261117120000",
     "modification_date": null
   },
@@ -1298,7 +1298,7 @@ ReportForgeResult reportforge_extract_json(
 ```csharp
 using System;
 using System.IO;
-using ReportForge.Fluent;
+using FlowPdf.Fluent;
 
 byte[] pdfBytes = File.ReadAllBytes("factura.pdf");
 
@@ -1313,7 +1313,7 @@ Console.WriteLine(jsonEstructurado);
 
 #### TypeScript / JavaScript (Node.js & Bun)
 ```typescript
-import { ReportDocument, ReportForgeEngine } from "reportforge";
+import { ReportDocument, FlowPdfEngine } from "flowpdf";
 import * as fs from "fs";
 
 const pdfBuffer = fs.readFileSync("factura.pdf");
@@ -1329,7 +1329,7 @@ console.log(`Páginas: ${docData.page_count}, Título: ${docData.metadata?.title
 
 #### Java (Java 11+)
 ```java
-import dev.reportforge.ReportDocument;
+import io.github.codepro47rd.flowpdf.ReportDocument;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -1352,7 +1352,7 @@ public class ExtraccionPdf {
 ```php
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
-use ReportForge\ReportDocument;
+use FlowPdf\ReportDocument;
 
 $pdfBytes = file_get_contents("factura.pdf");
 
@@ -1367,18 +1367,18 @@ echo "Total Páginas: " . $docData['page_count'];
 
 #### Python (Python 3.9+)
 ```python
-import reportforge
-from reportforge import ReportDocument
+import flowpdf
+from flowpdf import ReportDocument
 
 with open("factura.pdf", "rb") as f:
     pdf_bytes = f.read()
 
 # 1. Extracción rápida de texto
-texto = reportforge.extract_text(pdf_bytes)
+texto = flowpdf.extract_text(pdf_bytes)
 print(texto)
 
 # 2. Extracción estructurada de diccionario
-datos = reportforge.extract_document(pdf_bytes)
+datos = flowpdf.extract_document(pdf_bytes)
 print(f"Páginas: {datos['page_count']}")
 for pagina in datos['pages']:
     print(f"Página #{pagina['page_number']} ({pagina['width']}x{pagina['height']} pt)")
@@ -1386,7 +1386,7 @@ for pagina in datos['pages']:
 
 #### Rust Puro
 ```rust
-use reportforge::extractor::{PdfExtractor, ExtractOptions};
+use flowpdf::extractor::{PdfExtractor, ExtractOptions};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pdf_bytes = std::fs::read("factura.pdf")?;
@@ -1407,22 +1407,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## 9. Motor WebAssembly (Wasm) de Ejecución en Navegador (Client-Side Rendering)
 
-ReportForge compila a `wasm32-unknown-unknown` produciendo un binario standalone (`reportforge.wasm`, 927 KB) que ejecuta el motor de composición, gráficos vectoriales y extracción de texto directamente en navegadores web en menos de 10 milisegundos sin backend.
+FlowPDF compila a `wasm32-unknown-unknown` produciendo un binario standalone (`flowpdf.wasm`, 927 KB) que ejecuta el motor de composición, gráficos vectoriales y extracción de texto directamente en navegadores web en menos de 10 milisegundos sin backend.
 
 ### 9.1 Símbolos Exportados en WebAssembly
 ```c
 // Gestión de Memoria en el Heap de Wasm
-uint8_t* reportforge_wasm_alloc(size_t size);
-void reportforge_wasm_dealloc(uint8_t* ptr, size_t size);
+uint8_t* flowpdf_wasm_alloc(size_t size);
+void flowpdf_wasm_dealloc(uint8_t* ptr, size_t size);
 
 // Renderizado directo de AST JSON a PDF (retorna puntero y longitud empaquetados en uint64_t)
-uint64_t reportforge_wasm_render(const uint8_t* json_ptr, size_t json_len);
+uint64_t flowpdf_wasm_render(const uint8_t* json_ptr, size_t json_len);
 
 // Extracción de texto plano en Wasm
-uint64_t reportforge_wasm_extract_text(const uint8_t* pdf_ptr, size_t pdf_len);
+uint64_t flowpdf_wasm_extract_text(const uint8_t* pdf_ptr, size_t pdf_len);
 
 // Registro de fuente TrueType (.ttf) en Wasm
-int32_t reportforge_wasm_register_font(
+int32_t flowpdf_wasm_register_font(
     const uint8_t* name_ptr, size_t name_len,
     const uint8_t* font_ptr, size_t font_len
 );
@@ -1430,10 +1430,10 @@ int32_t reportforge_wasm_register_font(
 
 ### 9.2 Integración en JavaScript / Navegador
 ```javascript
-import { ReportForgeWasm } from './reportforge-wasm.js';
+import { FlowPdfWasm } from './flowpdf-wasm.js';
 
-const rf = new ReportForgeWasm();
-await rf.init('reportforge.wasm');
+const rf = new FlowPdfWasm();
+await rf.init('flowpdf.wasm');
 
 // 1. Renderizado en memoria en ~8 ms
 const pdfBytes = rf.renderPdf({
@@ -1461,12 +1461,12 @@ document.getElementById('pdfViewer').src = URL.createObjectURL(blob);
 ## 10. Implementación Completa de Casos de Producción por Lenguaje
 
 ### 9.1 C# (.NET 8, 9, 10)
-**Paquete**: [`docs/packages/ReportForge.2.0.0.nupkg`](packages/ReportForge.2.0.0.nupkg)  
-**Instalación**: `dotnet add package ReportForge --source ./docs/packages`
+**Paquete**: [NuGet `FlowPDF`](https://www.nuget.org/packages/FlowPDF)  
+**Instalación**: `dotnet add package FlowPDF`
 
 ```csharp
 using System.IO;
-using ReportForge;
+using FlowPdf;
 
 // Composición fluida fuertemente tipada
 var doc = ReportDocument.Create(page => page.Size("A4").Margin(36))
@@ -1486,11 +1486,11 @@ var doc = ReportDocument.Create(page => page.Size("A4").Margin(36))
                 cols.Add("Total", width: 100);
             });
             t.AddRow("Servidor Rust Dedicado", "1", "$ 450.00", "$ 450.00");
-            t.AddRow("Licencia ReportForge v2.0", "1", "$ 999.00", "$ 999.00");
+            t.AddRow("Licencia FlowPDF", "1", "$ 999.00", "$ 999.00");
         });
         c.Spacer(15);
         c.Row(r => {
-            r.AddQr("https://reportforge.dev/verify/2026", size: 65);
+            r.AddQr("https://example.com/verify/2026", size: 65);
             r.AddBarcode("FAC2026-9901", format: "CODE128", height: 35);
         });
     })
@@ -1502,11 +1502,11 @@ File.WriteAllBytes("reporte_csharp.pdf", pdfBytes);
 ```
 
 ### 9.2 TypeScript / JavaScript (Node.js & Bun)
-**Paquete**: [`docs/packages/reportforge-2.0.0.tgz`](packages/reportforge-2.0.0.tgz)  
-**Instalación**: `npm install ./docs/packages/reportforge-2.0.0.tgz`
+**Paquete**: [npm `flowpdf`](https://www.npmjs.com/package/flowpdf)  
+**Instalación**: `npm install flowpdf`
 
 ```typescript
-import { ReportDocument } from "reportforge";
+import { ReportDocument } from "flowpdf";
 import * as fs from "fs";
 
 const doc = ReportDocument.create({ size: "A4", margin: 36 })
@@ -1524,7 +1524,7 @@ const doc = ReportDocument.create({ size: "A4", margin: 36 })
         { "Ítem": "Suscripción Enterprise", "Total": "$ 1,200.00" }
       ]
     });
-    c.qr("https://reportforge.dev", { size: 65 });
+    c.qr("https://example.com", { size: 65 });
   });
 
 const pdfBuffer: Buffer = doc.generatePdf();
@@ -1532,11 +1532,11 @@ fs.writeFileSync("factura_ts.pdf", pdfBuffer);
 ```
 
 ### 9.3 Java (Java 11+)
-**Paquete**: [`docs/packages/reportforge-2.0.0.jar`](packages/reportforge-2.0.0.jar)  
-**Instalación**: `mvn install:install-file -Dfile=docs/packages/reportforge-2.0.0.jar -DgroupId=dev.reportforge -DartifactId=reportforge -Dversion=2.0.0 -Dpackaging=jar`
+**Paquete**: [Maven Central `io.github.codepro47rd:flowpdf`](https://central.sonatype.com/artifact/io.github.codepro47rd/flowpdf)  
+**Instalación**: Maven: `io.github.codepro47rd:flowpdf:1.0.0`
 
 ```java
-import dev.reportforge.ReportDocument;
+import io.github.codepro47rd.flowpdf.ReportDocument;
 import java.io.FileOutputStream;
 
 public class GenerarReporte {
@@ -1555,7 +1555,7 @@ public class GenerarReporte {
                     t.addColumn("Subtotal", 100.0f);
                     t.addRow("Consultoría Cloud", "$ 1,500.00");
                 });
-                c.qr("https://reportforge.dev", 70.0f);
+                c.qr("https://example.com", 70.0f);
             });
 
         byte[] pdf = doc.generatePdf();
@@ -1567,13 +1567,13 @@ public class GenerarReporte {
 ```
 
 ### 9.4 PHP (PHP 8.0+)
-**Paquete**: [`docs/packages/reportforge-php-2.0.0.zip`](packages/reportforge-php-2.0.0.zip)  
+**Paquete**: [Packagist `codepro47rd/flowpdf`](https://packagist.org/packages/codepro47rd/flowpdf)  
 **Requisito**: Habilitar `extension=ffi` en `php.ini`.
 
 ```php
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
-use ReportForge\ReportDocument;
+use FlowPdf\ReportDocument;
 
 $doc = ReportDocument::create(['size' => 'A4', 'margin' => 36])
     ->header(function($h) {
@@ -1592,10 +1592,10 @@ $doc = ReportDocument::create(['size' => 'A4', 'margin' => 36])
                 ['title' => 'Monto', 'width' => 100]
             ],
             'rows' => [
-                ['Plan Anual ReportForge', '$ 999.00']
+                ['Plan Anual FlowPDF', '$ 999.00']
             ]
         ]);
-        $c->qr("https://reportforge.dev", 65);
+        $c->qr("https://example.com", 65);
     });
 
 $pdf = $doc->generatePdf();
@@ -1603,11 +1603,11 @@ file_put_contents("factura_php.pdf", $pdf);
 ```
 
 ### 9.5 Python (Python 3.9+)
-**Paquete**: [`docs/packages/reportforge-2.0.0-py3-none-any.whl`](packages/reportforge-2.0.0-py3-none-any.whl)  
-**Instalación**: `pip install ./docs/packages/reportforge-2.0.0-py3-none-any.whl`
+**Paquete**: [PyPI `flowpdf`](https://pypi.org/project/flowpdf/)  
+**Instalación**: `pip install flowpdf`
 
 ```python
-from reportforge import ReportDocument
+from flowpdf import ReportDocument
 
 doc = (
     ReportDocument.create(size="A4", margin=36)
@@ -1620,7 +1620,7 @@ doc = (
             rows=[["Licencia Rust", "$ 999.00"]],
             repeat_header=True
         ),
-        c.qr("https://reportforge.dev", size=60)
+        c.qr("https://example.com", size=60)
     ])
 )
 
@@ -1630,8 +1630,8 @@ with open("factura_python.pdf", "wb") as f:
 
 ### 9.6 Rust Puro
 ```rust
-use reportforge::ast::DocumentDefinitionAst;
-use reportforge::pdf_engine::PdfEngine;
+use flowpdf::ast::DocumentDefinitionAst;
+use flowpdf::pdf_engine::PdfEngine;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let json_template = r#"{
@@ -1639,7 +1639,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "content": [
             { "type": "text", "value": "Reporte Nativo en Rust", "font_size": 18.0, "bold": true },
             { "type": "text", "value": "Acentos y símbolos: á, é, í, ó, ú, ñ, €" },
-            { "type": "qr", "value": "https://reportforge.dev", "size": 65.0 }
+            { "type": "qr", "value": "https://example.com", "size": 65.0 }
         ]
     }"#;
 
@@ -1666,13 +1666,13 @@ cargo test
 ```
 
 ### Artefactos Generados en `target/release/`
-- Windows: `reportforge.dll` y `reportforge.lib`
-- Linux: `libreportforge.so` y `libreportforge.a`
-- macOS: `libreportforge.dylib`
+- Windows: `flowpdf.dll` y `flowpdf.lib`
+- Linux: `libflowpdf.so` y `libflowpdf.a`
+- macOS: `libflowpdf.dylib`
 
 ### Compilación Cruzada para Linux desde Windows con Docker
 ```bash
-docker run --rm -v ${PWD}:/usr/src/reportforge -w /usr/src/reportforge rust:1-alpine cargo build --release
+docker run --rm -v ${PWD}:/usr/src/flowpdf -w /usr/src/flowpdf rust:1-alpine cargo build --release
 ```
 
 ---
@@ -1681,9 +1681,9 @@ docker run --rm -v ${PWD}:/usr/src/reportforge -w /usr/src/reportforge rust:1-al
 
 | Síntoma / Error | Causa Probable | Solución Oficial |
 | :--- | :--- | :--- |
-| `DllNotFoundException` en C# | El binario `.dll` o `.so` no se encuentra en el directorio de ejecución. | Asegurarse de compilar con el paquete NuGet oficial o copiar `runtimes/win-x64/native/reportforge.dll` junto al ejecutable. |
+| `DllNotFoundException` en C# | El binario `.dll` o `.so` no se encuentra en el directorio de ejecución. | Asegurarse de compilar con el paquete NuGet oficial o copiar `runtimes/win-x64/native/flowpdf_native.dll` junto al ejecutable. |
 | Caracteres españoles corruptos (símbolos raros) | Uso de codificación ASCII estándar en lugar de WinAnsi CP1252. | El motor codifica automáticamente a secuencias hexadecimales ISO 32000-1 (`\E1` para `á`, `\F1` para `ñ`). Pasar cadenas UTF-8 estándar. |
-| Fuga de memoria progresiva en servidores | La aplicación no invoca `reportforge_free_result`. | En lenguajes FFI, llamar siempre a `reportforge_free_result(result)` en un bloque `finally` o destructores de clase. |
+| Fuga de memoria progresiva en servidores | La aplicación no invoca `flowpdf_free_result`. | En lenguajes FFI, llamar siempre a `flowpdf_free_result(result)` en un bloque `finally` o destructores de clase. |
 | Filas de tabla cortadas entre páginas | El componente padre no permite división de flujo. | La tabla maneja la división automática por defecto. Evitar envolver tablas grandes dentro de contenedores con altura fija (`height`). |
 | `FFI extension not enabled` en PHP | La extensión FFI viene deshabilitada por defecto en PHP. | Editar `php.ini` y configurar `extension=ffi` y `ffi.enable=true`. |
 | Error al cargar librerías en Linux Alpine | Ausencia de `glibc` en imágenes basadas en `musl`. | Compilar el crate con target `x86_64-unknown-linux-musl` o instalar paquetes de compatibilidad gcompat en Alpine (`apk add gcompat`). |

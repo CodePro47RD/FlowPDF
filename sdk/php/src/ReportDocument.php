@@ -1,10 +1,10 @@
 <?php
 
-namespace ReportForge;
+namespace FlowPdf;
 
-use ReportForge\Builders\PageConfigBuilder;
-use ReportForge\Builders\ColumnBuilder;
-use ReportForge\Builders\SingleContainerBuilder;
+use FlowPdf\Builders\PageConfigBuilder;
+use FlowPdf\Builders\ColumnBuilder;
+use FlowPdf\Builders\SingleContainerBuilder;
 
 class ReportDocument
 {
@@ -92,7 +92,7 @@ class ReportDocument
 
     public static function registerFont(string $name, string $fontBytes): bool
     {
-        return ReportForgeEngine::registerFont($name, $fontBytes);
+        return FlowPdfEngine::registerFont($name, $fontBytes);
     }
 
     public function build(): array
@@ -107,16 +107,16 @@ class ReportDocument
 
     public function renderPdf(mixed $data = null): string
     {
-        return ReportForgeEngine::renderPdf($this->build(), $data);
+        return FlowPdfEngine::renderPdf($this->build(), $data);
     }
 
     public static function extractText(string $pdfBytes): string
     {
-        return ReportForgeEngine::extractText($pdfBytes);
+        return FlowPdfEngine::extractText($pdfBytes);
     }
 
     public static function extractDocument(string $pdfBytes, ?array $options = null): array
     {
-        return ReportForgeEngine::extractDocument($pdfBytes, $options);
+        return FlowPdfEngine::extractDocument($pdfBytes, $options);
     }
 }

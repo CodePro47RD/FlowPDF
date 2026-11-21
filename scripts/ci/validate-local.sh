@@ -4,7 +4,7 @@
 #   scripts/ci/validate-local.sh [version] [pasos...]
 #
 #   version  versión de prueba a estampar (por defecto 0.0.0-rc.1)
-#   pasos    subconjunto de: lint native crate nuget npm pypi maven php smoke   (por defecto: todos)
+#   pasos    subconjunto de: lint native crate nuget npm pypi maven php smoke wasm   (por defecto: todos)
 #
 # Trabaja sobre una copia del repo en .ci-local/ (ignorada por git); el árbol real no se toca.
 # Nota: win-x64 se compila aquí con MinGW (cross); en CI se compila con MSVC en Windows.
@@ -12,7 +12,7 @@
 set -euo pipefail
 
 VERSION="${1:-0.0.0-rc.1}"; shift || true
-STEPS="${*:-lint native crate nuget npm pypi maven php smoke}"
+STEPS="${*:-lint native crate nuget npm pypi maven php smoke wasm}"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK="$ROOT/.ci-local"
@@ -57,8 +57,8 @@ native() {
     rustup target add x86_64-pc-windows-gnu >/dev/null
     cargo build --release --lib --target x86_64-pc-windows-gnu
     mkdir -p natives/linux-x64/native natives/win-x64/native
-    cp target/release/libreportforge.so natives/linux-x64/native/libreportforge_native.so
-    cp target/x86_64-pc-windows-gnu/release/reportforge.dll natives/win-x64/native/reportforge_native.dll
+    cp target/release/libflowpdf.so natives/linux-x64/native/libflowpdf_native.so
+    cp target/x86_64-pc-windows-gnu/release/flowpdf.dll natives/win-x64/native/flowpdf_native.dll
     ls -la natives/*/native'
 }
 
@@ -75,9 +75,9 @@ crate() {
 nuget() {
   run mcr.microsoft.com/dotnet/sdk:10.0 '
     apt-get update -qq && apt-get install -y -qq unzip >/dev/null
-    rm -rf out/nuget sdk/csharp/ReportForge/bin sdk/csharp/ReportForge/obj
-    dotnet pack sdk/csharp/ReportForge/ReportForge.csproj -c Release -o out/nuget -p:GeneratePackageOnBuild=false
-    unzip -l out/nuget/*.nupkg | grep "runtimes/linux-x64/native/libreportforge_native.so"'
+    rm -rf out/nuget sdk/csharp/FlowPdf/bin sdk/csharp/FlowPdf/obj
+    dotnet pack sdk/csharp/FlowPdf/FlowPdf.csproj -c Release -o out/nuget -p:GeneratePackageOnBuild=false
+    unzip -l out/nuget/*.nupkg | grep "runtimes/linux-x64/native/libflowpdf_native.so"'
 }
 
 npm_() {
@@ -85,7 +85,7 @@ npm_() {
     cd sdk/typescript
     npm ci && npm run build
     mkdir -p ../../out/npm && rm -f ../../out/npm/*.tgz && npm pack --pack-destination ../../out/npm
-    tar -tzf ../../out/npm/*.tgz | grep "package/runtimes/linux-x64/native/libreportforge_native.so"'
+    tar -tzf ../../out/npm/*.tgz | grep "package/runtimes/linux-x64/native/libflowpdf_native.so"'
 }
 
 pypi() {
@@ -93,14 +93,14 @@ pypi() {
     pip install -q --root-user-action=ignore --upgrade build twine
     rm -rf out/pypi && python -m build sdk/python --outdir out/pypi
     twine check out/pypi/*
-    python -m zipfile -l out/pypi/*.whl | grep "reportforge/runtimes/linux-x64/native/libreportforge_native.so"'
+    python -m zipfile -l out/pypi/*.whl | grep "flowpdf/runtimes/linux-x64/native/libflowpdf_native.so"'
 }
 
 maven() {
   run maven:3.9-eclipse-temurin-17 "
     mvn -B -q -f sdk/java/pom.xml -Prelease -Dgpg.skip verify
     ls -la sdk/java/target/*.jar
-    jar tf sdk/java/target/reportforge-$VERSION.jar | grep 'runtimes/linux-x64/native/libreportforge_native.so'"
+    jar tf sdk/java/target/flowpdf-$VERSION.jar | grep 'runtimes/linux-x64/native/libflowpdf_native.so'"
 }
 
 php() {
@@ -111,7 +111,7 @@ php() {
     cp -R sdk/php/src sdk/php/runtimes sdk/php/README.md out/php/
     cp LICENSE out/php/
     jq 'del(.version)' sdk/php/composer.json > out/php/composer.json
-    (cd out/php && zip -qr ../reportforge-php-$VERSION.zip .)
+    (cd out/php && zip -qr ../flowpdf-php-$VERSION.zip .)
     cd out/php && composer validate --strict --no-check-publish
     find . -path '*native*' -type f"
 }
@@ -121,17 +121,20 @@ smoke_linux() {
   run mcr.microsoft.com/dotnet/sdk:10.0 "
     rm -rf /tmp/smoke && cp -R scripts/ci/smoke/dotnet /tmp/smoke
     NUGET_PACKAGES=/tmp/nuget-fresh dotnet run --project /tmp/smoke -c Release \
-      -p:ReportForgeVersion=$VERSION -p:ReportForgeFeed=/src/out/nuget"
+      -p:FlowPdfVersion=$VERSION -p:FlowPdfFeed=/src/out/nuget"
 }
 smoke_windows() {
   # En el host: requiere Windows + dotnet SDK 10. Caché de paquetes aislada para no reutilizar
-  # un ReportForge viejo con la misma versión.
+  # un FlowPDF viejo con la misma versión.
   [[ "${OS:-}" == Windows_NT ]] || { echo "No es Windows; se omite"; return 0; }
   command -v dotnet >/dev/null || { echo "dotnet no está instalado; se omite"; return 0; }
   rm -rf "$WORK/nuget-fresh" "$WORK/smoke-win" && cp -R "$SRC/scripts/ci/smoke/dotnet" "$WORK/smoke-win"
   NUGET_PACKAGES="$(host_path "$WORK/nuget-fresh")" dotnet run --project "$(host_path "$WORK/smoke-win")" -c Release \
-    -p:ReportForgeVersion="$VERSION" -p:ReportForgeFeed="$(host_path "$SRC/out/nuget")"
+    -p:FlowPdfVersion="$VERSION" -p:FlowPdfFeed="$(host_path "$SRC/out/nuget")"
 }
+
+# WASM del sitio (docs/): carga la copia base64, genera un PDF y extrae su texto (Node 20)
+wasm_() { run node:20-bookworm "node scripts/ci/smoke/wasm/smoke.js"; }
 
 want lint   && step lint   lint
 want native && step native native
@@ -145,6 +148,7 @@ want npm    && step npm    npm_
 want pypi   && step pypi   pypi
 want maven  && step maven  maven
 want php    && step php    php
+want wasm   && step wasm   wasm_
 if want smoke; then
   [[ -n "$(ls "$SRC"/out/nuget/*.nupkg 2>/dev/null)" ]] || step nuget nuget
   step smoke-linux   smoke_linux
@@ -153,7 +157,7 @@ fi
 
 echo; echo "================ RESUMEN ================"
 fail=0
-for k in lint native stage crate nuget npm pypi maven php smoke-linux smoke-windows; do
+for k in lint native stage crate nuget npm pypi maven php smoke-linux smoke-windows wasm; do
   [[ -n "${RESULT[$k]:-}" ]] || continue
   printf '  %-8s %s\n' "$k" "${RESULT[$k]}"
   [[ "${RESULT[$k]}" == OK ]] || fail=1

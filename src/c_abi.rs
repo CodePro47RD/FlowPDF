@@ -6,14 +6,14 @@ use crate::ast::DocumentDefinitionAst;
 use crate::pdf_engine::PdfEngine;
 
 #[repr(C)]
-pub struct ReportForgeResult {
+pub struct FlowPdfResult {
     pub data: *mut u8,
     pub length: usize,
     pub success: bool,
     pub error_message: *mut c_char,
 }
 
-impl ReportForgeResult {
+impl FlowPdfResult {
     fn success(bytes: Vec<u8>) -> Self {
         let mut boxed_slice = bytes.into_boxed_slice();
         let length = boxed_slice.len();
@@ -40,31 +40,31 @@ impl ReportForgeResult {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_render_pdf(
+pub unsafe extern "C" fn flowpdf_render_pdf(
     doc_json_ptr: *const c_char,
     data_json_ptr: *const c_char,
-) -> ReportForgeResult {
+) -> FlowPdfResult {
     if doc_json_ptr.is_null() {
-        return ReportForgeResult::error("document_json pointer is null");
+        return FlowPdfResult::error("document_json pointer is null");
     }
 
     let doc_str = match CStr::from_ptr(doc_json_ptr).to_str() {
         Ok(s) => s,
-        Err(e) => return ReportForgeResult::error(&format!("Invalid UTF-8 in document JSON: {}", e)),
+        Err(e) => return FlowPdfResult::error(&format!("Invalid UTF-8 in document JSON: {}", e)),
     };
 
     let doc_ast: DocumentDefinitionAst = match serde_json::from_str(doc_str) {
         Ok(ast) => ast,
-        Err(e) => return ReportForgeResult::error(&format!("Failed to parse document AST: {}", e)),
+        Err(e) => return FlowPdfResult::error(&format!("Failed to parse document AST: {}", e)),
     };
 
     let data_val = if !data_json_ptr.is_null() {
         match CStr::from_ptr(data_json_ptr).to_str() {
             Ok(s) => match serde_json::from_str::<serde_json::Value>(s) {
                 Ok(v) => Some(v),
-                Err(e) => return ReportForgeResult::error(&format!("Failed to parse data JSON: {}", e)),
+                Err(e) => return FlowPdfResult::error(&format!("Failed to parse data JSON: {}", e)),
             },
-            Err(e) => return ReportForgeResult::error(&format!("Invalid UTF-8 in data JSON: {}", e)),
+            Err(e) => return FlowPdfResult::error(&format!("Invalid UTF-8 in data JSON: {}", e)),
         }
     } else {
         None
@@ -72,35 +72,35 @@ pub unsafe extern "C" fn reportforge_render_pdf(
 
     let engine = PdfEngine::new();
     match engine.render(&doc_ast, data_val.as_ref()) {
-        Ok(pdf_bytes) => ReportForgeResult::success(pdf_bytes),
-        Err(err) => ReportForgeResult::error(&format!("Render error: {}", err)),
+        Ok(pdf_bytes) => FlowPdfResult::success(pdf_bytes),
+        Err(err) => FlowPdfResult::error(&format!("Render error: {}", err)),
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_extract_text(
+pub unsafe extern "C" fn flowpdf_extract_text(
     pdf_data: *const u8,
     pdf_len: usize,
-) -> ReportForgeResult {
+) -> FlowPdfResult {
     if pdf_data.is_null() || pdf_len == 0 {
-        return ReportForgeResult::error("pdf_data pointer is null or length is 0");
+        return FlowPdfResult::error("pdf_data pointer is null or length is 0");
     }
 
     let slice = std::slice::from_raw_parts(pdf_data, pdf_len);
     match crate::extractor::PdfExtractor::extract_text(slice) {
-        Ok(text) => ReportForgeResult::success(text.into_bytes()),
-        Err(err) => ReportForgeResult::error(&err),
+        Ok(text) => FlowPdfResult::success(text.into_bytes()),
+        Err(err) => FlowPdfResult::error(&err),
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_extract_json(
+pub unsafe extern "C" fn flowpdf_extract_json(
     pdf_data: *const u8,
     pdf_len: usize,
     options_json_ptr: *const c_char,
-) -> ReportForgeResult {
+) -> FlowPdfResult {
     if pdf_data.is_null() || pdf_len == 0 {
-        return ReportForgeResult::error("pdf_data pointer is null or length is 0");
+        return FlowPdfResult::error("pdf_data pointer is null or length is 0");
     }
 
     let slice = std::slice::from_raw_parts(pdf_data, pdf_len);
@@ -108,9 +108,9 @@ pub unsafe extern "C" fn reportforge_extract_json(
         match CStr::from_ptr(options_json_ptr).to_str() {
             Ok(s) => match serde_json::from_str(s) {
                 Ok(opt) => Some(opt),
-                Err(e) => return ReportForgeResult::error(&format!("Invalid options JSON: {}", e)),
+                Err(e) => return FlowPdfResult::error(&format!("Invalid options JSON: {}", e)),
             },
-            Err(e) => return ReportForgeResult::error(&format!("Invalid UTF-8 in options JSON: {}", e)),
+            Err(e) => return FlowPdfResult::error(&format!("Invalid UTF-8 in options JSON: {}", e)),
         }
     } else {
         None
@@ -118,15 +118,15 @@ pub unsafe extern "C" fn reportforge_extract_json(
 
     match crate::extractor::PdfExtractor::extract_document(slice, options) {
         Ok(extracted) => match serde_json::to_vec(&extracted) {
-            Ok(json_bytes) => ReportForgeResult::success(json_bytes),
-            Err(e) => ReportForgeResult::error(&format!("Serialization error: {}", e)),
+            Ok(json_bytes) => FlowPdfResult::success(json_bytes),
+            Err(e) => FlowPdfResult::error(&format!("Serialization error: {}", e)),
         },
-        Err(err) => ReportForgeResult::error(&err),
+        Err(err) => FlowPdfResult::error(&err),
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_register_font(
+pub unsafe extern "C" fn flowpdf_register_font(
     font_name: *const c_char,
     font_bytes: *const u8,
     font_len: usize,
@@ -146,7 +146,7 @@ pub unsafe extern "C" fn reportforge_register_font(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn reportforge_free_result(result: ReportForgeResult) {
+pub unsafe extern "C" fn flowpdf_free_result(result: FlowPdfResult) {
     if !result.data.is_null() && result.length > 0 {
         let _ = Vec::from_raw_parts(result.data, result.length, result.length);
     }
@@ -156,8 +156,8 @@ pub unsafe extern "C" fn reportforge_free_result(result: ReportForgeResult) {
 }
 
 #[no_mangle]
-pub extern "C" fn reportforge_version() -> *const c_char {
+pub extern "C" fn flowpdf_version() -> *const c_char {
     // La versión sale de Cargo.toml (en CI, la del tag del release)
-    static VERSION: &str = concat!("ReportForge Rust Core v", env!("CARGO_PKG_VERSION"), "\0");
+    static VERSION: &str = concat!("FlowPDF Rust Core v", env!("CARGO_PKG_VERSION"), "\0");
     VERSION.as_ptr() as *const c_char
 }

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReportForge 2.1 | Motor Universal de Generación, Gráficos Vectoriales y WebAssembly</title>
+  <title>FlowPDF | Motor Universal de Generación, Gráficos Vectoriales y WebAssembly</title>
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="alternate" type="text/plain" href="llms.txt" title="Documentación para LLMs y Asistentes de IA">
   <meta name="description" content="Motor universal de composición, gráficos estadísticos y extracción de documentos en microsegundos, impulsado por Rust Core con soporte Wasm en navegador, fuentes TTF y SDKs para C#, TypeScript, Python, PHP y Java.">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
-  <script src="reportforge-wasm-data.js"></script>
-  <script src="reportforge-wasm.js"></script>
+  <script src="flowpdf-wasm-data.js"></script>
+  <script src="flowpdf-wasm.js"></script>
   <script src="pdf.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -53,7 +53,7 @@
 </head>
 <body class="bg-[#060D1E] text-slate-100 antialiased selection:bg-blue-600 selection:text-white relative overflow-x-hidden">
 
-  <!-- Ambient Background Glows inspired by ReportForge Brand -->
+  <!-- Ambient Background Glows inspired by FlowPDF Brand -->
   <div class="fixed top-0 left-1/4 w-[650px] h-[650px] bg-blue-600/12 rounded-full blur-[150px] pointer-events-none -z-10"></div>
   <div class="fixed top-1/3 right-10 w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
   <div class="fixed bottom-10 left-1/3 w-[700px] h-[700px] bg-blue-900/15 rounded-full blur-[160px] pointer-events-none -z-10"></div>
@@ -65,8 +65,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       <!-- Logo -->
       <a href="#" class="flex items-center gap-3.5 group">
-        <img src="assets/logo-dark.png" alt="ReportForge" class="h-10 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105 duration-200">
-        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-sky-400">v2.1 Rust + Wasm</span>
+        <img src="assets/logo-dark.png" alt="FlowPDF" class="h-10 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105 duration-200">
+        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-sky-400">Rust + Wasm</span>
       </a>
 
       <!-- Desktop Nav -->
@@ -83,7 +83,7 @@
         <a href="#benchmark" class="hover:text-sky-400 transition-colors">Benchmark</a>
         <a href="#ecosistema" class="hover:text-sky-400 transition-colors">SDKs</a>
         <a href="#descargas" class="hover:text-sky-400 transition-colors">Descargas</a>
-        <a href="packages/ReportForge_Manual_Oficial_Completo.pdf" target="_blank" class="hover:text-sky-400 transition-colors">Manual PDF</a>
+        <a href="FlowPDF_Manual_Oficial_Completo.pdf" target="_blank" class="hover:text-sky-400 transition-colors">Manual PDF</a>
         <a href="llms.txt" target="_blank" class="hover:text-sky-300 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-950/60 border border-blue-500/30 text-xs font-mono text-sky-400 hover:bg-blue-900/40" title="Especificación limpia para ChatGPT, Claude, Cursor y Copilot">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
           <span>llms.txt</span>
@@ -107,7 +107,7 @@
     <!-- Version Pill -->
     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-xs font-medium text-slate-300 mb-8 backdrop-blur-md">
       <span class="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
-      <span>ReportForge 2.1 liberado: WebAssembly en navegador + Fuentes TTF + Gráficos Vectoriales</span>
+      <span>FlowPDF 1.0: WebAssembly en navegador + Fuentes TTF + Gráficos Vectoriales</span>
       <span class="text-slate-500">|</span>
       <a href="#playground" class="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1">
         Editor Wasm en Vivo &rarr;
@@ -124,7 +124,7 @@
 
     <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
       Genera dashboards con <b>gráficos nativos (barras, líneas, pastel)</b>, <b>fuentes TTF personalizadas</b> y extracción de texto a <b>sub-milisegundos</b>. 
-      Impulsado por <b>Rust Core v2.1</b>, compilado directamente a <b>WebAssembly (Wasm)</b> para ejecución sin servidor en el navegador y disponible nativamente para <b>C#, TypeScript, Python, PHP y Java</b>.
+      Impulsado por <b>Rust Core</b>, compilado directamente a <b>WebAssembly (Wasm)</b> para ejecución sin servidor en el navegador y disponible nativamente para <b>C#, TypeScript, Python, PHP y Java</b>.
     </p>
 
     <!-- CTAs -->
@@ -149,7 +149,7 @@
         <span>Descargar SDKs</span>
       </a>
 
-      <a href="packages/ReportForge_Manual_Oficial_Completo.pdf" target="_blank" class="px-5 py-3.5 rounded-xl font-medium text-slate-300 hover:text-white bg-slate-950/60 hover:bg-slate-900 border border-slate-800 transition-all flex items-center gap-2">
+      <a href="FlowPDF_Manual_Oficial_Completo.pdf" target="_blank" class="px-5 py-3.5 rounded-xl font-medium text-slate-300 hover:text-white bg-slate-950/60 hover:bg-slate-900 border border-slate-800 transition-all flex items-center gap-2">
         <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M7 2h10l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h14V9h-5V4H7z"/></svg>
         <span>Manual PDF</span>
       </a>
@@ -187,7 +187,7 @@
     <div class="text-center mb-12">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-xs font-semibold text-cyan-300 mb-3">
         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-        <span>Motor Rust Core v2.1 Compilado a WebAssembly</span>
+        <span>Motor Rust Core Compilado a WebAssembly</span>
       </div>
       <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
         Playground en Vivo <br>
@@ -281,7 +281,7 @@
     <div class="text-center mb-16">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-950/80 border border-blue-500/40 text-xs font-semibold text-sky-300 mb-3">
         <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-        <span>Novedad en ReportForge 2.1</span>
+        <span>Novedad en FlowPDF</span>
       </div>
       <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
         Gráficos Estadísticos y Fuentes TTF <br>
@@ -291,7 +291,7 @@
       </h2>
       <p class="mt-4 text-slate-400 max-w-3xl mx-auto text-base leading-relaxed">
         Olvídate de renderizar gráficos en canvas HTML o generar pesadas imágenes PNG. 
-        ReportForge dibuja primitivas matemáticas vectoriales (<code>re</code>, <code>m</code>, <code>l</code>, <code>f</code>, <code>S</code>) 
+        FlowPDF dibuja primitivas matemáticas vectoriales (<code>re</code>, <code>m</code>, <code>l</code>, <code>f</code>, <code>S</code>) 
         directamente en el stream del PDF, con soporte para <b>temas Light y Dark</b> y la capacidad de incrustar <b>fuentes TrueType (.ttf)</b> personalizadas.
       </p>
     </div>
@@ -343,7 +343,7 @@
     <div class="text-center mb-16">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-xs font-semibold text-emerald-300 mb-3">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-        <span>Novedad en ReportForge 2.0</span>
+        <span>Novedad en FlowPDF</span>
       </div>
       <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
         Extracción de Texto y Parsing Estructurado <br>
@@ -353,7 +353,7 @@
       </h2>
       <p class="mt-4 text-slate-400 max-w-3xl mx-auto text-base leading-relaxed">
         No sólo generes reportes: ahora puedes <b>ingerir, auditar y parsear documentos PDF existentes</b> directamente en memoria. 
-        ReportForge incluye un motor nativo en Rust que inspecciona el árbol de objetos PDF (diccionarios, <code>MediaBox</code>, streams de contenido) y extrae texto plano o metadatos estructurados en JSON sin recurrir a Chromium, Poppler o Java.
+        FlowPDF incluye un motor nativo en Rust que inspecciona el árbol de objetos PDF (diccionarios, <code>MediaBox</code>, streams de contenido) y extrae texto plano o metadatos estructurados en JSON sin recurrir a Chromium, Poppler o Java.
       </p>
     </div>
 
@@ -403,9 +403,9 @@
         </div>
         <div class="flex items-center gap-2 text-xs font-mono">
           <span class="text-slate-400">C-ABI:</span>
-          <code class="text-sky-300">reportforge_extract_text</code>
+          <code class="text-sky-300">flowpdf_extract_text</code>
           <span class="text-slate-600">|</span>
-          <code class="text-emerald-300">reportforge_extract_json</code>
+          <code class="text-emerald-300">flowpdf_extract_json</code>
         </div>
       </div>
 
@@ -425,32 +425,32 @@
 
           <!-- Snippet C# -->
           <div id="ext-code-csharp" class="ext-code-block">
-            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>using ReportForge.Native;
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>using FlowPdf.Native;
 using System.IO;
 
 byte[] pdfBytes = File.ReadAllBytes("factura_existente.pdf");
 
 // 1. Extraer sólo texto plano completo (&lt; 1 ms)
-string texto = ReportForgeEngine.ExtractText(pdfBytes);
+string texto = FlowPdfEngine.ExtractText(pdfBytes);
 Console.WriteLine($"Texto extraído:\n{texto}");
 
 // 2. Extraer estructura completa (metadatos + páginas)
-string json = ReportForgeEngine.ExtractJson(pdfBytes);
+string json = FlowPdfEngine.ExtractJson(pdfBytes);
 Console.WriteLine($"Metadatos y páginas en JSON:\n{json}");</code></pre>
           </div>
 
           <!-- Snippet TS -->
           <div id="ext-code-ts" class="ext-code-block hidden">
-            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import { ReportForgeEngine } from 'reportforge';
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import { FlowPdfEngine } from 'flowpdf';
 import * as fs from 'fs';
 
 const pdfBytes = fs.readFileSync('factura_existente.pdf');
 
 // 1. Texto plano
-const text = ReportForgeEngine.extractText(pdfBytes);
+const text = FlowPdfEngine.extractText(pdfBytes);
 
 // 2. Estructura con páginas, dimensiones y metadatos
-const doc = ReportForgeEngine.extractDocument(pdfBytes);
+const doc = FlowPdfEngine.extractDocument(pdfBytes);
 console.log(`Documento: ${doc.metadata.title}`);
 console.log(`Páginas: ${doc.total_pages}`);
 doc.pages.forEach(p => console.log(`Pág ${p.page_number} (${p.width}x${p.height}pt)`));</code></pre>
@@ -458,16 +458,16 @@ doc.pages.forEach(p => console.log(`Pág ${p.page_number} (${p.width}x${p.height
 
           <!-- Snippet Python -->
           <div id="ext-code-py" class="ext-code-block hidden">
-            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import reportforge
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import flowpdf
 
 with open("factura_existente.pdf", "rb") as f:
     pdf_bytes = f.read()
 
 # 1. Extracción de texto plano
-texto = reportforge.extract_text(pdf_bytes)
+texto = flowpdf.extract_text(pdf_bytes)
 
 # 2. Extracción de diccionario con metadatos y páginas
-doc = reportforge.extract_document(pdf_bytes)
+doc = flowpdf.extract_document(pdf_bytes)
 print(f"Total páginas: {doc['total_pages']}")
 print(f"Autor: {doc['metadata']['author']}")
 print(f"Páginas: {len(doc['pages'])}")</code></pre>
@@ -475,32 +475,32 @@ print(f"Páginas: {len(doc['pages'])}")</code></pre>
 
           <!-- Snippet PHP -->
           <div id="ext-code-php" class="ext-code-block hidden">
-            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>use ReportForge\ReportForgeEngine;
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>use FlowPdf\FlowPdfEngine;
 
 $pdfBytes = file_get_contents("factura_existente.pdf");
 
 // 1. Extraer texto plano
-$texto = ReportForgeEngine::extractText($pdfBytes);
+$texto = FlowPdfEngine::extractText($pdfBytes);
 
 // 2. Extraer JSON con metadatos y dimensiones
-$json = ReportForgeEngine::extractJson($pdfBytes);
+$json = FlowPdfEngine::extractJson($pdfBytes);
 $doc = json_decode($json, true);
 echo "Total páginas: " . $doc['total_pages'];</code></pre>
           </div>
 
           <!-- Snippet Java -->
           <div id="ext-code-java" class="ext-code-block hidden">
-            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import dev.reportforge.ReportForgeEngine;
+            <pre class="text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import io.github.codepro47rd.flowpdf.FlowPdfEngine;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 byte[] pdfBytes = Files.readAllBytes(Path.of("factura_existente.pdf"));
 
 // 1. Extraer texto plano
-String texto = ReportForgeEngine.extractText(pdfBytes);
+String texto = FlowPdfEngine.extractText(pdfBytes);
 
 // 2. Extraer JSON completo
-String json = ReportForgeEngine.extractJson(pdfBytes);
+String json = FlowPdfEngine.extractJson(pdfBytes);
 System.out.println("JSON extraído: " + json);</code></pre>
           </div>
         </div>
@@ -516,7 +516,7 @@ System.out.println("JSON extraído: " + json);</code></pre>
   "metadata": {
     "title": "Factura NCF B0100000492",
     "author": "Empresa Demo S.R.L.",
-    "producer": "ReportForge Rust Core v2.0",
+    "producer": "FlowPDF Rust Core",
     "creation_date": "D:20261117184500"
   },
   "pages": [
@@ -524,10 +524,10 @@ System.out.println("JSON extraído: " + json);</code></pre>
       "page_number": 1,
       "width": 595.28,
       "height": 841.89,
-      "text": "REPORTFORGE ENTERPRISE\nFacturación Electrónica..."
+      "text": "FLOWPDF ENTERPRISE\nFacturación Electrónica..."
     }
   ],
-  "full_text": "REPORTFORGE ENTERPRISE..."
+  "full_text": "FLOWPDF ENTERPRISE..."
 }</code></pre>
         </div>
       </div>
@@ -540,9 +540,9 @@ System.out.println("JSON extraído: " + json);</code></pre>
   <section id="benchmark" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800/80">
     <div class="text-center mb-16">
       <h2 class="text-xs font-bold uppercase tracking-widest text-emerald-400">Pruebas Reales de Rendimiento</h2>
-      <p class="mt-2 text-3xl sm:text-4xl font-extrabold text-white">¿Por qué ReportForge y no HTML a PDF?</p>
+      <p class="mt-2 text-3xl sm:text-4xl font-extrabold text-white">¿Por qué FlowPDF y no HTML a PDF?</p>
       <p class="mt-3 text-slate-400 max-w-2xl mx-auto text-sm">
-        Las soluciones que levantan Chrome headless consumen gigabytes de memoria y tardan segundos por página. ReportForge utiliza composición vectorial matemática directa.
+        Las soluciones que levantan Chrome headless consumen gigabytes de memoria y tardan segundos por página. FlowPDF utiliza composición vectorial matemática directa.
       </p>
     </div>
 
@@ -553,7 +553,7 @@ System.out.println("JSON extraído: " + json);</code></pre>
             <th class="py-4 px-6 font-semibold">Métrica / Capacidad</th>
             <th class="py-4 px-6 font-semibold text-red-400">Motores Chromium (Puppeteer / Playwright)</th>
             <th class="py-4 px-6 font-semibold text-amber-400">WeasyPrint (Python CSS Paged Media)</th>
-            <th class="py-4 px-6 font-semibold text-sky-300 bg-blue-950/60 border-l border-r border-blue-500/40">ReportForge 2.0 (Rust Core) 🚀</th>
+            <th class="py-4 px-6 font-semibold text-sky-300 bg-blue-950/60 border-l border-r border-blue-500/40">FlowPDF (Rust Core) 🚀</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/80 text-slate-300">
@@ -642,19 +642,19 @@ System.out.println("JSON extraído: " + json);</code></pre>
           <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
               <span class="p-1 rounded bg-blue-500/20 text-blue-400 font-mono text-xs">C#</span>
-              Paquete NuGet ReportForge 2.0.0
+              Paquete NuGet FlowPDF
             </h3>
             <p class="text-xs text-slate-400 mt-2">
               Multi-targeting compilado para <code>net8.0</code>, <code>net9.0</code> y <code>net10.0</code>. 
-              Embedea automáticamente <code>reportforge_native.dll</code> y <code>libreportforge_native.so</code>.
+              Embedea automáticamente <code>flowpdf_native.dll</code> y <code>libflowpdf_native.so</code>.
             </p>
             <div class="mt-4 p-3 rounded-lg bg-slate-950 font-mono text-xs text-cyan-300 flex items-center justify-between">
-              <code>dotnet add package ReportForge</code>
-              <button onclick="copyToClipboard('dotnet add package ReportForge')" class="text-slate-500 hover:text-white">&copy;</button>
+              <code>dotnet add package FlowPDF</code>
+              <button onclick="copyToClipboard('dotnet add package FlowPDF')" class="text-slate-500 hover:text-white">&copy;</button>
             </div>
             <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
               <span class="text-xs text-slate-400">Descarga local:</span>
-              <a href="packages/ReportForge.2.0.0.nupkg" download="ReportForge.2.0.0.nupkg" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">ReportForge.2.0.0.nupkg (1.6 MB) &darr;</a>
+              <a href="https://www.nuget.org/packages/FlowPDF" target="_blank" rel="noopener" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">Ver en NuGet &nearr;</a>
             </div>
           </div>
         </div>
@@ -664,8 +664,8 @@ System.out.println("JSON extraído: " + json);</code></pre>
             <span>Ejemplo de Implementación C#</span>
             <button onclick="copyCode('csharp-code')" class="text-cyan-400 hover:text-cyan-300">Copiar Código</button>
           </div>
-          <pre id="csharp-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>using ReportForge.Fluent;
-using ReportForge.Native;
+          <pre id="csharp-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>using FlowPdf.Fluent;
+using FlowPdf.Native;
 using System.IO;
 
 // 1. Declarar documento fluido con soporte Unicode y acentos
@@ -673,10 +673,10 @@ var doc = ReportDocument.Create(page => page.A4().Portrait().Margin(15))
     .Title("Facturación Electrónica en C#")
     .Header(h => h.Row(r => {
         r.RelativeItem(3, c => {
-            c.Text("REPORTFORGE ENTERPRISE").H2().Bold().Color("#1E40AF");
+            c.Text("FLOWPDF ENTERPRISE").H2().Bold().Color("#1E40AF");
             c.Text("Facturación con acentos: á é í ó ú ñ Ñ ¿ ¡ €").Caption().Color("#4B5563");
         });
-        r.RelativeItem(1, c => c.QrCode("https://reportforge.io/verify/FAC-9901", 60));
+        r.RelativeItem(1, c => c.QrCode("https://example.com/verify/FAC-9901", 60));
     }))
     .Content(c => {
         c.Spacer(10);
@@ -714,18 +714,18 @@ Console.WriteLine($"✅ PDF generado ({pdfBytes.Length} bytes) en microsegundos!
           <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
               <span class="p-1 rounded bg-yellow-500/20 text-yellow-400 font-mono text-xs">NPM</span>
-              Paquete npm reportforge 2.0.0
+              Paquete npm flowpdf
             </h3>
             <p class="text-xs text-slate-400 mt-2">
               Soporte nativo para <b>Node.js</b> (vía <code>koffi</code> sin compilar C++), <b>Bun</b> (FFI directo zero-overhead) y <b>Deno</b>.
             </p>
             <div class="mt-4 p-3 rounded-lg bg-slate-950 font-mono text-xs text-cyan-300 flex items-center justify-between">
-              <code>npm install reportforge</code>
-              <button onclick="copyToClipboard('npm install reportforge')" class="text-slate-500 hover:text-white">&copy;</button>
+              <code>npm install flowpdf</code>
+              <button onclick="copyToClipboard('npm install flowpdf')" class="text-slate-500 hover:text-white">&copy;</button>
             </div>
             <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
               <span class="text-xs text-slate-400">Descarga tarball:</span>
-              <a href="packages/reportforge-2.0.0.tgz" download="reportforge-2.0.0.tgz" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">reportforge-2.0.0.tgz (1.6 MB) &darr;</a>
+              <a href="https://www.npmjs.com/package/flowpdf" target="_blank" rel="noopener" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">Ver en npm &nearr;</a>
             </div>
           </div>
         </div>
@@ -735,16 +735,16 @@ Console.WriteLine($"✅ PDF generado ({pdfBytes.Length} bytes) en microsegundos!
             <span>Ejemplo de Implementación TypeScript / Bun / Node</span>
             <button onclick="copyCode('ts-code')" class="text-cyan-400 hover:text-cyan-300">Copiar Código</button>
           </div>
-          <pre id="ts-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import { ReportDocument } from 'reportforge';
+          <pre id="ts-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import { ReportDocument } from 'flowpdf';
 import * as fs from 'fs';
 
 const doc = ReportDocument.create(page =&gt; page.a4().portrait().margin(15))
     .header(h =&gt; h.row(r =&gt; {
         r.relativeItem(3, col =&gt; col.column(c =&gt; {
-            c.text('REPORTFORGE ENTERPRISE', t =&gt; t.h2().bold().color('#1E40AF'));
+            c.text('FLOWPDF ENTERPRISE', t =&gt; t.h2().bold().color('#1E40AF'));
             c.text('Facturación con acentos: á é í ó ú ñ €', t =&gt; t.caption());
         }));
-        r.relativeItem(1, col =&gt; col.qr('https://reportforge.io/verify/FAC-9901', 60));
+        r.relativeItem(1, col =&gt; col.qr('https://example.com/verify/FAC-9901', 60));
     }))
     .content(c =&gt; {
         c.spacer(10);
@@ -780,18 +780,18 @@ console.log(`✅ PDF generado exitosamente (${pdfBytes.length} bytes) en ~25ms!`
           <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
               <span class="p-1 rounded bg-emerald-500/20 text-emerald-400 font-mono text-xs">PyPI</span>
-              Paquete wheel reportforge 2.0.0
+              Paquete wheel flowpdf
             </h3>
             <p class="text-xs text-slate-400 mt-2">
               Compatible con Python 3.9 a 3.12+. Carga directa mediante <code>ctypes</code> de los binarios nativos de Rust Core sin compilar.
             </p>
             <div class="mt-4 p-3 rounded-lg bg-slate-950 font-mono text-xs text-cyan-300 flex items-center justify-between">
-              <code>pip install reportforge</code>
-              <button onclick="copyToClipboard('pip install reportforge')" class="text-slate-500 hover:text-white">&copy;</button>
+              <code>pip install flowpdf</code>
+              <button onclick="copyToClipboard('pip install flowpdf')" class="text-slate-500 hover:text-white">&copy;</button>
             </div>
             <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
               <span class="text-xs text-slate-400">Descarga wheel:</span>
-              <a href="packages/reportforge-2.0.0-py3-none-any.whl" download="reportforge-2.0.0-py3-none-any.whl" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">reportforge-2.0.0-py3-none-any.whl (1.5 MB) &darr;</a>
+              <a href="https://pypi.org/project/flowpdf/" target="_blank" rel="noopener" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">Ver en PyPI &nearr;</a>
             </div>
           </div>
         </div>
@@ -801,7 +801,7 @@ console.log(`✅ PDF generado exitosamente (${pdfBytes.length} bytes) en ~25ms!`
             <span>Ejemplo de Implementación Python</span>
             <button onclick="copyCode('py-code')" class="text-cyan-400 hover:text-cyan-300">Copiar Código</button>
           </div>
-          <pre id="py-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>from reportforge import ReportDocument
+          <pre id="py-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>from flowpdf import ReportDocument
 
 doc = (
     ReportDocument()
@@ -810,11 +810,11 @@ doc = (
     .header(lambda h: (
         h.row(lambda r: (
             r.column(lambda c: (
-                c.text("REPORTFORGE ENTERPRISE", lambda t: t.h2().bold().color("#1E40AF")),
+                c.text("FLOWPDF ENTERPRISE", lambda t: t.h2().bold().color("#1E40AF")),
                 c.text("Acentos españoles sin mojibake: á é í ó ú ñ Ñ ¿ ¡ €", lambda t: t.caption().color("#4B5563"))
             ), flex=3),
             r.column(lambda c: (
-                c.qr_code("https://reportforge.io/verify/FAC-PY", size=60),
+                c.qr_code("https://example.com/verify/FAC-PY", size=60),
             ), flex=1)
         ))
     ))
@@ -856,14 +856,14 @@ print(f"✅ PDF generado exitosamente ({len(pdf_bytes)} bytes)!")</code></pre>
           <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
               <span class="p-1 rounded bg-indigo-500/20 text-indigo-400 font-mono text-xs">PHP</span>
-              Composer reportforge/reportforge
+              Composer codepro47rd/flowpdf
             </h3>
             <p class="text-xs text-slate-400 mt-2">
               Estándar <b>PSR-4</b> con soporte nativo de <b>PHP FFI</b> (<code>\FFI::cdef</code>) para renderizado en microsegundos y cliente cURL de respaldo.
             </p>
             <div class="mt-4 p-3 rounded-lg bg-slate-950 font-mono text-xs text-cyan-300 flex items-center justify-between">
-              <code>composer require reportforge/reportforge</code>
-              <button onclick="copyToClipboard('composer require reportforge/reportforge')" class="text-slate-500 hover:text-white">&copy;</button>
+              <code>composer require codepro47rd/flowpdf</code>
+              <button onclick="copyToClipboard('composer require codepro47rd/flowpdf')" class="text-slate-500 hover:text-white">&copy;</button>
             </div>
           </div>
         </div>
@@ -876,7 +876,7 @@ print(f"✅ PDF generado exitosamente ({len(pdf_bytes)} bytes)!")</code></pre>
           <pre id="php-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>&lt;?php
 require_once 'vendor/autoload.php';
 
-use ReportForge\ReportDocument;
+use FlowPdf\ReportDocument;
 
 $doc = ReportDocument::create(fn($p) =&gt; $p-&gt;a4()-&gt;portrait()-&gt;margin(15))
     -&gt;content(fn($c) =&gt; (
@@ -893,7 +893,7 @@ $doc = ReportDocument::create(fn($p) =&gt; $p-&gt;a4()-&gt;portrait()-&gt;margin
             ])
         )),
         $c-&gt;spacer(10),
-        $c-&gt;qrCode("https://reportforge.io/verify/FAC-PHP", size: 60),
+        $c-&gt;qrCode("https://example.com/verify/FAC-PHP", size: 60),
         $c-&gt;spacer(10),
         $c-&gt;barcode("FACPHP2026", barcodeType: "code128", width: 160, height: 35)
     ));
@@ -913,18 +913,18 @@ echo "✅ PDF generado exitosamente (" . strlen($pdfBytes) . " bytes)!\n";</code
           <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
               <span class="p-1 rounded bg-red-500/20 text-red-400 font-mono text-xs">Maven</span>
-              dev.reportforge:reportforge:2.0.0
+              io.github.codepro47rd:flowpdf:1.0.0
             </h3>
             <p class="text-xs text-slate-400 mt-2">
               JAR auto-contenido que extrae dinámicamente los binarios de Rust Core vía <b>JNA</b>. Cero dependencias JSON externas.
             </p>
             <div class="mt-4 p-3 rounded-lg bg-slate-950 font-mono text-xs text-cyan-300 flex items-center justify-between">
-              <code>dev.reportforge:reportforge:2.0.0</code>
-              <button onclick="copyToClipboard('dev.reportforge:reportforge:2.0.0')" class="text-slate-500 hover:text-white">&copy;</button>
+              <code>io.github.codepro47rd:flowpdf:1.0.0</code>
+              <button onclick="copyToClipboard('io.github.codepro47rd:flowpdf:1.0.0')" class="text-slate-500 hover:text-white">&copy;</button>
             </div>
             <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
               <span class="text-xs text-slate-400">Descarga JAR:</span>
-              <a href="packages/reportforge-2.0.0.jar" download="reportforge-2.0.0.jar" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">reportforge-2.0.0.jar (1.5 MB) &darr;</a>
+              <a href="https://central.sonatype.com/artifact/io.github.codepro47rd/flowpdf" target="_blank" rel="noopener" class="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1">Ver en Maven Central &nearr;</a>
             </div>
           </div>
         </div>
@@ -934,7 +934,7 @@ echo "✅ PDF generado exitosamente (" . strlen($pdfBytes) . " bytes)!\n";</code
             <span>Ejemplo de Implementación Java 11+</span>
             <button onclick="copyCode('java-code')" class="text-cyan-400 hover:text-cyan-300">Copiar Código</button>
           </div>
-          <pre id="java-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import dev.reportforge.ReportDocument;
+          <pre id="java-code" class="mt-4 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"><code>import io.github.codepro47rd.flowpdf.ReportDocument;
 import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
@@ -957,7 +957,7 @@ public class Main {
                     ));
                 });
                 c.spacer(10);
-                c.qrCode("https://reportforge.io/verify/FAC-JAVA", 60);
+                c.qrCode("https://example.com/verify/FAC-JAVA", 60);
                 c.spacer(10);
                 c.barcode("FACJAVA2026", "code128", 160, 35, true);
             });
@@ -983,7 +983,7 @@ public class Main {
       <h2 class="text-xs font-bold uppercase tracking-widest text-sky-400">Artefactos Compilados</h2>
       <p class="mt-2 text-3xl sm:text-4xl font-extrabold text-white">Descargas Directas de Paquetes</p>
       <p class="mt-3 text-slate-400 max-w-2xl mx-auto text-sm">
-        Todos los paquetes incluyen los binarios compilados de Rust Core v2.0 (Windows x64 y Linux x64) integrados.
+        Todos los paquetes incluyen los binarios compilados de Rust Core (Windows x64 y Linux x64) integrados.
       </p>
     </div>
 
@@ -993,19 +993,19 @@ public class Main {
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="text-2xl font-bold text-white">C# / .NET</span>
-            <span class="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">NuGet v2.0.0</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">NuGet</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
             Paquete nupkg multi-target (.NET 8, 9, 10). Generación declarativa en 35ms y extracción nativa de texto o JSON en &lt; 1ms.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
-            dotnet add package ReportForge
+            dotnet add package FlowPDF
           </div>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
-          <span class="text-xs text-slate-500 font-mono">ReportForge.2.0.0.nupkg</span>
-          <a href="packages/ReportForge.2.0.0.nupkg" download="ReportForge.2.0.0.nupkg" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
-            <span>Descargar</span> &darr;
+          <span class="text-xs text-slate-500 font-mono">dotnet add package FlowPDF</span>
+          <a href="https://www.nuget.org/packages/FlowPDF" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
+            <span>Ver en NuGet</span> &nearr;
           </a>
         </div>
       </div>
@@ -1015,19 +1015,19 @@ public class Main {
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="text-2xl font-bold text-white">TypeScript / JS</span>
-            <span class="text-xs px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-semibold">npm v2.0.0</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-semibold">npm</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
             Tarball npm oficial (Node.js, Bun FFI, Deno). Generación fluida y extracción de texto/metadatos con tipos completos.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
-            npm install reportforge
+            npm install flowpdf
           </div>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
-          <span class="text-xs text-slate-500 font-mono">reportforge-2.0.0.tgz</span>
-          <a href="packages/reportforge-2.0.0.tgz" download="reportforge-2.0.0.tgz" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
-            <span>Descargar</span> &darr;
+          <span class="text-xs text-slate-500 font-mono">npm install flowpdf</span>
+          <a href="https://www.npmjs.com/package/flowpdf" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
+            <span>Ver en npm</span> &nearr;
           </a>
         </div>
       </div>
@@ -1037,19 +1037,19 @@ public class Main {
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="text-2xl font-bold text-white">Python</span>
-            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">wheel v2.0.0</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">wheel</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
             Wheel universal para Python 3.9+. Generación in-process y funciones de extracción de texto y metadatos sin compilar.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
-            pip install reportforge
+            pip install flowpdf
           </div>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
-          <span class="text-xs text-slate-500 font-mono">reportforge-2.0.0.whl</span>
-          <a href="packages/reportforge-2.0.0-py3-none-any.whl" download="reportforge-2.0.0-py3-none-any.whl" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
-            <span>Descargar</span> &darr;
+          <span class="text-xs text-slate-500 font-mono">pip install flowpdf</span>
+          <a href="https://pypi.org/project/flowpdf/" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
+            <span>Ver en PyPI</span> &nearr;
           </a>
         </div>
       </div>
@@ -1059,19 +1059,19 @@ public class Main {
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="text-2xl font-bold text-white">PHP 8+</span>
-            <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold">Composer v2.0.0</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold">Composer</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
             Estructura PSR-4 con autoloading. Soporte PHP FFI para generación ultra-rápida y extracción nativa de texto.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
-            composer require reportforge/reportforge
+            composer require codepro47rd/flowpdf
           </div>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
-          <span class="text-xs text-slate-500 font-mono">reportforge-php-2.0.0.zip</span>
-          <a href="packages/reportforge-php-2.0.0.zip" download="reportforge-php-2.0.0.zip" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
-            <span>Descargar</span> &darr;
+          <span class="text-xs text-slate-500 font-mono">composer require codepro47rd/flowpdf</span>
+          <a href="https://packagist.org/packages/codepro47rd/flowpdf" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
+            <span>Ver en Packagist</span> &nearr;
           </a>
         </div>
       </div>
@@ -1081,19 +1081,19 @@ public class Main {
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="text-2xl font-bold text-white">Java 11+</span>
-            <span class="text-xs px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 font-semibold">Maven / JAR v2.0.0</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 font-semibold">Maven / JAR</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
             JAR ejecutable con extracción dinámica vía JNA. Generación de alta fidelidad y extracción estructurada de PDFs.
           </p>
           <div class="mt-4 p-2.5 bg-slate-950 rounded-lg text-xs font-mono text-slate-300">
-            dev.reportforge:reportforge:2.0.0
+            io.github.codepro47rd:flowpdf:1.0.0
           </div>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
-          <span class="text-xs text-slate-500 font-mono">reportforge-2.0.0.jar</span>
-          <a href="packages/reportforge-2.0.0.jar" download="reportforge-2.0.0.jar" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
-            <span>Descargar</span> &darr;
+          <span class="text-xs text-slate-500 font-mono">io.github.codepro47rd:flowpdf</span>
+          <a href="https://central.sonatype.com/artifact/io.github.codepro47rd/flowpdf" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
+            <span>Ver en Maven Central</span> &nearr;
           </a>
         </div>
       </div>
@@ -1109,14 +1109,14 @@ public class Main {
             Manual técnico completo (13 páginas) con diagramas de flujo, especificación del motor nativo en Rust, catálogo de componentes y guía de implementación para los SDKs.
           </p>
           <div class="mt-4">
-            <a href="packages/ReportForge_Manual_Oficial_Completo.pdf" download="ReportForge_Manual_Oficial_Completo.pdf" class="block p-3 bg-slate-950 rounded-lg text-xs font-mono text-sky-300 hover:underline border border-slate-800">
-              &bull; ReportForge_Manual_Oficial_Completo.pdf (13 páginas, 144 KB) &darr;
+            <a href="FlowPDF_Manual_Oficial_Completo.pdf" download="FlowPDF_Manual_Oficial_Completo.pdf" class="block p-3 bg-slate-950 rounded-lg text-xs font-mono text-sky-300 hover:underline border border-slate-800">
+              &bull; FlowPDF_Manual_Oficial_Completo.pdf (13 páginas, 144 KB) &darr;
             </a>
           </div>
         </div>
         <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
-          <span class="text-xs text-slate-500 font-mono">docs/packages/</span>
-          <a href="packages/ReportForge_Manual_Oficial_Completo.pdf" target="_blank" class="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
+          <span class="text-xs text-slate-500 font-mono">docs/</span>
+          <a href="FlowPDF_Manual_Oficial_Completo.pdf" target="_blank" class="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold shadow-md transition-colors flex items-center gap-1">
             <span>Ver PDF</span> &rarr;
           </a>
         </div>
@@ -1155,18 +1155,18 @@ public class Main {
   <footer class="border-t border-blue-950/80 bg-[#040814] py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
       <div class="flex items-center gap-4">
-        <img src="assets/logo-dark.png" alt="ReportForge" class="h-8 w-auto">
+        <img src="assets/logo-dark.png" alt="FlowPDF" class="h-8 w-auto">
         <span class="text-xs text-slate-400">| Motor Universal de Documentos y Reportes</span>
       </div>
 
       <div class="flex items-center gap-6 text-xs text-slate-400">
-        <a href="packages/ReportForge_Manual_Oficial_Completo.pdf" target="_blank" class="hover:text-sky-300 transition-colors">Manual Maestro PDF</a>
+        <a href="FlowPDF_Manual_Oficial_Completo.pdf" target="_blank" class="hover:text-sky-300 transition-colors">Manual Maestro PDF</a>
         <a href="llms.txt" target="_blank" class="hover:text-sky-300 transition-colors font-mono text-sky-400">llms.txt</a>
-        <a href="https://github.com/CodePro47RD/ReportForge" target="_blank" class="hover:text-sky-300 transition-colors">GitHub</a>
+        <a href="https://github.com/CodePro47RD/FlowPDF" target="_blank" class="hover:text-sky-300 transition-colors">GitHub</a>
       </div>
 
       <div class="text-xs text-slate-500 text-center md:text-right">
-        Licencia MIT © 2026 Edwin Abreu & ReportForge Contributors. <br>
+        Licencia MIT © 2026 Edwin Abreu & FlowPDF Contributors. <br>
         Diseñado para alta velocidad, cero sobrecarga y máxima fidelidad tipográfica.
       </div>
     </div>
@@ -1242,14 +1242,14 @@ public class Main {
                 type: "column",
                 spacing: 3,
                 items: [
-                  { type: "text", value: "REPORTFORGE ENTERPRISE", style: "h2", bold: true, color: "#0066FF" },
+                  { type: "text", value: "FLOWPDF ENTERPRISE", style: "h2", bold: true, color: "#0066FF" },
                   { type: "text", value: "Facturación en Español con Acentos: á, é, í, ó, ú, ñ, €", style: "caption" }
                 ]
               }
             },
             {
               flex: 1,
-              item: { type: "qr", value: "https://reportforge.io/verify/FAC-9901", size: 65 }
+              item: { type: "qr", value: "https://example.com/verify/FAC-9901", size: 65 }
             }
           ]
         },
@@ -1266,7 +1266,7 @@ public class Main {
               { title: "Total", field: "total", width: 90, align: "right" }
             ],
             data: [
-              { sku: "SRV-01", desc: "Suscripción Anual ReportForge 2.1", qty: "1", total: "€ 1,200.00" },
+              { sku: "SRV-01", desc: "Suscripción Anual FlowPDF", qty: "1", total: "€ 1,200.00" },
               { sku: "SUP-02", desc: "Módulo Gráficos Vectoriales y Wasm", qty: "1", total: "€ 450.00" },
               { sku: "TRN-03", desc: "Soporte Técnico Especializado", qty: "2", total: "€ 300.00" }
             ]
@@ -1282,7 +1282,7 @@ public class Main {
         ],
         footer: {
           type: "text",
-          value: "Documento emitido in-process mediante ReportForge Rust Core en WebAssembly",
+          value: "Documento emitido in-process mediante FlowPDF Rust Core en WebAssembly",
           style: "caption",
           alignment: "center"
         }
@@ -1440,7 +1440,7 @@ public class Main {
 
       try {
         wasmStatus.textContent = "Cargando Wasm...";
-        await window.reportforgeWasm.init();
+        await window.flowpdfWasm.init();
         wasmStatus.textContent = "⚡ Wasm Listo";
         await compileWasmPdf();
       } catch (err) {
@@ -1494,10 +1494,10 @@ public class Main {
     async function compileWasmPdf() {
       if (wasmErrorBanner) wasmErrorBanner.classList.add('hidden');
 
-      if (!window.reportforgeWasm || !window.reportforgeWasm.isReady) {
+      if (!window.flowpdfWasm || !window.flowpdfWasm.isReady) {
         try {
           wasmStatus.textContent = "Iniciando Wasm...";
-          await window.reportforgeWasm.init();
+          await window.flowpdfWasm.init();
           wasmStatus.textContent = "⚡ Wasm Listo";
         } catch (e) {
           wasmStatus.textContent = "Error Wasm";
@@ -1515,7 +1515,7 @@ public class Main {
       try {
         const parsed = JSON.parse(code);
         const t0 = performance.now();
-        const pdfBytes = window.reportforgeWasm.renderPdf(parsed);
+        const pdfBytes = window.flowpdfWasm.renderPdf(parsed);
         const elapsed = performance.now() - t0;
 
         currentPdfBytes = pdfBytes.slice();
@@ -1579,7 +1579,7 @@ public class Main {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `reportforge_${wasmSelect.value || 'documento'}.pdf`;
+        a.download = `flowpdf_${wasmSelect.value || 'documento'}.pdf`;
         document.body.appendChild(a);
         a.click();
 

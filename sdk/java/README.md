@@ -1,20 +1,20 @@
-# ReportForge Java SDK v2.0.0
+# FlowPDF Java SDK
 
-Universal Document Engine and Fluent Report Builder SDK for **Java (11+)**, powered by in-process **Rust Core v2.0** and high-throughput remote HTTP rendering.
+Universal Document Engine and Fluent Report Builder SDK for **Java (11+)**, powered by in-process **Rust Core** and high-throughput remote HTTP rendering.
 
-[![Maven Central](https://img.shields.io/badge/maven--central-v2.0.0-blue.svg)](https://central.sonatype.com/artifact/dev.reportforge/reportforge)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.codepro47rd/flowpdf)](https://central.sonatype.com/artifact/io.github.codepro47rd/flowpdf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## ⚡ Key Highlights
 
-- **Ultra-Fast In-Process Generation**: Generates complete PDFs in **~15ms - 35ms** with zero network latency using JNA and native Rust Core v2.0.
-- **Embedded Multi-Platform Runtimes**: Bundles precompiled `win-x64` (`reportforge_native.dll`) and `linux-x64` (`libreportforge_native.so`) runtimes automatically extracted and loaded.
+- **Ultra-Fast In-Process Generation**: Generates complete PDFs in **~15ms - 35ms** with zero network latency using JNA and native Rust Core.
+- **Embedded Multi-Platform Runtimes**: Bundles precompiled `win-x64` (`flowpdf_native.dll`) and `linux-x64` (`libflowpdf_native.so`) runtimes automatically extracted and loaded.
 - **Full Unicode & Spanish Accents**: Native WinAnsi hex encoding for `á, é, í, ó, ú, ñ, Ñ, ¿, ¡, €`.
 - **Zero Third-Party JSON Dependencies**: Built-in lightweight serializer for seamless integration into enterprise Spring Boot, Quarkus, Micronaut, and plain Java applications.
 - **Fluent Declarative Builder**: Composable, chainable, type-safe API for tables, barcodes, QR codes, multi-column layouts, headers, and footers.
-- **Standard HTTP Client**: Built-in `ReportForgeClient` using `java.net.http.HttpClient` for background worker rendering.
+- **Standard HTTP Client**: Built-in `FlowPdfClient` using `java.net.http.HttpClient` for background worker rendering.
 
 ---
 
@@ -23,9 +23,9 @@ Universal Document Engine and Fluent Report Builder SDK for **Java (11+)**, powe
 ### Maven
 ```xml
 <dependency>
-    <groupId>dev.reportforge</groupId>
-    <artifactId>reportforge</artifactId>
-    <version>2.0.0</version>
+    <groupId>io.github.codepro47rd</groupId>
+    <artifactId>flowpdf</artifactId>
+    <version>1.0.0</version>
 </dependency>
 <dependency>
     <groupId>net.java.dev.jna</groupId>
@@ -36,7 +36,7 @@ Universal Document Engine and Fluent Report Builder SDK for **Java (11+)**, powe
 
 ### Gradle
 ```groovy
-implementation 'dev.reportforge:reportforge:2.0.0'
+implementation 'io.github.codepro47rd:flowpdf:1.0.0'
 implementation 'net.java.dev.jna:jna:5.17.0'
 ```
 
@@ -47,8 +47,8 @@ implementation 'net.java.dev.jna:jna:5.17.0'
 ```java
 package com.example;
 
-import dev.reportforge.ReportDocument;
-import dev.reportforge.ReportForgeEngine;
+import io.github.codepro47rd.flowpdf.ReportDocument;
+import io.github.codepro47rd.flowpdf.FlowPdfEngine;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -62,11 +62,11 @@ public class Main {
             .title("Factura Comercial en Java")
             .header(h -> h.row(r -> {
                 r.column(c -> {
-                    c.text("REPORTFORGE ENTERPRISE", t -> t.h2().bold().color("#1E40AF"));
+                    c.text("FLOWPDF ENTERPRISE", t -> t.h2().bold().color("#1E40AF"));
                     c.text("Facturación Electrónica en Español: á é í ó ú ñ Ñ ¿ ¡ €", t -> t.caption().color("#4B5563"));
                 }, null, 3.0);
                 r.column(c -> {
-                    c.qrCode("https://reportforge.io/verify/FAC-JAVA-2026", 60);
+                    c.qrCode("https://example.com/verify/FAC-JAVA-2026", 60);
                 }, null, 1.0);
             }))
             .content(c -> {
@@ -80,7 +80,7 @@ public class Main {
                     t.headerBackground("#1E40AF");
                     t.zebra(true);
                     t.data(List.of(
-                        Map.of("sku", "SRV-01", "description", "Licencia ReportForge Enterprise Anual", "qty", 1, "price", "€ 1,200.00", "total", "€ 1,200.00"),
+                        Map.of("sku", "SRV-01", "description", "Licencia FlowPDF Enterprise Anual", "qty", 1, "price", "€ 1,200.00", "total", "€ 1,200.00"),
                         Map.of("sku", "SUP-02", "description", "Soporte Técnico 24/7 y Consultoría", "qty", 2, "price", "€ 150.00", "total", "€ 300.00")
                     ));
                 });
@@ -98,7 +98,7 @@ public class Main {
                     }, null, 1.0);
                 });
             })
-            .footer(f -> f.text("Documento generado in-process con ReportForge Java SDK & Rust Core v2.0", t -> t.caption().center()));
+            .footer(f -> f.text("Documento generado in-process con FlowPDF Java SDK & Rust Core", t -> t.caption().center()));
 
         // 2. Render directly in-process to PDF in ~30 ms!
         byte[] pdfBytes = doc.renderPdf();
@@ -117,10 +117,10 @@ public class Main {
 ## 🌐 Remote HTTP Rendering (Cloud / Server)
 
 ```java
-import dev.reportforge.ReportForgeClient;
-import dev.reportforge.ReportDocument;
+import io.github.codepro47rd.flowpdf.FlowPdfClient;
+import io.github.codepro47rd.flowpdf.ReportDocument;
 
-ReportForgeClient client = new ReportForgeClient("http://localhost:8000", "your-api-key");
+FlowPdfClient client = new FlowPdfClient("http://localhost:8000", "your-api-key");
 
 ReportDocument doc = ReportDocument.create()
     .content(c -> c.text("Generado en worker asíncrono con Celery y Redis", t -> t.h1()));
@@ -132,4 +132,4 @@ byte[] pdf = client.render(doc);
 
 ## 📄 License
 
-MIT © 2026 Edwin Abreu & ReportForge Contributors.
+MIT © 2026 Edwin Abreu & FlowPDF Contributors.

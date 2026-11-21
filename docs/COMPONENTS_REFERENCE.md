@@ -1,4 +1,4 @@
-# Catálogo de Componentes ReportForge
+# Catálogo de Componentes FlowPDF
 
 Referencia exhaustiva de todos los componentes disponibles tanto en la API fluida de Python como en el esquema declarativo JSON.
 
@@ -93,7 +93,7 @@ Chart(
 ```python
 from engine import QRCode, Barcode
 
-QRCode("https://verify.reportforge.io/inv/9901", size=80)
+QRCode("https://example.com/inv/9901", size=80)
 Barcode("INV9901", barcode_type="code128", width=160, height=40)
 ```
 

@@ -6,18 +6,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.codepro47rd</groupId>
-    <artifactId>reportforge</artifactId>
-    <version>2.1.0</version>
+    <artifactId>flowpdf</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>ReportForge Java SDK</name>
-    <description>Universal Document Engine and Fluent Report Builder SDK for Java with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly</description>
-    <url>https://github.com/CodePro47RD/ReportForge</url>
+    <name>FlowPDF Java SDK</name>
+    <description>Universal Document Engine and Fluent Report Builder SDK for Java with native Rust Core, vector charts, custom TTF fonts, and WebAssembly</description>
+    <url>https://github.com/CodePro47RD/FlowPDF</url>
 
     <scm>
-        <url>https://github.com/CodePro47RD/ReportForge</url>
-        <connection>scm:git:https://github.com/CodePro47RD/ReportForge.git</connection>
-        <developerConnection>scm:git:https://github.com/CodePro47RD/ReportForge.git</developerConnection>
+        <url>https://github.com/CodePro47RD/FlowPDF</url>
+        <connection>scm:git:https://github.com/CodePro47RD/FlowPDF.git</connection>
+        <developerConnection>scm:git:https://github.com/CodePro47RD/FlowPDF.git</developerConnection>
     </scm>
 
     <licenses>
@@ -31,7 +31,6 @@
         <developer>
             <id>edwinabreu</id>
             <name>Edwin Abreu</name>
-            <email>dev@reportforge.io</email>
         </developer>
     </developers>
 

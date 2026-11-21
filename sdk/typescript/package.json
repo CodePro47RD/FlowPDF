@@ -1,7 +1,7 @@
 {
-  "name": "reportforge",
-  "version": "2.1.0",
-  "description": "Universal Document Engine and Fluent Report Builder SDK for TypeScript, JavaScript, Bun and Node.js with native Rust Core v2.1, vector charts, custom TTF fonts, and WebAssembly",
+  "name": "flowpdf",
+  "version": "1.0.0",
+  "description": "Universal Document Engine and Fluent Report Builder SDK for TypeScript, JavaScript, Bun and Node.js with native Rust Core, vector charts, custom TTF fonts, and WebAssembly",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -13,7 +13,7 @@
     "build": "tsc"
   },
   "keywords": [
-    "reportforge",
+    "flowpdf",
     "pdf",
     "reporting",
     "document-engine",
@@ -23,14 +23,14 @@
     "bun",
     "rust"
   ],
-  "author": "Edwin Abreu & ReportForge Contributors",
+  "author": "Edwin Abreu & FlowPDF Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CodePro47RD/ReportForge.git",
+    "url": "git+https://github.com/CodePro47RD/FlowPDF.git",
     "directory": "sdk/typescript"
   },
-  "homepage": "https://github.com/CodePro47RD/ReportForge#readme",
+  "homepage": "https://github.com/CodePro47RD/FlowPDF#readme",
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.4.5"

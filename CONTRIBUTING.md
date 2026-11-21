@@ -1,6 +1,6 @@
-# Contributing to ReportForge
+# Contributing to FlowPDF
 
-Thank you for your interest in contributing to **ReportForge**! 🎉
+Thank you for your interest in contributing to **FlowPDF**! 🎉
 
 We welcome contributions from the community, whether it's fixing bugs, improving documentation, adding new components to the document engine, or building SDK client libraries in other programming languages.
 
@@ -10,8 +10,8 @@ We welcome contributions from the community, whether it's fixing bugs, improving
 
 1. **Fork & Clone:**
    ```bash
-   git clone https://github.com/<your-username>/reportforge.git
-   cd reportforge
+   git clone https://github.com/<your-username>/flowpdf.git
+   cd flowpdf
    ```
 
 2. **Environment & Dependencies:**

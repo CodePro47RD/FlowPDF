@@ -1,5 +1,5 @@
 {
-  "name": "reportforge-ts-examples",
+  "name": "flowpdf-ts-examples",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -7,7 +7,7 @@
     "start": "tsc && node dist/generate_report.js"
   },
   "dependencies": {
-    "@reportforge/client": "file:../../sdk/typescript"
+    "@flowpdf/client": "file:../../sdk/typescript"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",

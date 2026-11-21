@@ -1,6 +1,6 @@
-use reportforge::ast::DocumentDefinitionAst;
-use reportforge::c_abi::*;
-use reportforge::pdf_engine::PdfEngine;
+use flowpdf::ast::DocumentDefinitionAst;
+use flowpdf::c_abi::*;
+use flowpdf::pdf_engine::PdfEngine;
 use std::ffi::{CStr, CString};
 
 #[test]
@@ -13,7 +13,7 @@ fn test_render_minimal_document() {
         },
         "content": {
             "type": "text",
-            "value": "Hello from ReportForge Rust Core v2.0!",
+            "value": "Hello from FlowPDF Rust Core!",
             "bold": true,
             "font_size": 16.0
         }
@@ -30,7 +30,7 @@ fn test_render_minimal_document() {
 
     let doc = lopdf::Document::load_mem(&pdf_bytes).expect("Load PDF from memory");
     let text = doc.extract_text(&[1]).expect("Extract text from page 1");
-    assert!(text.contains("Hello from ReportForge"), "Extracted text should contain our string: {}", text);
+    assert!(text.contains("Hello from FlowPDF"), "Extracted text should contain our string: {}", text);
 }
 
 #[test]
@@ -84,7 +84,7 @@ fn test_table_rendering() {
             ],
             "data": [
                 { "desc": "Servidor Dedicado Rust", "qty": "2", "price": "$250.00", "total": "$500.00" },
-                { "desc": "Licencia ReportForge v2.0", "qty": "1", "price": "$999.00", "total": "$999.00" },
+                { "desc": "Licencia FlowPDF", "qty": "1", "price": "$999.00", "total": "$999.00" },
                 { "desc": "Soporte 24/7", "qty": "12", "price": "$50.00", "total": "$600.00" }
             ]
         }
@@ -110,7 +110,7 @@ fn test_qr_and_barcode_rendering() {
         "content": [
             {
                 "type": "qr",
-                "value": "https://github.com/reportforge/reportforge",
+                "value": "https://github.com/codepro47rd/flowpdf",
                 "size": 100.0
             },
             {
@@ -133,7 +133,7 @@ fn test_qr_and_barcode_rendering() {
 
 #[test]
 fn test_c_abi_version() {
-    let version_ptr = reportforge_version();
+    let version_ptr = flowpdf_version();
     assert!(!version_ptr.is_null());
     let version_str = unsafe { CStr::from_ptr(version_ptr).to_str().unwrap() };
     let expected = format!("v{}", env!("CARGO_PKG_VERSION"));
@@ -148,7 +148,7 @@ fn test_c_abi_render_pdf() {
     }"#;
 
     let c_json = CString::new(json_input).unwrap();
-    let result = unsafe { reportforge_render_pdf(c_json.as_ptr(), std::ptr::null()) };
+    let result = unsafe { flowpdf_render_pdf(c_json.as_ptr(), std::ptr::null()) };
 
     assert!(result.success, "C-ABI should succeed");
     assert!(!result.data.is_null(), "Data pointer must not be null");
@@ -158,7 +158,7 @@ fn test_c_abi_render_pdf() {
     assert!(slice.starts_with(b"%PDF-"));
 
     // Cleanup
-    unsafe { reportforge_free_result(result) };
+    unsafe { flowpdf_free_result(result) };
 }
 
 #[test]
@@ -172,11 +172,11 @@ fn test_c_abi_extract_text() {
     }"#;
 
     let c_json = CString::new(json_input).unwrap();
-    let render_res = unsafe { reportforge_render_pdf(c_json.as_ptr(), std::ptr::null()) };
+    let render_res = unsafe { flowpdf_render_pdf(c_json.as_ptr(), std::ptr::null()) };
     assert!(render_res.success);
 
     // Call extraction
-    let extract_res = unsafe { reportforge_extract_text(render_res.data, render_res.length) };
+    let extract_res = unsafe { flowpdf_extract_text(render_res.data, render_res.length) };
     assert!(extract_res.success, "Extraction should succeed");
     assert!(!extract_res.data.is_null());
 
@@ -185,8 +185,8 @@ fn test_c_abi_extract_text() {
     assert!(extracted_str.contains("Texto Extraído con Éxito"));
 
     unsafe {
-        reportforge_free_result(extract_res);
-        reportforge_free_result(render_res);
+        flowpdf_free_result(extract_res);
+        flowpdf_free_result(render_res);
     }
 }
 
@@ -198,10 +198,10 @@ fn test_c_abi_extract_json() {
     }"#;
 
     let c_json = CString::new(json_input).unwrap();
-    let render_res = unsafe { reportforge_render_pdf(c_json.as_ptr(), std::ptr::null()) };
+    let render_res = unsafe { flowpdf_render_pdf(c_json.as_ptr(), std::ptr::null()) };
     assert!(render_res.success);
 
-    let extract_res = unsafe { reportforge_extract_json(render_res.data, render_res.length, std::ptr::null()) };
+    let extract_res = unsafe { flowpdf_extract_json(render_res.data, render_res.length, std::ptr::null()) };
     assert!(extract_res.success, "JSON Extraction should succeed");
 
     let slice = unsafe { std::slice::from_raw_parts(extract_res.data, extract_res.length) };
@@ -213,8 +213,8 @@ fn test_c_abi_extract_json() {
     assert_eq!(val["pages"].as_array().unwrap().len(), 1);
 
     unsafe {
-        reportforge_free_result(extract_res);
-        reportforge_free_result(render_res);
+        flowpdf_free_result(extract_res);
+        flowpdf_free_result(render_res);
     }
 }
 
@@ -230,7 +230,7 @@ fn test_custom_ttf_font_registration_and_rendering() {
     let c_name = CString::new("Arial").unwrap();
 
     // 1. Registrar fuente vía C-ABI
-    let reg_code = unsafe { reportforge_register_font(c_name.as_ptr(), font_bytes.as_ptr(), font_bytes.len()) };
+    let reg_code = unsafe { flowpdf_register_font(c_name.as_ptr(), font_bytes.as_ptr(), font_bytes.len()) };
     assert_eq!(reg_code, 0, "Font registration must return 0 (success)");
 
     // 2. Renderizar documento usando la fuente personalizada "Arial"
@@ -253,7 +253,7 @@ fn test_custom_ttf_font_registration_and_rendering() {
     }"#;
 
     let c_json = CString::new(json_input).unwrap();
-    let render_res = unsafe { reportforge_render_pdf(c_json.as_ptr(), std::ptr::null()) };
+    let render_res = unsafe { flowpdf_render_pdf(c_json.as_ptr(), std::ptr::null()) };
     assert!(render_res.success, "Rendering with TTF font should succeed");
 
     let pdf_slice = unsafe { std::slice::from_raw_parts(render_res.data, render_res.length) };
@@ -276,7 +276,7 @@ fn test_custom_ttf_font_registration_and_rendering() {
     }
     assert!(found_font_descriptor, "PDF must contain embedded FontDescriptor");
 
-    unsafe { reportforge_free_result(render_res) };
+    unsafe { flowpdf_free_result(render_res) };
 }
 
 #[test]
