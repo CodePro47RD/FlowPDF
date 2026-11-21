@@ -188,6 +188,14 @@ namespace ReportForge.Models
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Align { get; set; }
 
+        /// <summary>
+        /// Ancho según el contenido: el motor mide el texto más ancho de la columna (cabecera incluida) con las
+        /// métricas reales de Helvetica. Su texto no se parte; las columnas flexibles toman lo que quede.
+        /// </summary>
+        [JsonPropertyName("auto")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public bool Auto { get; set; }
+
         public TableColumnDefinition() { }
 
         public TableColumnDefinition(string field, string title)
@@ -226,6 +234,47 @@ namespace ReportForge.Models
 
         [JsonPropertyName("repeat_header")]
         public bool RepeatHeader { get; set; } = true;
+
+        /// <summary>Tamaño de letra de las celdas (pt). Sin él, 9 pt.</summary>
+        [JsonPropertyName("font_size")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? FontSize { get; set; }
+
+        [JsonPropertyName("padding_x")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? PaddingX { get; set; }
+
+        [JsonPropertyName("padding_y")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? PaddingY { get; set; }
+
+        [JsonPropertyName("header_color")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? HeaderColor { get; set; }
+
+        [JsonPropertyName("text_color")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? TextColor { get; set; }
+
+        [JsonPropertyName("zebra_color")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ZebraColor { get; set; }
+
+        /// <summary>
+        /// Campo que agrupa las filas: cada vez que cambia su valor se intercala un título a todo el ancho.
+        /// Las filas deben venir ordenadas por ese campo.
+        /// </summary>
+        [JsonPropertyName("group_by")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? GroupBy { get; set; }
+
+        [JsonPropertyName("group_background")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? GroupBackground { get; set; }
+
+        [JsonPropertyName("group_color")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? GroupColor { get; set; }
 
         public TableComponent() { }
 

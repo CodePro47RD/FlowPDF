@@ -6,6 +6,8 @@ pub mod core;
 pub mod encoding;
 pub mod extractor;
 pub mod font;
+pub mod image;
+pub mod metrics;
 pub mod pdf_engine;
 pub mod wasm;
 
@@ -17,5 +19,6 @@ pub use core::*;
 pub use encoding::*;
 pub use extractor::*;
 pub use font::*;
+pub use metrics::helvetica_width;
 pub use pdf_engine::*;
 pub use wasm::*;

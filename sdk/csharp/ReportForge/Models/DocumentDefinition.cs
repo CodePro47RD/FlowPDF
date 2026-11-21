@@ -13,6 +13,7 @@ namespace ReportForge.Models
         public ComponentDefinition? Header { get; set; }
 
         [JsonPropertyName("content")]
+        [JsonConverter(typeof(ContentConverter))]
         public object Content { get; set; } = new List<ComponentDefinition>();
 
         [JsonPropertyName("footer")]
