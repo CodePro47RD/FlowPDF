@@ -1,4 +1,5 @@
 # Compila el motor Rust, empaqueta todos los SDKs y los publica en los registros públicos.
+# Documentación de configuración (secrets, Trusted Publishing): docs/RELEASE_CI.md
 #
 # Disparadores:
 #   - push de un tag vX.Y.Z (o vX.Y.Z-pre)          -> compila y PUBLICA
