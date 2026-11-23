@@ -309,7 +309,7 @@ jobs:
         with: { node-version: 20, registry-url: "https://registry.npmjs.org" }
       - run: |
           TAG=latest; [ "${{ needs.meta.outputs.prerelease }}" = "true" ] && TAG=next
-          npm publish out/*.tgz --access public --tag "$TAG"
+          npm publish ./out/*.tgz --access public --tag "$TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
