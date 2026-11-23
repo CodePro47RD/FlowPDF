@@ -39,5 +39,10 @@
     "fluent",
     "php"
   ],
-  "homepage": "https://github.com/CodePro47RD/FlowPDF"
+  "homepage": "https://codepro47rd.github.io/FlowPDF/",
+  "support": {
+    "source": "https://github.com/CodePro47RD/FlowPDF",
+    "issues": "https://github.com/CodePro47RD/FlowPDF/issues",
+    "docs": "https://codepro47rd.github.io/FlowPDF/llms.txt"
+  }
 }

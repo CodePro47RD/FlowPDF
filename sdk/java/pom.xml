@@ -12,7 +12,7 @@
 
     <name>FlowPDF Java SDK</name>
     <description>Open-source report generation library made in the Dominican Republic. Universal document engine and fluent report builder SDK for Java with native Rust Core, vector charts, custom TTF fonts, and WebAssembly</description>
-    <url>https://github.com/CodePro47RD/FlowPDF</url>
+    <url>https://codepro47rd.github.io/FlowPDF/</url>
 
     <scm>
         <url>https://github.com/CodePro47RD/FlowPDF</url>

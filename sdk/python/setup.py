@@ -14,7 +14,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Edwin Abreu, Felix R. Benzan & FlowPDF Contributors",
-    url="https://github.com/CodePro47RD/FlowPDF",
+    url="https://codepro47rd.github.io/FlowPDF/",
     packages=find_packages(),
     package_data={
         "flowpdf": [

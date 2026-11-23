@@ -31,4 +31,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/CodePro47RD/FlowPDF"
+Homepage = "https://codepro47rd.github.io/FlowPDF/"
+Repository = "https://github.com/CodePro47RD/FlowPDF"
+Documentation = "https://codepro47rd.github.io/FlowPDF/llms.txt"
+Issues = "https://github.com/CodePro47RD/FlowPDF/issues"
