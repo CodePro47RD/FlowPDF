@@ -96,8 +96,25 @@ File.WriteAllBytes("factura_remota.pdf", pdf);
 
 | Mode | Engine | Latency | Throughput | Use Case |
 |---|---|---|---|---|
-| **Native In-Process** | Rust Core (`flowpdf.dll` / `libflowpdf.so`) | **~5 - 25 ms** | > 1,500 docs/sec | High-frequency invoices, microservices, local apps |
+| **Native In-Process** | Rust Core (`flowpdf_native.dll` / `libflowpdf_native.so`) | **~5 - 25 ms** | > 1,500 docs/sec | High-frequency invoices, microservices, local apps |
 | **Distributed HTTP** | Django + Celery + Redis | ~150 - 300 ms | Scalable to millions/day | Heavy async batches, mail merge, centralized auditing |
+
+---
+
+## 🌐 Links
+
+- **Website & live editor:** https://codepro47rd.github.io/FlowPDF/
+- **Source code:** https://github.com/CodePro47RD/FlowPDF
+- **Issues & feedback:** https://github.com/CodePro47RD/FlowPDF/issues
+
+## 👥 Authors
+
+🇩🇴 FlowPDF is built in the Dominican Republic by:
+
+- **Edwin Abreu** — [edwin.cpro47.com](https://edwin.cpro47.com)
+- **Felix R. Benzan** — [www.felixbenzan.com.do](https://www.felixbenzan.com.do)
+
+Contributions are welcome — see the repository for details.
 
 ---
 
