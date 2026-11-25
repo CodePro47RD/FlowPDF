@@ -220,7 +220,6 @@ export class FlowPdfEngine {
 
         throw new Error('FlowPDF in-process native rendering in Node.js requires "koffi".');
     }
-    }
 
     public static extractText(pdfBytes: Uint8Array | Buffer): string {
         const libPath = this.getLibraryPath();
