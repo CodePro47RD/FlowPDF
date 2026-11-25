@@ -27,6 +27,44 @@ namespace FlowPdf.Models
         [JsonPropertyName("fonts")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<CustomFontDefinition>? Fonts { get; set; }
+
+        [JsonPropertyName("watermark")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public WatermarkDefinition? Watermark { get; set; }
+    }
+
+    public class WatermarkDefinition
+    {
+        [JsonPropertyName("text")]
+        public string Text { get; set; } = string.Empty;
+
+        [JsonPropertyName("x")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public float? X { get; set; }
+
+        [JsonPropertyName("y")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public float? Y { get; set; }
+
+        [JsonPropertyName("position")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Position { get; set; }
+
+        [JsonPropertyName("rotation")]
+        public float Rotation { get; set; } = -45.0f;
+
+        [JsonPropertyName("opacity")]
+        public float Opacity { get; set; } = 0.15f;
+
+        [JsonPropertyName("font_size")]
+        public float FontSize { get; set; } = 54.0f;
+
+        [JsonPropertyName("color")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Color { get; set; }
+
+        [JsonPropertyName("background")]
+        public bool Background { get; set; } = true;
     }
 
     public class CustomFontDefinition

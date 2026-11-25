@@ -50,6 +50,70 @@ pub unsafe extern "C" fn flowpdf_wasm_render(json_ptr: *const u8, json_len: usiz
     }
 }
 
+/// Renderiza un JSON a Excel (.xlsx) en WebAssembly.
+/// Retorna un u64 empaquetado: (out_ptr << 32) | out_len.
+#[no_mangle]
+pub unsafe extern "C" fn flowpdf_wasm_render_xlsx(json_ptr: *const u8, json_len: usize) -> u64 {
+    if json_ptr.is_null() || json_len == 0 {
+        return 0;
+    }
+
+    let json_slice = slice::from_raw_parts(json_ptr, json_len);
+    let json_str = match std::str::from_utf8(json_slice) {
+        Ok(s) => s,
+        Err(_) => return 0,
+    };
+
+    let doc_ast: DocumentDefinitionAst = match serde_json::from_str(json_str) {
+        Ok(ast) => ast,
+        Err(_) => return 0,
+    };
+
+    let engine = crate::excel_engine::ExcelEngine::new();
+    match engine.render(&doc_ast, None) {
+        Ok(bytes) => {
+            let len = bytes.len();
+            let mut boxed = bytes.into_boxed_slice();
+            let ptr = boxed.as_mut_ptr();
+            std::mem::forget(boxed);
+            ((ptr as u64) << 32) | (len as u64)
+        }
+        Err(_) => 0,
+    }
+}
+
+/// Renderiza un JSON a Word (.docx) en WebAssembly.
+/// Retorna un u64 empaquetado: (out_ptr << 32) | out_len.
+#[no_mangle]
+pub unsafe extern "C" fn flowpdf_wasm_render_docx(json_ptr: *const u8, json_len: usize) -> u64 {
+    if json_ptr.is_null() || json_len == 0 {
+        return 0;
+    }
+
+    let json_slice = slice::from_raw_parts(json_ptr, json_len);
+    let json_str = match std::str::from_utf8(json_slice) {
+        Ok(s) => s,
+        Err(_) => return 0,
+    };
+
+    let doc_ast: DocumentDefinitionAst = match serde_json::from_str(json_str) {
+        Ok(ast) => ast,
+        Err(_) => return 0,
+    };
+
+    let engine = crate::word_engine::WordEngine::new();
+    match engine.render(&doc_ast, None) {
+        Ok(bytes) => {
+            let len = bytes.len();
+            let mut boxed = bytes.into_boxed_slice();
+            let ptr = boxed.as_mut_ptr();
+            std::mem::forget(boxed);
+            ((ptr as u64) << 32) | (len as u64)
+        }
+        Err(_) => 0,
+    }
+}
+
 /// Extrae texto plano de un PDF en WebAssembly.
 /// Retorna un u64 empaquetado: (out_ptr << 32) | out_len (UTF-8).
 #[no_mangle]

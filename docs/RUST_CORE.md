@@ -38,10 +38,29 @@ FlowPdfResult flowpdf_render_pdf(
     const char* data_json
 );
 
-// 2. Libera la memoria del resultado (Evita fugas de memoria en C#, Java, PHP, etc.)
+// 2. Renderiza el documento a Excel (.xlsx) con tablas, estilos y marcas de agua
+FlowPdfResult flowpdf_render_xlsx(
+    const char* document_json,
+    const char* data_json
+);
+
+// 3. Renderiza el documento a Microsoft Word (.docx)
+FlowPdfResult flowpdf_render_docx(
+    const char* document_json,
+    const char* data_json
+);
+
+// 4. Renderiza a cualquier formato ("pdf", "xlsx", "docx")
+FlowPdfResult flowpdf_render_document(
+    const char* document_json,
+    const char* data_json,
+    const char* format
+);
+
+// 5. Libera la memoria del resultado (Evita fugas de memoria en C#, Java, PHP, etc.)
 void flowpdf_free_result(FlowPdfResult result);
 
-// 3. Devuelve la versión actual del motor
+// 6. Devuelve la versión actual del motor
 const char* flowpdf_version(void);
 ```
 

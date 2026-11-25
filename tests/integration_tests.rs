@@ -343,3 +343,182 @@ fn test_vector_charts_rendering() {
     assert!(text.contains("Ventas Trimestrales"));
     assert!(text.contains("Tendencia de Usuarios"));
 }
+
+#[test]
+fn test_floating_watermark_in_pdf() {
+    let json_input = r##"{
+        "page": {
+            "size": "A4",
+            "margin": 36.0
+        },
+        "watermark": {
+            "text": "CONFIDENCIAL",
+            "x": 120.0,
+            "y": 350.0,
+            "rotation": -45.0,
+            "opacity": 0.2,
+            "font_size": 48.0,
+            "color": "#DC2626"
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Documento con marca de agua flotante",
+                "style": "h1"
+            }
+        ]
+    }"##;
+
+    let doc_ast: DocumentDefinitionAst = serde_json::from_str(json_input).expect("Valid JSON AST with Watermark");
+    let engine = PdfEngine::new();
+    let result = engine.render(&doc_ast, None);
+    assert!(result.is_ok(), "Watermark rendering failed: {:?}", result.err());
+
+    let pdf_bytes = result.unwrap();
+    assert!(pdf_bytes.starts_with(b"%PDF-"));
+
+    let doc = lopdf::Document::load_mem(&pdf_bytes).expect("Load PDF with watermark");
+    let text = doc.extract_text(&[1]).expect("Extract text from watermark page");
+    assert!(text.contains("CONFIDENCIAL"), "Extracted text should contain the watermark: {}", text);
+    assert!(text.contains("Documento con marca de agua"));
+}
+
+#[test]
+fn test_render_excel_xlsx() {
+    let json_input = r#"{
+        "page": { "size": "A4" },
+        "watermark": {
+            "text": "BORRADOR",
+            "opacity": 0.15
+        },
+        "header": {
+            "type": "text",
+            "value": "REPORTE DE VENTAS EN EXCEL",
+            "style": "h1"
+        },
+        "content": {
+            "type": "table",
+            "columns": [
+                { "title": "Código", "field": "code", "width": 80.0 },
+                { "title": "Producto", "field": "name", "width": 180.0 },
+                { "title": "Precio", "field": "price", "format": "currency", "align": "right" },
+                { "title": "Cantidad", "field": "qty", "format": "number", "align": "center" }
+            ],
+            "data": [
+                { "code": "SRV-01", "name": "Servidor Cloud 4C/8G", "price": 120.50, "qty": 3 },
+                { "code": "LIC-02", "name": "Licencia Enterprise", "price": 450.00, "qty": 1 }
+            ]
+        }
+    }"#;
+
+    let doc_ast: DocumentDefinitionAst = serde_json::from_str(json_input).expect("Valid JSON AST");
+    let excel_engine = flowpdf::excel_engine::ExcelEngine::new();
+    let result = excel_engine.render(&doc_ast, None);
+    assert!(result.is_ok(), "Excel rendering failed: {:?}", result.err());
+
+    let xlsx_bytes = result.unwrap();
+    // Los archivos .xlsx son archivos ZIP que comienzan con el encabezado [0x50, 0x4B, 0x03, 0x04] ("PK..")
+    assert!(xlsx_bytes.len() > 500, "Excel file should have substantial size");
+    assert_eq!(&xlsx_bytes[0..4], &[0x50, 0x4B, 0x03, 0x04], "Excel must start with ZIP magic bytes PK\x03\x04");
+
+    // Verificar también a través de C-ABI
+    let c_doc = CString::new(json_input).unwrap();
+    unsafe {
+        let res = flowpdf_render_xlsx(c_doc.as_ptr(), std::ptr::null());
+        assert!(res.success, "C-ABI flowpdf_render_xlsx failed");
+        assert!(res.length > 500);
+        assert_eq!(std::slice::from_raw_parts(res.data, 4), &[0x50, 0x4B, 0x03, 0x04]);
+        flowpdf_free_result(res);
+    }
+}
+
+#[test]
+fn test_render_word_docx() {
+    let json_input = r#"{
+        "page": { "size": "A4", "margin": 30.0 },
+        "watermark": {
+            "text": "CONFIDENCIAL",
+            "position": "center"
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Contrato Comercial Word (.docx)",
+                "style": "h1"
+            },
+            {
+                "type": "text",
+                "value": "Este documento ha sido exportado directamente a Microsoft Word utilizando FlowPDF."
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "table",
+                "columns": [
+                    { "title": "Cláusula", "field": "clause" },
+                    { "title": "Detalle", "field": "detail" }
+                ],
+                "data": [
+                    { "clause": "1. Objeto", "detail": "Prestación de servicios de software." },
+                    { "clause": "2. Duración", "detail": "12 meses renovables." }
+                ]
+            }
+        ]
+    }"#;
+
+    let doc_ast: DocumentDefinitionAst = serde_json::from_str(json_input).expect("Valid JSON AST");
+    let word_engine = flowpdf::word_engine::WordEngine::new();
+    let result = word_engine.render(&doc_ast, None);
+    assert!(result.is_ok(), "Word rendering failed: {:?}", result.err());
+
+    let docx_bytes = result.unwrap();
+    // Los archivos .docx también son archivos ZIP que comienzan con [0x50, 0x4B, 0x03, 0x04]
+    assert!(docx_bytes.len() > 500, "Word file should have substantial size");
+    assert_eq!(&docx_bytes[0..4], &[0x50, 0x4B, 0x03, 0x04], "Word must start with ZIP magic bytes PK\x03\x04");
+
+    // Verificar también a través de C-ABI
+    let c_doc = CString::new(json_input).unwrap();
+    unsafe {
+        let res = flowpdf_render_docx(c_doc.as_ptr(), std::ptr::null());
+        assert!(res.success, "C-ABI flowpdf_render_docx failed");
+        assert!(res.length > 500);
+        assert_eq!(std::slice::from_raw_parts(res.data, 4), &[0x50, 0x4B, 0x03, 0x04]);
+        flowpdf_free_result(res);
+    }
+}
+
+#[test]
+fn test_c_abi_render_document_multi_format() {
+    let json_input = r#"{
+        "content": {
+            "type": "text",
+            "value": "Prueba Multi-Formato"
+        }
+    }"#;
+
+    let c_doc = CString::new(json_input).unwrap();
+
+    unsafe {
+        // 1. PDF
+        let c_fmt_pdf = CString::new("pdf").unwrap();
+        let res_pdf = flowpdf_render_document(c_doc.as_ptr(), std::ptr::null(), c_fmt_pdf.as_ptr());
+        assert!(res_pdf.success, "Render document PDF failed");
+        assert_eq!(std::slice::from_raw_parts(res_pdf.data, 5), b"%PDF-");
+        flowpdf_free_result(res_pdf);
+
+        // 2. Excel (xlsx)
+        let c_fmt_xlsx = CString::new("xlsx").unwrap();
+        let res_xlsx = flowpdf_render_document(c_doc.as_ptr(), std::ptr::null(), c_fmt_xlsx.as_ptr());
+        assert!(res_xlsx.success, "Render document XLSX failed");
+        assert_eq!(std::slice::from_raw_parts(res_xlsx.data, 4), &[0x50, 0x4B, 0x03, 0x04]);
+        flowpdf_free_result(res_xlsx);
+
+        // 3. Word (docx)
+        let c_fmt_docx = CString::new("docx").unwrap();
+        let res_docx = flowpdf_render_document(c_doc.as_ptr(), std::ptr::null(), c_fmt_docx.as_ptr());
+        assert!(res_docx.success, "Render document DOCX failed");
+        assert_eq!(std::slice::from_raw_parts(res_docx.data, 4), &[0x50, 0x4B, 0x03, 0x04]);
+        flowpdf_free_result(res_docx);
+    }
+}

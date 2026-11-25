@@ -13,6 +13,7 @@ pub struct PageConfigAst {
     pub margin_bottom: Option<f32>,
     pub margin_left: Option<f32>,
     pub margin_right: Option<f32>,
+    pub watermark: Option<WatermarkAst>,
 }
 
 fn default_page_size() -> String { "A4".to_string() }
@@ -29,6 +30,7 @@ impl Default for PageConfigAst {
             margin_bottom: None,
             margin_left: None,
             margin_right: None,
+            watermark: None,
         }
     }
 }
@@ -225,6 +227,42 @@ pub struct DocumentDefinitionAst {
     pub header: Option<Box<ComponentAst>>,
     pub content: ContentAst,
     pub footer: Option<Box<ComponentAst>>,
+    pub watermark: Option<WatermarkAst>,
+    #[serde(default)]
+    pub watermarks: Vec<WatermarkAst>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WatermarkAst {
+    pub text: String,
+    pub x: Option<f32>,
+    pub y: Option<f32>,
+    pub position: Option<String>,
+    #[serde(default = "default_watermark_rotation")]
+    pub rotation: f32,
+    #[serde(default = "default_watermark_opacity")]
+    pub opacity: f32,
+    #[serde(default = "default_watermark_font_size")]
+    pub font_size: f32,
+    pub color: Option<String>,
+    #[serde(default = "default_true")]
+    pub background: bool,
+}
+
+impl DocumentDefinitionAst {
+    pub fn all_watermarks(&self) -> Vec<WatermarkAst> {
+        let mut list = Vec::new();
+        if let Some(wm) = &self.watermark {
+            list.push(wm.clone());
+        }
+        for wm in &self.watermarks {
+            list.push(wm.clone());
+        }
+        if let Some(wm) = &self.page.watermark {
+            list.push(wm.clone());
+        }
+        list
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -258,3 +296,6 @@ fn default_format() -> String { "pdf".to_string() }
 fn default_chart_type() -> String { "bar".to_string() }
 fn default_chart_height() -> f32 { 180.0 }
 fn default_chart_theme() -> String { "light".to_string() }
+fn default_watermark_rotation() -> f32 { -45.0 }
+fn default_watermark_opacity() -> f32 { 0.15 }
+fn default_watermark_font_size() -> f32 { 54.0 }

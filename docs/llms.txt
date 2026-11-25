@@ -1185,6 +1185,44 @@ Permite incrustar tipografías corporativas personalizadas (Google Fonts como *I
 
 ---
 
+### 3.15 Watermark (Marcas de Agua en Texto Flotante)
+
+Permite superponer marcas de agua de texto flotante en cualquier coordenada libre `(x, y)` o centradas, con rotación en cualquier ángulo, opacidad configurable y soporte uniforme en PDF, Word (.docx) y Excel (.xlsx).
+
+#### Propiedades del AST
+| Propiedad | Clave AST | Tipo | Por Defecto | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `text` | `text` | `string` | Requerido | Texto de la marca (ej. `"CONFIDENCIAL"`, `"BORRADOR"`, `"{{ status }}"`). |
+| `x` | `x` | `number` | `null` | Coordenada horizontal X en puntos tipográficos. |
+| `y` | `y` | `number` | `null` | Coordenada vertical Y en puntos tipográficos. |
+| `position` | `position` | `string` | `"center"` | Preset: `"center"`, `"top-left"`, `"top-right"`, `"bottom-left"`, `"bottom-right"`, `"diagonal"`. |
+| `rotation` | `rotation` | `number` | `-45.0` | Ángulo de rotación en grados sexagesimales. |
+| `opacity` | `opacity` | `number` | `0.15` | Nivel de opacidad entre 0.0 (transparente) y 1.0 (opaco). |
+| `font_size` | `font_size` | `number` | `54.0` | Tamaño del texto en puntos. |
+| `color` | `color` | `string` | `"#888888"` | Color hexadecimal. |
+| `background`| `background`| `boolean`| `true` | `true` para dibujar debajo del contenido, `false` encima. |
+
+#### Ejemplo en JSON
+```json
+{
+  "page": { "size": "A4", "margin": 30.0 },
+  "watermark": {
+    "text": "BORRADOR",
+    "x": 100.0,
+    "y": 250.0,
+    "rotation": -45.0,
+    "opacity": 0.15,
+    "font_size": 54.0,
+    "color": "#888888"
+  },
+  "content": [
+    { "type": "text", "value": "Documento con marca de agua flotante" }
+  ]
+}
+```
+
+---
+
 ## 4. Especificación Formal del AST JSON (Esquema v2.0)
 
 Todo documento FlowPDF se puede definir mediante un payload JSON puro validado por el motor:

@@ -94,6 +94,15 @@ namespace FlowPdf.Native
         [DllImport(LibName, EntryPoint = "flowpdf_render_pdf", CallingConvention = CallingConvention.Cdecl)]
         private static extern FlowPdfResultNative NativeRenderPdf(byte[] docJson, byte[]? dataJson);
 
+        [DllImport(LibName, EntryPoint = "flowpdf_render_xlsx", CallingConvention = CallingConvention.Cdecl)]
+        private static extern FlowPdfResultNative NativeRenderXlsx(byte[] docJson, byte[]? dataJson);
+
+        [DllImport(LibName, EntryPoint = "flowpdf_render_docx", CallingConvention = CallingConvention.Cdecl)]
+        private static extern FlowPdfResultNative NativeRenderDocx(byte[] docJson, byte[]? dataJson);
+
+        [DllImport(LibName, EntryPoint = "flowpdf_render_document", CallingConvention = CallingConvention.Cdecl)]
+        private static extern FlowPdfResultNative NativeRenderDocument(byte[] docJson, byte[]? dataJson, byte[] format);
+
         [DllImport(LibName, EntryPoint = "flowpdf_extract_text", CallingConvention = CallingConvention.Cdecl)]
         private static extern FlowPdfResultNative NativeExtractText(byte[] pdfData, UIntPtr pdfLen);
 
@@ -170,6 +179,112 @@ namespace FlowPdf.Native
         public static byte[] RenderPdf(ReportDocument document, object? data = null)
         {
             return RenderPdf(document.Build(), data);
+        }
+
+        public static byte[] RenderXlsx(string documentJson, string? dataJson = null)
+        {
+            byte[] docBytes = Encoding.UTF8.GetBytes(documentJson + "\0");
+            byte[]? dataBytes = dataJson != null ? Encoding.UTF8.GetBytes(dataJson + "\0") : null;
+
+            FlowPdfResultNative result = NativeRenderXlsx(docBytes, dataBytes);
+            try
+            {
+                if (!result.Success)
+                {
+                    string error = result.ErrorMessage != IntPtr.Zero
+                        ? Marshal.PtrToStringUTF8(result.ErrorMessage) ?? "Unknown native error"
+                        : "Unknown native error";
+                    throw new InvalidOperationException($"FlowPDF Native Error: {error}");
+                }
+
+                int length = (int)result.Length.ToUInt32();
+                byte[] managedBytes = new byte[length];
+                if (length > 0 && result.Data != IntPtr.Zero)
+                {
+                    Marshal.Copy(result.Data, managedBytes, 0, length);
+                }
+                return managedBytes;
+            }
+            finally
+            {
+                NativeFreeResult(result);
+            }
+        }
+
+        public static byte[] RenderXlsx(DocumentDefinition document, object? data = null)
+        {
+            string docJson = JsonSerializer.Serialize(document, JsonOptions);
+            string? dataJson = data != null ? JsonSerializer.Serialize(data, JsonOptions) : null;
+            return RenderXlsx(docJson, dataJson);
+        }
+
+        public static byte[] RenderXlsx(ReportDocument document, object? data = null)
+        {
+            return RenderXlsx(document.Build(), data);
+        }
+
+        public static byte[] RenderDocx(string documentJson, string? dataJson = null)
+        {
+            byte[] docBytes = Encoding.UTF8.GetBytes(documentJson + "\0");
+            byte[]? dataBytes = dataJson != null ? Encoding.UTF8.GetBytes(dataJson + "\0") : null;
+
+            FlowPdfResultNative result = NativeRenderDocx(docBytes, dataBytes);
+            try
+            {
+                if (!result.Success)
+                {
+                    string error = result.ErrorMessage != IntPtr.Zero
+                        ? Marshal.PtrToStringUTF8(result.ErrorMessage) ?? "Unknown native error"
+                        : "Unknown native error";
+                    throw new InvalidOperationException($"FlowPDF Native Error: {error}");
+                }
+
+                int length = (int)result.Length.ToUInt32();
+                byte[] managedBytes = new byte[length];
+                if (length > 0 && result.Data != IntPtr.Zero)
+                {
+                    Marshal.Copy(result.Data, managedBytes, 0, length);
+                }
+                return managedBytes;
+            }
+            finally
+            {
+                NativeFreeResult(result);
+            }
+        }
+
+        public static byte[] RenderDocx(DocumentDefinition document, object? data = null)
+        {
+            string docJson = JsonSerializer.Serialize(document, JsonOptions);
+            string? dataJson = data != null ? JsonSerializer.Serialize(data, JsonOptions) : null;
+            return RenderDocx(docJson, dataJson);
+        }
+
+        public static byte[] RenderDocx(ReportDocument document, object? data = null)
+        {
+            return RenderDocx(document.Build(), data);
+        }
+
+        public static byte[] Render(string documentJson, string? dataJson = null, string format = "pdf")
+        {
+            return format.ToLowerInvariant() switch
+            {
+                "xlsx" or "excel" => RenderXlsx(documentJson, dataJson),
+                "docx" or "doc" or "word" => RenderDocx(documentJson, dataJson),
+                _ => RenderPdf(documentJson, dataJson),
+            };
+        }
+
+        public static byte[] Render(DocumentDefinition document, object? data = null, string format = "pdf")
+        {
+            string docJson = JsonSerializer.Serialize(document, JsonOptions);
+            string? dataJson = data != null ? JsonSerializer.Serialize(data, JsonOptions) : null;
+            return Render(docJson, dataJson, format);
+        }
+
+        public static byte[] Render(ReportDocument document, object? data = null, string format = "pdf")
+        {
+            return Render(document.Build(), data, format);
         }
 
         public static string ExtractText(byte[] pdfBytes)

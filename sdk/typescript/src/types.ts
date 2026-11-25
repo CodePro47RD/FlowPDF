@@ -194,6 +194,18 @@ export interface CustomFontDefinition {
     data?: string;
 }
 
+export interface WatermarkDefinition {
+    text: string;
+    x?: number;
+    y?: number;
+    position?: 'center' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'diagonal' | string;
+    rotation?: number;
+    opacity?: number;
+    font_size?: number;
+    color?: string;
+    background?: boolean;
+}
+
 export interface DocumentDefinition {
     page?: PageConfig;
     header?: AnyComponent;
@@ -201,13 +213,14 @@ export interface DocumentDefinition {
     footer?: AnyComponent;
     metadata?: Record<string, any>;
     fonts?: CustomFontDefinition[];
+    watermark?: WatermarkDefinition;
 }
 
 export interface ReportPayload<TData = any> {
     template?: string;
     document?: DocumentDefinition;
     data?: TData;
-    format?: 'pdf' | 'html';
+    format?: 'pdf' | 'xlsx' | 'docx' | 'html' | string;
     response_type?: 'binary' | 'json';
 }
 

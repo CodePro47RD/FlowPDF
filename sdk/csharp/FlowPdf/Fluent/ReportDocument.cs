@@ -82,6 +82,32 @@ namespace FlowPdf.Fluent
             return this;
         }
 
+        public ReportDocument Watermark(
+            string text,
+            float? x = null,
+            float? y = null,
+            string? position = null,
+            float rotation = -45.0f,
+            float opacity = 0.15f,
+            float fontSize = 54.0f,
+            string? color = null,
+            bool background = true)
+        {
+            _document.Watermark = new WatermarkDefinition
+            {
+                Text = text,
+                X = x,
+                Y = y,
+                Position = position,
+                Rotation = rotation,
+                Opacity = opacity,
+                FontSize = fontSize,
+                Color = color,
+                Background = background,
+            };
+            return this;
+        }
+
         public static bool RegisterFont(string name, byte[] fontBytes)
         {
             return FlowPdfEngine.RegisterFont(name, fontBytes);
@@ -96,6 +122,30 @@ namespace FlowPdf.Fluent
         public byte[] GeneratePdf(object? data = null)
         {
             return FlowPdfEngine.RenderPdf(_document, data);
+        }
+
+        /// <summary>
+        /// Renders the document to an Excel (.xlsx) byte array in-process using the native Rust Core engine.
+        /// </summary>
+        public byte[] GenerateXlsx(object? data = null)
+        {
+            return FlowPdfEngine.RenderXlsx(_document, data);
+        }
+
+        /// <summary>
+        /// Renders the document to a Word (.docx) byte array in-process using the native Rust Core engine.
+        /// </summary>
+        public byte[] GenerateDocx(object? data = null)
+        {
+            return FlowPdfEngine.RenderDocx(_document, data);
+        }
+
+        /// <summary>
+        /// Renders the document to the specified format ("pdf", "xlsx", "docx").
+        /// </summary>
+        public byte[] Generate(string format, object? data = null)
+        {
+            return FlowPdfEngine.Render(_document, data, format);
         }
 
         /// <summary>

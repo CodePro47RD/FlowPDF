@@ -100,6 +100,9 @@ export class FlowPdfEngine {
                 const lib = koffi.load(libPath);
                 this.cachedKoffiLib = {
                     render: lib.func('flowpdf_render_pdf', FlowPdfResult, ['str', 'str']),
+                    renderXlsx: lib.func('flowpdf_render_xlsx', FlowPdfResult, ['str', 'str']),
+                    renderDocx: lib.func('flowpdf_render_docx', FlowPdfResult, ['str', 'str']),
+                    renderDocument: lib.func('flowpdf_render_document', FlowPdfResult, ['str', 'str', 'str']),
                     free: lib.func('flowpdf_free_result', 'void', [FlowPdfResult]),
                 };
             }
@@ -126,6 +129,97 @@ export class FlowPdfEngine {
             'Install it with: npm install koffi\n' +
             'Alternatively, use FlowPdfClient for HTTP/REST server rendering.'
         );
+    }
+
+    public static renderXlsx(document: object | string, data?: object | string): Uint8Array {
+        const docJson = typeof document === 'string' ? document : JSON.stringify(document);
+        const dataJson = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : null;
+        const libPath = this.getLibraryPath();
+
+        const koffi = getKoffi();
+        if (koffi) {
+            if (!this.cachedKoffiLib) {
+                const FlowPdfResult = koffi.struct('FlowPdfResult', {
+                    data: 'uint8_t *',
+                    length: 'size_t',
+                    success: 'bool',
+                    error_message: 'char *'
+                });
+
+                const lib = koffi.load(libPath);
+                this.cachedKoffiLib = {
+                    render: lib.func('flowpdf_render_pdf', FlowPdfResult, ['str', 'str']),
+                    renderXlsx: lib.func('flowpdf_render_xlsx', FlowPdfResult, ['str', 'str']),
+                    renderDocx: lib.func('flowpdf_render_docx', FlowPdfResult, ['str', 'str']),
+                    renderDocument: lib.func('flowpdf_render_document', FlowPdfResult, ['str', 'str', 'str']),
+                    free: lib.func('flowpdf_free_result', 'void', [FlowPdfResult]),
+                };
+            }
+
+            const res = this.cachedKoffiLib.renderXlsx(docJson, dataJson);
+            try {
+                if (!res.success) {
+                    const err = res.error_message || 'Unknown native render error';
+                    throw new Error(`FlowPDF Native Error: ${err}`);
+                }
+
+                if (res.length > 0 && res.data) {
+                    const decoded = koffi.decode(res.data, 'uint8_t', res.length);
+                    return new Uint8Array(decoded);
+                }
+                return new Uint8Array();
+            } finally {
+                this.cachedKoffiLib.free(res);
+            }
+        }
+
+        throw new Error('FlowPDF in-process native rendering in Node.js requires "koffi".');
+    }
+
+    public static renderDocx(document: object | string, data?: object | string): Uint8Array {
+        const docJson = typeof document === 'string' ? document : JSON.stringify(document);
+        const dataJson = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : null;
+        const libPath = this.getLibraryPath();
+
+        const koffi = getKoffi();
+        if (koffi) {
+            if (!this.cachedKoffiLib) {
+                const FlowPdfResult = koffi.struct('FlowPdfResult', {
+                    data: 'uint8_t *',
+                    length: 'size_t',
+                    success: 'bool',
+                    error_message: 'char *'
+                });
+
+                const lib = koffi.load(libPath);
+                this.cachedKoffiLib = {
+                    render: lib.func('flowpdf_render_pdf', FlowPdfResult, ['str', 'str']),
+                    renderXlsx: lib.func('flowpdf_render_xlsx', FlowPdfResult, ['str', 'str']),
+                    renderDocx: lib.func('flowpdf_render_docx', FlowPdfResult, ['str', 'str']),
+                    renderDocument: lib.func('flowpdf_render_document', FlowPdfResult, ['str', 'str', 'str']),
+                    free: lib.func('flowpdf_free_result', 'void', [FlowPdfResult]),
+                };
+            }
+
+            const res = this.cachedKoffiLib.renderDocx(docJson, dataJson);
+            try {
+                if (!res.success) {
+                    const err = res.error_message || 'Unknown native render error';
+                    throw new Error(`FlowPDF Native Error: ${err}`);
+                }
+
+                if (res.length > 0 && res.data) {
+                    const decoded = koffi.decode(res.data, 'uint8_t', res.length);
+                    return new Uint8Array(decoded);
+                }
+                return new Uint8Array();
+            } finally {
+                this.cachedKoffiLib.free(res);
+            }
+        }
+
+        throw new Error('FlowPDF in-process native rendering in Node.js requires "koffi".');
+    }
     }
 
     public static extractText(pdfBytes: Uint8Array | Buffer): string {

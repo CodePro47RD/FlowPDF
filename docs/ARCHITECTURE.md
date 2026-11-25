@@ -16,12 +16,14 @@ flowchart TD
         DRF --> Celery["Celery Worker + Redis<br/>(Procesamiento Asíncrono)"]
     end
 
-    subgraph Engine_Layer["Motor Independiente de Composición (engine/)"]
-        Rep --> Compiler["engine.templates.parser<br/>TemplateCompiler (JSON AST)"]
-        Compiler --> Doc["engine.core.Document<br/>Fluent Builder"]
-        Doc --> Paginator["engine.layout.Paginator<br/>Medición & Paginación"]
-        Paginator --> Components["engine.components<br/>Text, Table, Chart, QR, Barcode, etc."]
-        Components --> Renderer["engine.renderers.PDFRenderer<br/>ReportLab Canvas Adapter"]
+    subgraph Engine_Layer["Motor Independiente de Composición (Rust Core)"]
+        Rep --> Compiler["TemplateCompiler (JSON AST)"]
+        Compiler --> Doc["DocumentDefinitionAst<br/>(page, header, content, footer, watermark)"]
+        Doc --> Paginator["Medición & Paginación (PDF) / Disposición tabular (XLSX, DOCX)"]
+        Paginator --> Components["Text, Table, Chart, QR, Barcode, Watermark, etc."]
+        Components --> PDFRenderer["PDFRenderer (lopdf + ExtGState)"]
+        Components --> ExcelRenderer["ExcelRenderer (rust_xlsxwriter)"]
+        Components --> WordRenderer["WordRenderer (docx-rs)"]
     end
 
     subgraph Storage_Layer["Capa de Almacenamiento"]

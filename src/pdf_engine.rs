@@ -241,7 +241,8 @@ impl PdfEngine {
             }
         }
 
-        self.build_pdf(page_w, page_h, pages, ctx)
+        let watermarks = doc_ast.all_watermarks();
+        self.build_pdf(page_w, page_h, pages, ctx, watermarks)
     }
 
     /// Coloca un componente en el flujo de páginas. Columnas, textos y tablas se parten entre páginas;
@@ -962,7 +963,7 @@ impl PdfEngine {
         }
     }
 
-    fn build_pdf(&self, page_w: f32, page_h: f32, pages: Vec<Vec<PdfOp>>, ctx: RenderCtx) -> Result<Vec<u8>, String> {
+    fn build_pdf(&self, page_w: f32, page_h: f32, pages: Vec<Vec<PdfOp>>, ctx: RenderCtx, watermarks: Vec<WatermarkAst>) -> Result<Vec<u8>, String> {
         let mut doc = Document::with_version("1.4");
         let pages_id = doc.new_object_id();
 
@@ -995,6 +996,20 @@ impl PdfEngine {
             "Font" => font_dict,
         };
 
+        if !watermarks.is_empty() {
+            let mut ext_gstates = lopdf::Dictionary::new();
+            for (i, wm) in watermarks.iter().enumerate() {
+                let gs_name = format!("GS_WM{}", i + 1);
+                let gs_dict = dictionary! {
+                    "Type" => "ExtGState",
+                    "ca" => wm.opacity,
+                    "CA" => wm.opacity,
+                };
+                ext_gstates.set(gs_name, gs_dict);
+            }
+            resources.set("ExtGState", ext_gstates);
+        }
+
         // Imágenes: un XObject por fuente, compartido por todas las páginas
         let mut xobjects = lopdf::Dictionary::new();
         for entry in &ctx.images {
@@ -1010,7 +1025,7 @@ impl PdfEngine {
 
         let mut kids: Vec<Object> = Vec::with_capacity(pages.len());
         for ops in pages {
-            let content_id = doc.add_object(Stream::new(dictionary! {}, page_content(page_h, ops)));
+            let content_id = doc.add_object(Stream::new(dictionary! {}, page_content(page_w, page_h, ops, &watermarks, ctx.data)));
             let page_id = doc.add_object(dictionary! {
                 "Type" => "Page",
                 "Parent" => pages_id,
@@ -1049,9 +1064,70 @@ impl Default for PdfEngine {
     }
 }
 
+fn render_watermark_stream(
+    stream: &mut Vec<u8>,
+    page_w: f32,
+    page_h: f32,
+    idx: usize,
+    wm: &WatermarkAst,
+    data: Option<&Value>,
+) {
+    let text = interpolate_string(&wm.text, data);
+    if text.is_empty() {
+        return;
+    }
+    let gs_name = format!("/GS_WM{}", idx + 1);
+    let font_size = wm.font_size;
+    let rad = wm.rotation.to_radians();
+    let cos = rad.cos();
+    let sin = rad.sin();
+    let text_w = helvetica_width(&text, font_size, true);
+    let color = wm.color.as_deref().map(Color::from_hex).unwrap_or_else(|| Color::rgb(0.53, 0.53, 0.53));
+
+    let (tx, ty) = if let (Some(x), Some(y)) = (wm.x, wm.y) {
+        let pdf_y = page_h - y;
+        (x, pdf_y)
+    } else {
+        match wm.position.as_deref() {
+            Some("top-left") => (50.0, page_h - 100.0),
+            Some("top-right") => (page_w - text_w - 50.0, page_h - 100.0),
+            Some("bottom-left") => (50.0, 100.0),
+            Some("bottom-right") => (page_w - text_w - 50.0, 100.0),
+            _ => {
+                let cx = page_w / 2.0;
+                let cy = page_h / 2.0;
+                let pdf_cy = page_h - cy;
+                let h_offset = font_size * 0.35;
+                let tx = cx - cos * (text_w / 2.0) + sin * h_offset;
+                let ty = pdf_cy - sin * (text_w / 2.0) - cos * h_offset;
+                (tx, ty)
+            }
+        }
+    };
+
+    let hex_str = crate::encoding::unicode_to_winansi_hex(&text);
+    writeln!(
+        stream,
+        "q {gs_name} gs {r:.3} {g:.3} {b:.3} rg BT /F2 {font_size:.1} Tf {cos:.4} {sin:.4} {nsin:.4} {cos:.4} {tx:.2} {ty:.2} Tm {hex_str} Tj ET Q",
+        r = color.r,
+        g = color.g,
+        b = color.b,
+        nsin = -sin,
+    ).unwrap();
+}
+
 /// Flujo de contenido de una página.
-fn page_content(page_h: f32, ops: Vec<PdfOp>) -> Vec<u8> {
+fn page_content(page_w: f32, page_h: f32, ops: Vec<PdfOp>, watermarks: &[WatermarkAst], data: Option<&Value>) -> Vec<u8> {
     let mut content_stream = Vec::new();
+
+    // 1. Marcas de agua en segundo plano (detrás del contenido)
+    for (i, wm) in watermarks.iter().enumerate() {
+        if wm.background {
+            render_watermark_stream(&mut content_stream, page_w, page_h, i, wm, data);
+        }
+    }
+
+    // 2. Operaciones normales de la página
     for op in ops {
         match op {
             PdfOp::Text { text, font_ref, size, x, y, color } => {
@@ -1122,6 +1198,14 @@ fn page_content(page_h: f32, ops: Vec<PdfOp>) -> Vec<u8> {
             }
         }
     }
+
+    // 3. Marcas de agua en primer plano (sobre el contenido)
+    for (i, wm) in watermarks.iter().enumerate() {
+        if !wm.background {
+            render_watermark_stream(&mut content_stream, page_w, page_h, i, wm, data);
+        }
+    }
+
     content_stream
 }
 

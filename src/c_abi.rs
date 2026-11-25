@@ -3,7 +3,9 @@ use std::os::raw::c_char;
 use std::ptr;
 
 use crate::ast::DocumentDefinitionAst;
+use crate::excel_engine::ExcelEngine;
 use crate::pdf_engine::PdfEngine;
+use crate::word_engine::WordEngine;
 
 #[repr(C)]
 pub struct FlowPdfResult {
@@ -39,41 +41,109 @@ impl FlowPdfResult {
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn flowpdf_render_pdf(
+unsafe fn parse_inputs(
     doc_json_ptr: *const c_char,
     data_json_ptr: *const c_char,
-) -> FlowPdfResult {
+) -> Result<(DocumentDefinitionAst, Option<serde_json::Value>), FlowPdfResult> {
     if doc_json_ptr.is_null() {
-        return FlowPdfResult::error("document_json pointer is null");
+        return Err(FlowPdfResult::error("document_json pointer is null"));
     }
 
     let doc_str = match CStr::from_ptr(doc_json_ptr).to_str() {
         Ok(s) => s,
-        Err(e) => return FlowPdfResult::error(&format!("Invalid UTF-8 in document JSON: {}", e)),
+        Err(e) => return Err(FlowPdfResult::error(&format!("Invalid UTF-8 in document JSON: {}", e))),
     };
 
     let doc_ast: DocumentDefinitionAst = match serde_json::from_str(doc_str) {
         Ok(ast) => ast,
-        Err(e) => return FlowPdfResult::error(&format!("Failed to parse document AST: {}", e)),
+        Err(e) => return Err(FlowPdfResult::error(&format!("Failed to parse document AST: {}", e))),
     };
 
     let data_val = if !data_json_ptr.is_null() {
         match CStr::from_ptr(data_json_ptr).to_str() {
             Ok(s) => match serde_json::from_str::<serde_json::Value>(s) {
                 Ok(v) => Some(v),
-                Err(e) => return FlowPdfResult::error(&format!("Failed to parse data JSON: {}", e)),
+                Err(e) => return Err(FlowPdfResult::error(&format!("Failed to parse data JSON: {}", e))),
             },
-            Err(e) => return FlowPdfResult::error(&format!("Invalid UTF-8 in data JSON: {}", e)),
+            Err(e) => return Err(FlowPdfResult::error(&format!("Invalid UTF-8 in data JSON: {}", e))),
         }
     } else {
         None
     };
 
+    Ok((doc_ast, data_val))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn flowpdf_render_pdf(
+    doc_json_ptr: *const c_char,
+    data_json_ptr: *const c_char,
+) -> FlowPdfResult {
+    let (doc_ast, data_val) = match parse_inputs(doc_json_ptr, data_json_ptr) {
+        Ok(pair) => pair,
+        Err(res) => return res,
+    };
+
     let engine = PdfEngine::new();
     match engine.render(&doc_ast, data_val.as_ref()) {
         Ok(pdf_bytes) => FlowPdfResult::success(pdf_bytes),
-        Err(err) => FlowPdfResult::error(&format!("Render error: {}", err)),
+        Err(err) => FlowPdfResult::error(&format!("Render PDF error: {}", err)),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn flowpdf_render_xlsx(
+    doc_json_ptr: *const c_char,
+    data_json_ptr: *const c_char,
+) -> FlowPdfResult {
+    let (doc_ast, data_val) = match parse_inputs(doc_json_ptr, data_json_ptr) {
+        Ok(pair) => pair,
+        Err(res) => return res,
+    };
+
+    let engine = ExcelEngine::new();
+    match engine.render(&doc_ast, data_val.as_ref()) {
+        Ok(bytes) => FlowPdfResult::success(bytes),
+        Err(err) => FlowPdfResult::error(&format!("Render Excel error: {}", err)),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn flowpdf_render_docx(
+    doc_json_ptr: *const c_char,
+    data_json_ptr: *const c_char,
+) -> FlowPdfResult {
+    let (doc_ast, data_val) = match parse_inputs(doc_json_ptr, data_json_ptr) {
+        Ok(pair) => pair,
+        Err(res) => return res,
+    };
+
+    let engine = WordEngine::new();
+    match engine.render(&doc_ast, data_val.as_ref()) {
+        Ok(bytes) => FlowPdfResult::success(bytes),
+        Err(err) => FlowPdfResult::error(&format!("Render Word error: {}", err)),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn flowpdf_render_document(
+    doc_json_ptr: *const c_char,
+    data_json_ptr: *const c_char,
+    format_ptr: *const c_char,
+) -> FlowPdfResult {
+    let fmt_str = if !format_ptr.is_null() {
+        match CStr::from_ptr(format_ptr).to_str() {
+            Ok(s) => s.trim().to_lowercase(),
+            Err(_) => "pdf".to_string(),
+        }
+    } else {
+        "pdf".to_string()
+    };
+
+    match fmt_str.as_str() {
+        "xlsx" | "excel" => flowpdf_render_xlsx(doc_json_ptr, data_json_ptr),
+        "docx" | "doc" | "word" => flowpdf_render_docx(doc_json_ptr, data_json_ptr),
+        _ => flowpdf_render_pdf(doc_json_ptr, data_json_ptr),
     }
 }
 

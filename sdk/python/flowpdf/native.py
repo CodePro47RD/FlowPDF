@@ -75,6 +75,15 @@ class FlowPdfEngine:
             cls._lib.flowpdf_render_pdf.argtypes = [c_char_p, c_char_p]
             cls._lib.flowpdf_render_pdf.restype = FlowPdfResult
 
+            cls._lib.flowpdf_render_xlsx.argtypes = [c_char_p, c_char_p]
+            cls._lib.flowpdf_render_xlsx.restype = FlowPdfResult
+
+            cls._lib.flowpdf_render_docx.argtypes = [c_char_p, c_char_p]
+            cls._lib.flowpdf_render_docx.restype = FlowPdfResult
+
+            cls._lib.flowpdf_render_document.argtypes = [c_char_p, c_char_p, c_char_p]
+            cls._lib.flowpdf_render_document.restype = FlowPdfResult
+
             cls._lib.flowpdf_extract_text.argtypes = [POINTER(ctypes.c_ubyte), c_size_t]
             cls._lib.flowpdf_extract_text.restype = FlowPdfResult
 
@@ -141,6 +150,85 @@ class FlowPdfEngine:
             return b""
         finally:
             lib.flowpdf_free_result(result)
+
+    @classmethod
+    def render_xlsx(
+        cls,
+        document: Union[Dict[str, Any], str, Any],
+        data: Optional[Union[Dict[str, Any], str, list]] = None,
+    ) -> bytes:
+        """Renders document definition AST directly to Excel (.xlsx) bytes."""
+        if hasattr(document, "build") and callable(document.build):
+            document = document.build()
+
+        doc_json = json.dumps(document, ensure_ascii=False) if isinstance(document, dict) else str(document)
+        data_json = (
+            json.dumps(data, ensure_ascii=False)
+            if isinstance(data, (dict, list))
+            else (str(data) if data is not None else None)
+        )
+
+        doc_bytes = doc_json.encode("utf-8")
+        data_bytes = data_json.encode("utf-8") if data_json is not None else None
+
+        lib = cls._get_lib()
+        result = lib.flowpdf_render_xlsx(doc_bytes, data_bytes)
+        try:
+            if not result.success:
+                err_msg = result.error_message.decode("utf-8") if result.error_message else "Unknown native error"
+                raise RuntimeError(f"FlowPDF Native Error: {err_msg}")
+            if result.length > 0 and result.data:
+                return bytes(result.data[: result.length])
+            return b""
+        finally:
+            lib.flowpdf_free_result(result)
+
+    @classmethod
+    def render_docx(
+        cls,
+        document: Union[Dict[str, Any], str, Any],
+        data: Optional[Union[Dict[str, Any], str, list]] = None,
+    ) -> bytes:
+        """Renders document definition AST directly to Word (.docx) bytes."""
+        if hasattr(document, "build") and callable(document.build):
+            document = document.build()
+
+        doc_json = json.dumps(document, ensure_ascii=False) if isinstance(document, dict) else str(document)
+        data_json = (
+            json.dumps(data, ensure_ascii=False)
+            if isinstance(data, (dict, list))
+            else (str(data) if data is not None else None)
+        )
+
+        doc_bytes = doc_json.encode("utf-8")
+        data_bytes = data_json.encode("utf-8") if data_json is not None else None
+
+        lib = cls._get_lib()
+        result = lib.flowpdf_render_docx(doc_bytes, data_bytes)
+        try:
+            if not result.success:
+                err_msg = result.error_message.decode("utf-8") if result.error_message else "Unknown native error"
+                raise RuntimeError(f"FlowPDF Native Error: {err_msg}")
+            if result.length > 0 and result.data:
+                return bytes(result.data[: result.length])
+            return b""
+        finally:
+            lib.flowpdf_free_result(result)
+
+    @classmethod
+    def render(
+        cls,
+        document: Union[Dict[str, Any], str, Any],
+        data: Optional[Union[Dict[str, Any], str, list]] = None,
+        format: str = "pdf",
+    ) -> bytes:
+        """Renders document to the requested format ('pdf', 'xlsx', 'docx')."""
+        fmt = format.lower()
+        if fmt in ("xlsx", "excel"):
+            return cls.render_xlsx(document, data)
+        elif fmt in ("docx", "doc", "word"):
+            return cls.render_docx(document, data)
+        return cls.render_pdf(document, data)
 
     @classmethod
     def extract_text(cls, pdf_bytes: bytes) -> str:

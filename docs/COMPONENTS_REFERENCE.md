@@ -124,3 +124,38 @@ from engine import PageNumber
 
 PageNumber(format_str="Página {page} de {total}", alignment="right")
 ```
+
+---
+
+## 7. Watermark (Marcas de Agua Flotantes)
+Permite superponer marcas de agua en texto flotante en cualquier coordenada libre `(x, y)` o mediante presets de alineación (`center`, `top-left`, etc.), con rotación en cualquier ángulo, opacidad graduable y compatibilidad idéntica en PDF, Word (.docx) y Excel (.xlsx).
+
+### JSON Template:
+```json
+{
+  "watermark": {
+    "text": "CONFIDENCIAL",
+    "x": 120.0,
+    "y": 300.0,
+    "rotation": -45.0,
+    "opacity": 0.18,
+    "font_size": 48.0,
+    "color": "#DC2626",
+    "background": true
+  }
+}
+```
+
+### C# Fluent API:
+```csharp
+doc.Watermark("BORRADOR", rotation: -45f, opacity: 0.15f, color: "#888888");
+```
+
+---
+
+## 8. Formatos de Salida Multi-Plataforma
+FlowPDF permite exportar el mismo documento declarativo a tres formatos empresariales nativos:
+
+1. **PDF (`.pdf`)**: Motor vectorial nativo con paginación predictiva, fuentes TrueType y marcas de agua translúcidas (`flowpdf_render_pdf`).
+2. **Microsoft Excel (`.xlsx`)**: Hojas de cálculo con tablas dinámicas, zebra striping, formatos de moneda/número y marca de agua flotante (`flowpdf_render_xlsx`).
+3. **Microsoft Word (`.docx`)**: Documentos editables de Microsoft Word con tipografía, párrafos, tablas estilizadas y marcas de agua (`flowpdf_render_docx`).
