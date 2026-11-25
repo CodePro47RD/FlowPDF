@@ -221,7 +221,9 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: "17", cache: maven }
       # Perfil release sin firma: valida que sources/javadoc también se generen
-      - run: mvn -B -f sdk/java/pom.xml -Prelease -Dgpg.skip verify
+      - name: Limpiar cache corrupta de plugins Maven
+        run: rm -rf ~/.m2/repository/org/sonatype/central
+      - run: mvn -B -U -f sdk/java/pom.xml -Prelease -Dgpg.skip verify
       - name: Verificar binarios en el jar
         run: unzip -l sdk/java/target/flowpdf-${{ needs.meta.outputs.version }}.jar | grep 'runtimes/linux-x64/native/libflowpdf_native.so'
       - uses: actions/upload-artifact@v4
@@ -345,7 +347,9 @@ jobs:
           server-password: MAVEN_CENTRAL_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - run: mvn -B -f sdk/java/pom.xml -Prelease deploy
+      - name: Limpiar cache corrupta de plugins Maven
+        run: rm -rf ~/.m2/repository/org/sonatype/central
+      - run: mvn -B -U -f sdk/java/pom.xml -Prelease deploy
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
