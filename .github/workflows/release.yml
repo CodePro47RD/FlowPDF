@@ -202,12 +202,18 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install --upgrade build twine
+      - run: rm -rf out && mkdir -p out
       - run: python -m build sdk/python --outdir out
-      - run: twine check out/*
+      - run: twine check out/*.whl out/*.tar.gz
       - name: Verificar binarios en el wheel
         run: unzip -l out/*.whl | grep 'flowpdf/runtimes/linux-x64/native/libflowpdf_native.so'
       - uses: actions/upload-artifact@v4
-        with: { name: pkg-pypi, path: out/*, if-no-files-found: error }
+        with:
+          name: pkg-pypi
+          path: |
+            out/*.whl
+            out/*.tar.gz
+          if-no-files-found: error
 
   pack-maven:
     name: Empaquetar Maven (Java)

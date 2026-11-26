@@ -1380,18 +1380,53 @@ FlowPdfResult flowpdf_render_pdf(
     const char* data_json
 );
 
-// 2. Libera de forma segura la memoria asignada por Rust
+// 2. Renderiza a Microsoft Excel (.xlsx) con arquitectura OpenXML y cuadrícula maestra
+FlowPdfResult flowpdf_render_xlsx(
+    const char* doc_json,
+    const char* data_json
+);
+
+// 3. Renderiza a Microsoft Word (.docx) con paridad A4 en tablas y medidas twips (dxa)
+FlowPdfResult flowpdf_render_docx(
+    const char* doc_json,
+    const char* data_json
+);
+
+// 4. Renderizado universal polimórfico ("pdf", "xlsx", "docx")
+FlowPdfResult flowpdf_render_document(
+    const char* doc_json,
+    const char* data_json,
+    const char* format
+);
+
+// 5. Libera de forma segura la memoria asignada por Rust
 void flowpdf_free_result(FlowPdfResult result);
 
-// 3. Registra una fuente TrueType (.ttf) en la memoria global del motor
+// 6. Registra una fuente TrueType (.ttf) en la memoria global del motor
 int32_t flowpdf_register_font(
     const char* font_name,
     const uint8_t* font_bytes,
     size_t font_len
 );
 
-// 4. Retorna la cadena de versión oficial del motor
+// 7. Retorna la cadena de versión oficial del motor
 const char* flowpdf_version(void);
+```
+
+### 7.1 Universalidad de Plantillas y Exportación Multi-Formato (Zero-Change Parity)
+
+Un principio arquitectónico central de FlowPDF es la **independencia total del formato de salida**:
+- **Cero cambios en la plantilla:** No tienes que modificar nombres de componentes, campos, márgenes, estilos ni tablas en tu definición JSON o Fluent API para cambiar entre PDF, Excel o Word.
+- **Mapeo geométrico automático:**
+  - **PDF:** Renderiza lienzo vectorial milimétrico con tipografía tipográfica y dibujo Bézier.
+  - **Excel (`.xlsx`):** Emplea el modelo de *Microsoft Report Builder (SSRS)*: calcula la cuadrícula maestra a partir de las columnas principales de la tabla, fusiona celdas para textos continuos (`merge_range`), asigna alturas de fila proporcionales y preserva bordes, colores y formatos numéricos sin clobbering.
+  - **Word (`.docx`):** Renderiza contenedores anidados en tablas OpenXML con anchos exactos calculados en `dxa` (vigésimos de punto) ajustados a las dimensiones del papel (ej. A4 $11906 \times 16838\text{ dxa}$).
+- **Invocación en una sola línea:**
+  - **C#:** `doc.GeneratePdf()`, `doc.GenerateXlsx()`, `doc.GenerateDocx()`, `doc.Generate("xlsx")`
+  - **TypeScript:** `FlowPdfEngine.render(doc, data, "xlsx")`, `FlowPdfEngine.renderXlsx(doc, data)`, `FlowPdfEngine.renderDocx(doc, data)`
+  - **Python:** `FlowPdfEngine.render(doc, data, "xlsx")`, `FlowPdfEngine.render_xlsx(doc, data)`, `FlowPdfEngine.render_docx(doc, data)`
+  - **PHP:** `FlowPdfEngine::renderXlsx($doc, $data)`, `FlowPdfEngine::renderDocx($doc, $data)`
+  - **HTTP/REST:** Parámetro `"format": "pdf" | "xlsx" | "docx"` en el payload JSON.
 ```
 
 ### Reglas de Seguridad en Memoria
