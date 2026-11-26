@@ -522,3 +522,196 @@ fn test_c_abi_render_document_multi_format() {
         flowpdf_free_result(res_docx);
     }
 }
+
+#[test]
+fn test_complex_academic_record_multi_format_parity() {
+    let json_input = r##"{
+        "page": { "size": "LETTER", "orientation": "portrait", "margin": 25.0 },
+        "watermark": {
+            "text": "COPIA OFICIAL",
+            "position": "center",
+            "font_size": 36.0,
+            "opacity": 0.15,
+            "color": "#64748B"
+        },
+        "header": {
+            "type": "column",
+            "spacing": 4.0,
+            "items": [
+                {
+                    "type": "text",
+                    "value": "Universidad Tecnológica del Cibao Oriental",
+                    "style": "h2",
+                    "alignment": "center",
+                    "bold": true,
+                    "color": "#0F172A"
+                },
+                {
+                    "type": "text",
+                    "value": "Av. Universitaria No. 100, Cotuí, provincia Sánchez Ramírez, República Dominicana",
+                    "alignment": "center",
+                    "color": "#475569"
+                },
+                {
+                    "type": "text",
+                    "value": "DIVISIÓN ADMISIONES Y REGISTRO",
+                    "alignment": "center",
+                    "bold": true,
+                    "color": "#1E3A8A"
+                },
+                {
+                    "type": "row",
+                    "items": [
+                        { "type": "text", "value": "" },
+                        { "type": "text", "value": "Etapa: Inscripción", "alignment": "right", "bold": true }
+                    ]
+                },
+                {
+                    "type": "divider",
+                    "thickness": 1.0,
+                    "color": "#94A3B8"
+                }
+            ]
+        },
+        "content": [
+            {
+                "type": "row",
+                "items": [
+                    {
+                        "type": "column",
+                        "spacing": 2.0,
+                        "items": [
+                            { "type": "text", "value": "MATRÍCULA: 2021-1022", "bold": true },
+                            { "type": "text", "value": "PENSUM: 046-2014 (PRIMARIO)", "color": "#334155" }
+                        ]
+                    },
+                    {
+                        "type": "column",
+                        "spacing": 2.0,
+                        "items": [
+                            { "type": "text", "value": "ESTUDIANTE: LUIS ANGEL FERNÁNDEZ", "bold": true },
+                            { "type": "text", "value": "CARRERA : 0015 Licenciatura en Informática", "color": "#334155" }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "spacer",
+                "height": 10.0
+            },
+            {
+                "type": "table",
+                "header_background": "#8FAADC",
+                "header_color": "#0F172A",
+                "zebra": true,
+                "zebra_color": "#F1F5F9",
+                "columns": [
+                    { "title": "Código", "field": "codigo", "width": 80.0 },
+                    { "title": "Asignatura", "field": "asignatura", "width": 160.0 },
+                    { "title": "Cr", "field": "cr", "width": 35.0, "align": "center" },
+                    { "title": "Horario", "field": "horario", "width": 140.0 },
+                    { "title": "Profesor", "field": "profesor", "width": 130.0 },
+                    { "title": "Estatus", "field": "estatus", "width": 50.0, "align": "center" },
+                    { "title": "Trim", "field": "trim", "width": 40.0, "align": "center" }
+                ],
+                "data": [
+                    {
+                        "codigo": "CHU-120-02",
+                        "asignatura": "Cálculo II",
+                        "cr": 4,
+                        "horario": "MI 18:00 - 20:00 (L310)\nJ 19:00 - 22:00 (K-203)",
+                        "profesor": "Miguel Angel Hernández",
+                        "estatus": "AP",
+                        "trim": 12
+                    },
+                    {
+                        "codigo": "CHU-121-01",
+                        "asignatura": "ÁLGEBRA MATRICIAL",
+                        "cr": 4,
+                        "horario": "L 16:00 - 18:00 (Virtual-05)\nJ 16:00 - 18:00 (Virtual-02)",
+                        "profesor": "LEWIS BIENVENIDO SANTOS",
+                        "estatus": "AP",
+                        "trim": 9
+                    },
+                    {
+                        "codigo": "IRI-122-01",
+                        "asignatura": "Introducción a Circuitos Lógicos",
+                        "cr": 3,
+                        "horario": "M 19:00 - 22:00 (L310)\nD 18:00 - 20:00 (Virtual-06)",
+                        "profesor": "Sucre Orlando Gómez",
+                        "estatus": "AP",
+                        "trim": 11
+                    },
+                    {
+                        "codigo": "IRI-128-01",
+                        "asignatura": "Auditoría de Informática",
+                        "cr": 3,
+                        "horario": "L 19:00 - 22:00 (J-204)\nS 12:00 - 14:00 (Virtual-02)",
+                        "profesor": "Rafael Eugenio Robles",
+                        "estatus": "AP",
+                        "trim": 13
+                    }
+                ]
+            },
+            {
+                "type": "divider",
+                "thickness": 1.0,
+                "color": "#0F172A"
+            },
+            {
+                "type": "row",
+                "items": [
+                    { "type": "text", "value": "Total Cr: 14", "bold": true, "alignment": "left" }
+                ]
+            }
+        ],
+        "footer": {
+            "type": "column",
+            "spacing": 2.0,
+            "items": [
+                {
+                    "type": "text",
+                    "value": "Cotuí, República Dominicana",
+                    "alignment": "center",
+                    "color": "#64748B"
+                },
+                {
+                    "type": "row",
+                    "items": [
+                        { "type": "text", "value": "Teléfono: +1 809-585-2291", "color": "#64748B" },
+                        { "type": "text", "value": "informacion@uteco.edu.do", "color": "#64748B", "alignment": "center" },
+                        { "type": "text", "value": "www.uteco.edu.do", "color": "#64748B", "alignment": "right" }
+                    ]
+                },
+                {
+                    "type": "row",
+                    "items": [
+                        { "type": "text", "value": "UTECO\\edwin.abreu", "color": "#94A3B8" },
+                        { "type": "text", "value": "26/11/2026", "color": "#94A3B8", "alignment": "center" },
+                        { "type": "page_number", "alignment": "right" }
+                    ]
+                }
+            ]
+        }
+    }"##;
+
+    let doc_ast: DocumentDefinitionAst = serde_json::from_str(json_input).expect("Valid academic record JSON AST");
+
+    // 1. Probar render PDF
+    let pdf_engine = flowpdf::pdf_engine::PdfEngine::new();
+    let pdf_bytes = pdf_engine.render(&doc_ast, None).expect("PDF rendering should succeed");
+    assert!(!pdf_bytes.is_empty());
+    assert_eq!(&pdf_bytes[0..5], b"%PDF-");
+
+    // 2. Probar render Excel (XLSX) con la misma estructura visual
+    let excel_engine = flowpdf::excel_engine::ExcelEngine::new();
+    let xlsx_bytes = excel_engine.render(&doc_ast, None).expect("Excel rendering should succeed");
+    assert!(!xlsx_bytes.is_empty());
+    assert_eq!(&xlsx_bytes[0..4], &[0x50, 0x4B, 0x03, 0x04], "Valid XLSX ZIP header");
+
+    // 3. Probar render Word (DOCX) con la misma estructura visual
+    let word_engine = flowpdf::word_engine::WordEngine::new();
+    let docx_bytes = word_engine.render(&doc_ast, None).expect("Word rendering should succeed");
+    assert!(!docx_bytes.is_empty());
+    assert_eq!(&docx_bytes[0..4], &[0x50, 0x4B, 0x03, 0x04], "Valid DOCX ZIP header");
+}

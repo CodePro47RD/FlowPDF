@@ -86,9 +86,9 @@ namespace FlowPdf.Examples
                     .Text("Generado por FlowPDF - www.flowpdf.dev", t => t.AlignCenter().Color("#64748B")));
 
             // -------------------------------------------------------------
-            // TEST 1: RENDER IN-PROCESS CON MOTOR NATIVO RUST
+            // TEST 1: RENDER IN-PROCESS MULTI-FORMATO CON MOTOR NATIVO RUST
             // -------------------------------------------------------------
-            Console.WriteLine("[2/3] Generando PDF IN-PROCESS con motor nativo Rust (flowpdf.dll)...");
+            Console.WriteLine("[2/4] Generando PDF IN-PROCESS con motor nativo Rust (flowpdf.dll)...");
             var sw = Stopwatch.StartNew();
             byte[] nativePdf = invoiceDoc.GeneratePdf();
             sw.Stop();
@@ -97,6 +97,26 @@ namespace FlowPdf.Examples
             await File.WriteAllBytesAsync(nativeOutputPath, nativePdf);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"[✓] PDF Nativo generado en {sw.ElapsedMilliseconds} ms ({nativePdf.Length:N0} bytes): {nativeOutputPath}");
+            Console.ResetColor();
+
+            Console.WriteLine("\n[3/4] Exportando a Microsoft Excel (.xlsx) con paridad de diseño...");
+            sw.Restart();
+            byte[] nativeXlsx = invoiceDoc.GenerateXlsx();
+            sw.Stop();
+            string nativeXlsxPath = Path.Combine(AppContext.BaseDirectory, "orden_compra_nativa_rust.xlsx");
+            await File.WriteAllBytesAsync(nativeXlsxPath, nativeXlsx);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"[✓] Excel (.xlsx) generado en {sw.ElapsedMilliseconds} ms ({nativeXlsx.Length:N0} bytes): {nativeXlsxPath}");
+            Console.ResetColor();
+
+            Console.WriteLine("\n[4/4] Exportando a Microsoft Word (.docx) con paridad de diseño...");
+            sw.Restart();
+            byte[] nativeDocx = invoiceDoc.GenerateDocx();
+            sw.Stop();
+            string nativeDocxPath = Path.Combine(AppContext.BaseDirectory, "orden_compra_nativa_rust.docx");
+            await File.WriteAllBytesAsync(nativeDocxPath, nativeDocx);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"[✓] Word (.docx) generado en {sw.ElapsedMilliseconds} ms ({nativeDocx.Length:N0} bytes): {nativeDocxPath}");
             Console.ResetColor();
 
             // -------------------------------------------------------------

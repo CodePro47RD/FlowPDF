@@ -17,11 +17,16 @@ impl WordEngine {
 
         // 1. Configuración de página y márgenes
         let margin_val = (doc_ast.page.margin * 20.0) as i32; // conversión a dxa (twips: 1 pt = 20 dxa)
+        let margin_top = doc_ast.page.margin_top.map(|v| (v * 20.0) as i32).unwrap_or(margin_val);
+        let margin_bottom = doc_ast.page.margin_bottom.map(|v| (v * 20.0) as i32).unwrap_or(margin_val);
+        let margin_left = doc_ast.page.margin_left.map(|v| (v * 20.0) as i32).unwrap_or(margin_val);
+        let margin_right = doc_ast.page.margin_right.map(|v| (v * 20.0) as i32).unwrap_or(margin_val);
+
         let page_margin = PageMargin::new()
-            .top(doc_ast.page.margin_top.map(|v| (v * 20.0) as i32).unwrap_or(margin_val))
-            .bottom(doc_ast.page.margin_bottom.map(|v| (v * 20.0) as i32).unwrap_or(margin_val))
-            .left(doc_ast.page.margin_left.map(|v| (v * 20.0) as i32).unwrap_or(margin_val))
-            .right(doc_ast.page.margin_right.map(|v| (v * 20.0) as i32).unwrap_or(margin_val));
+            .top(margin_top)
+            .bottom(margin_bottom)
+            .left(margin_left)
+            .right(margin_right);
         doc = doc.page_margin(page_margin);
 
         // Dimensiones de página
@@ -37,10 +42,12 @@ impl WordEngine {
         };
         doc = doc.page_size(w_dxa, h_dxa);
 
+        let usable_width_dxa = w_dxa.saturating_sub((margin_left + margin_right).max(0) as u32).max(1000);
+
         // 2. Encabezado de página
         if let Some(header) = &doc_ast.header {
             let mut header_obj = Header::new();
-            for p in self.component_to_paragraphs(header, data)? {
+            for p in self.component_to_paragraphs(header, data, usable_width_dxa)? {
                 header_obj = header_obj.add_paragraph(p);
             }
             doc = doc.header(header_obj);
@@ -52,7 +59,6 @@ impl WordEngine {
             let text = interpolate_string(&wm.text, data);
             if !text.is_empty() {
                 let color_hex = wm.color.as_deref().unwrap_or("CCCCCC").trim_start_matches('#');
-                // En Word, una marca de agua se presenta destacada como párrafo con estilo translúcido o cabecera
                 let wm_run = Run::new()
                     .add_text(&text)
                     .bold()
@@ -69,14 +75,14 @@ impl WordEngine {
             }
         }
 
-        // 4. Contenido
+        // 4. Contenido principal
         match &doc_ast.content {
             ContentAst::Single(comp) => {
-                doc = self.render_component(comp, doc, data)?;
+                doc = self.render_component(comp, doc, usable_width_dxa, data)?;
             }
             ContentAst::Multiple(items) => {
                 for item in items {
-                    doc = self.render_component(item, doc, data)?;
+                    doc = self.render_component(item, doc, usable_width_dxa, data)?;
                 }
             }
         }
@@ -84,7 +90,7 @@ impl WordEngine {
         // 5. Pie de página
         if let Some(footer) = &doc_ast.footer {
             let mut footer_obj = Footer::new();
-            for p in self.component_to_paragraphs(footer, data)? {
+            for p in self.component_to_paragraphs(footer, data, usable_width_dxa)? {
                 footer_obj = footer_obj.add_paragraph(p);
             }
             doc = doc.footer(footer_obj);
@@ -95,20 +101,17 @@ impl WordEngine {
         Ok(buffer.into_inner())
     }
 
-    fn render_component(&self, comp: &ComponentAst, mut doc: Docx, data: Option<&Value>) -> Result<Docx, String> {
+    fn render_component(
+        &self,
+        comp: &ComponentAst,
+        mut doc: Docx,
+        usable_width_dxa: u32,
+        data: Option<&Value>,
+    ) -> Result<Docx, String> {
         match comp {
             ComponentAst::Text { value, style, bold, italic, font_size, color, alignment, .. } => {
                 let interpolated = interpolate_string(value, data);
-                let mut run = Run::new().add_text(&interpolated);
-
                 let is_bold = bold.unwrap_or(style.as_deref() == Some("h1") || style.as_deref() == Some("h2"));
-                if is_bold {
-                    run = run.bold();
-                }
-                if italic.unwrap_or(false) {
-                    run = run.italic();
-                }
-
                 let sz = font_size.map(|f| (f * 2.0) as usize).unwrap_or_else(|| {
                     match style.as_deref() {
                         Some("h1") => 32, // 16 pt
@@ -117,13 +120,8 @@ impl WordEngine {
                         _ => 20,          // 10 pt
                     }
                 });
-                run = run.size(sz);
 
-                if let Some(c) = color {
-                    run = run.color(c.trim_start_matches('#'));
-                }
-
-                let mut p = Paragraph::new().add_run(run);
+                let mut p = Paragraph::new();
                 if let Some(align) = alignment {
                     p = match align.as_str() {
                         "center" => p.align(AlignmentType::Center),
@@ -132,42 +130,158 @@ impl WordEngine {
                     };
                 }
 
+                let lines: Vec<&str> = interpolated.split('\n').collect();
+                for (l_idx, line) in lines.iter().enumerate() {
+                    let mut run = Run::new().add_text(*line);
+                    if is_bold {
+                        run = run.bold();
+                    }
+                    if italic.unwrap_or(false) {
+                        run = run.italic();
+                    }
+                    run = run.size(sz);
+                    if let Some(c) = color {
+                        run = run.color(c.trim_start_matches('#'));
+                    }
+                    if l_idx + 1 < lines.len() {
+                        run = run.add_break(BreakType::TextWrapping);
+                    }
+                    p = p.add_run(run);
+                }
+
                 doc = doc.add_paragraph(p);
             }
 
-            ComponentAst::Spacer { .. } => {
-                doc = doc.add_paragraph(Paragraph::new());
+            ComponentAst::Spacer { height } => {
+                let lines = (height / 15.0).max(1.0) as usize;
+                for _ in 0..lines {
+                    doc = doc.add_paragraph(Paragraph::new());
+                }
             }
 
-            ComponentAst::Divider { .. } => {
-                // Separador horizontal
-                let run = Run::new().add_text("____________________________________________________________")
-                    .color("CBD5E1")
-                    .size(16);
-                doc = doc.add_paragraph(Paragraph::new().add_run(run));
+            ComponentAst::Divider { thickness, color, .. } => {
+                let sz = (*thickness * 8.0).max(4.0) as usize;
+                let c = color.as_deref().unwrap_or("CBD5E1").trim_start_matches('#');
+                let tcb = TableCellBorder::new(TableCellBorderPosition::Bottom)
+                    .size(sz)
+                    .color(c)
+                    .border_type(BorderType::Single);
+
+                let cell = TableCell::new()
+                    .width(usable_width_dxa as usize, WidthType::Dxa)
+                    .clear_all_border()
+                    .set_border(tcb)
+                    .add_paragraph(Paragraph::new());
+
+                let row = TableRow::new(vec![cell]);
+                let table = Table::new(vec![row])
+                    .clear_all_border()
+                    .set_grid(vec![usable_width_dxa as usize]);
+                doc = doc.add_table(table);
             }
 
             ComponentAst::Column { items, .. } => {
                 for item in items {
-                    doc = self.render_component(item, doc, data)?;
+                    doc = self.render_component(item, doc, usable_width_dxa, data)?;
                 }
             }
 
             ComponentAst::Row { items, .. } => {
-                // Representamos fila como párrafos o celdas
-                for item in items {
-                    let c = match item {
+                let count = items.len();
+                if count == 0 {
+                    return Ok(doc);
+                }
+                if count == 1 {
+                    let item_comp = match &items[0] {
                         RowItemAst::Detailed { item, .. } => item,
                         RowItemAst::Simple(item) => item,
                     };
-                    doc = self.render_component(c, doc, data)?;
+                    return self.render_component(item_comp, doc, usable_width_dxa, data);
                 }
+
+                // Disposición horizontal de múltiples columnas mediante tabla de maquetación invisible
+                let total_flex: f32 = items.iter().map(|it| match it {
+                    RowItemAst::Detailed { flex, .. } => flex.unwrap_or(1.0),
+                    RowItemAst::Simple(_) => 1.0,
+                }).sum();
+
+                let mut col_widths_dxa: Vec<usize> = Vec::new();
+                for it in items {
+                    let f = match it {
+                        RowItemAst::Detailed { flex, width, .. } => {
+                            if let Some(w) = width {
+                                (*w * 20.0) as usize
+                            } else {
+                                (flex.unwrap_or(1.0) / total_flex.max(1.0) * usable_width_dxa as f32) as usize
+                            }
+                        }
+                        RowItemAst::Simple(_) => (usable_width_dxa as f32 / count as f32) as usize,
+                    };
+                    col_widths_dxa.push(f.max(500));
+                }
+
+                let mut cells: Vec<TableCell> = Vec::new();
+                for (idx, row_item) in items.iter().enumerate() {
+                    let item_comp = match row_item {
+                        RowItemAst::Detailed { item, .. } => item,
+                        RowItemAst::Simple(item) => item,
+                    };
+
+                    let w_dxa = col_widths_dxa[idx];
+                    let mut cell = TableCell::new()
+                        .width(w_dxa, WidthType::Dxa)
+                        .clear_all_border();
+
+                    let paras = self.component_to_paragraphs(item_comp, data, w_dxa as u32)?;
+                    if paras.is_empty() {
+                        cell = cell.add_paragraph(Paragraph::new());
+                    } else {
+                        for p in paras {
+                            cell = cell.add_paragraph(p);
+                        }
+                    }
+                    cells.push(cell);
+                }
+
+                let row_obj = TableRow::new(cells);
+                let table = Table::new(vec![row_obj])
+                    .clear_all_border()
+                    .set_grid(col_widths_dxa);
+                doc = doc.add_table(table);
             }
 
             ComponentAst::Container { child, .. } => {
                 if let Some(c) = child {
-                    doc = self.render_component(c, doc, data)?;
+                    doc = self.render_component(c, doc, usable_width_dxa, data)?;
                 }
+            }
+
+            ComponentAst::Image { source, width, height, alignment, .. } => {
+                let src = interpolate_string(source, data);
+                if let Ok(bytes) = crate::image::load_source(&src) {
+                    let w = (width.unwrap_or(120.0) * 15.0) as u32;
+                    let h = (height.unwrap_or(40.0) * 15.0) as u32;
+                    let pic = Pic::new(&bytes).size(w, h);
+                    let mut p = Paragraph::new().add_run(Run::new().add_image(pic));
+                    if let Some(align) = alignment {
+                        p = match align.as_str() {
+                            "center" => p.align(AlignmentType::Center),
+                            "right" => p.align(AlignmentType::Right),
+                            _ => p.align(AlignmentType::Left),
+                        };
+                    }
+                    doc = doc.add_paragraph(p);
+                }
+            }
+
+            ComponentAst::PageNumber { alignment, .. } => {
+                let mut p = Paragraph::new().add_run(Run::new().add_text("Pág. 1 de 1").size(18));
+                p = match alignment.as_str() {
+                    "center" => p.align(AlignmentType::Center),
+                    "right" => p.align(AlignmentType::Right),
+                    _ => p.align(AlignmentType::Left),
+                };
+                doc = doc.add_paragraph(p);
             }
 
             ComponentAst::Table {
@@ -183,11 +297,18 @@ impl WordEngine {
             } => {
                 let resolved_rows = resolve_table_rows(table_data, source.as_deref(), data);
 
+                // Calcular anchos de columnas proporcionales al ancho útil
+                let total_specified_w: f32 = columns.iter().map(|c| c.width.unwrap_or(80.0)).sum();
+                let col_widths_dxa: Vec<usize> = columns.iter().map(|c| {
+                    let ratio = c.width.unwrap_or(80.0) / total_specified_w.max(1.0);
+                    (ratio * usable_width_dxa as f32) as usize
+                }).collect();
+
                 let mut table_rows: Vec<TableRow> = Vec::new();
 
-                // Fila de cabecera
+                // 1. Fila de cabecera
                 let mut header_cells: Vec<TableCell> = Vec::new();
-                for col in columns {
+                for (c_idx, col) in columns.iter().enumerate() {
                     let mut run = Run::new().add_text(&col.title).bold().size(18); // 9 pt
                     if let Some(tc) = header_color {
                         run = run.color(tc.trim_start_matches('#'));
@@ -195,19 +316,35 @@ impl WordEngine {
                         run = run.color("FFFFFF");
                     }
 
-                    let p = Paragraph::new().add_run(run);
-                    let mut cell = TableCell::new().add_paragraph(p);
+                    let mut p = Paragraph::new().add_run(run);
+                    if let Some(align) = &col.align {
+                        p = match align.as_str() {
+                            "center" => p.align(AlignmentType::Center),
+                            "right" => p.align(AlignmentType::Right),
+                            _ => p.align(AlignmentType::Left),
+                        };
+                    }
+
+                    let col_w = col_widths_dxa[c_idx];
+                    let mut cell = TableCell::new()
+                        .width(col_w, WidthType::Dxa)
+                        .add_paragraph(p);
 
                     if let Some(bg) = header_background {
                         cell = cell.shading(Shading::new().fill(bg.trim_start_matches('#')));
                     } else {
                         cell = cell.shading(Shading::new().fill("1E40AF"));
                     }
+
+                    let top_b = TableCellBorder::new(TableCellBorderPosition::Top).size(4).color("CBD5E1").border_type(BorderType::Single);
+                    let bot_b = TableCellBorder::new(TableCellBorderPosition::Bottom).size(6).color("94A3B8").border_type(BorderType::Single);
+                    cell = cell.set_border(top_b).set_border(bot_b);
+
                     header_cells.push(cell);
                 }
                 table_rows.push(TableRow::new(header_cells));
 
-                // Filas de datos
+                // 2. Filas de datos
                 let mut current_group: Option<String> = None;
                 for (r_idx, row_map) in resolved_rows.iter().enumerate() {
                     // Agrupación si aplica
@@ -234,11 +371,10 @@ impl WordEngine {
                     let is_zebra = *zebra && (r_idx % 2 == 1);
                     let mut data_cells: Vec<TableCell> = Vec::new();
 
-                    for col in columns {
+                    for (c_idx, col) in columns.iter().enumerate() {
                         let val_str = format_cell_value(col.field.as_ref().and_then(|f| row_map.get(f)), col.format.as_deref());
-                        let run = Run::new().add_text(&val_str).size(18);
 
-                        let mut p = Paragraph::new().add_run(run);
+                        let mut p = Paragraph::new();
                         if let Some(align) = &col.align {
                             p = match align.as_str() {
                                 "center" => p.align(AlignmentType::Center),
@@ -247,17 +383,41 @@ impl WordEngine {
                             };
                         }
 
-                        let mut cell = TableCell::new().add_paragraph(p);
+                        // Soporte para texto multilínea con saltos de línea (como en horarios)
+                        let lines: Vec<&str> = val_str.split('\n').collect();
+                        for (l_idx, line) in lines.iter().enumerate() {
+                            let mut run = Run::new().add_text(*line).size(18);
+                            if l_idx + 1 < lines.len() {
+                                run = run.add_break(BreakType::TextWrapping);
+                            }
+                            p = p.add_run(run);
+                        }
+
+                        let col_w = col_widths_dxa[c_idx];
+                        let mut cell = TableCell::new()
+                            .width(col_w, WidthType::Dxa)
+                            .add_paragraph(p);
+
                         if is_zebra {
                             let zc = zebra_color.as_deref().unwrap_or("F8FAFC").trim_start_matches('#');
                             cell = cell.shading(Shading::new().fill(zc));
                         }
+
+                        // Borde inferior sutil para cada celda
+                        let cell_bot = TableCellBorder::new(TableCellBorderPosition::Bottom)
+                            .size(2)
+                            .color("E2E8F0")
+                            .border_type(BorderType::Single);
+                        cell = cell.set_border(cell_bot);
+
                         data_cells.push(cell);
                     }
                     table_rows.push(TableRow::new(data_cells));
                 }
 
-                let table = Table::new(table_rows);
+                let table = Table::new(table_rows)
+                    .clear_all_border()
+                    .set_grid(col_widths_dxa);
                 doc = doc.add_table(table);
                 doc = doc.add_paragraph(Paragraph::new()); // Espacio tras la tabla
             }
@@ -269,20 +429,14 @@ impl WordEngine {
         Ok(doc)
     }
 
-    fn component_to_paragraphs(&self, comp: &ComponentAst, data: Option<&Value>) -> Result<Vec<Paragraph>, String> {
+    fn component_to_paragraphs(&self, comp: &ComponentAst, data: Option<&Value>, available_width_dxa: u32) -> Result<Vec<Paragraph>, String> {
         match comp {
-            ComponentAst::Text { value, style, bold, font_size, color, alignment, .. } => {
+            ComponentAst::Text { value, style, bold, italic, font_size, color, alignment, .. } => {
                 let interpolated = interpolate_string(value, data);
-                let mut run = Run::new().add_text(&interpolated);
-                if bold.unwrap_or(style.as_deref() == Some("h1") || style.as_deref() == Some("h2")) {
-                    run = run.bold();
-                }
+                let is_bold = bold.unwrap_or(style.as_deref() == Some("h1") || style.as_deref() == Some("h2"));
                 let sz = font_size.map(|f| (f * 2.0) as usize).unwrap_or(20);
-                run = run.size(sz);
-                if let Some(c) = color {
-                    run = run.color(c.trim_start_matches('#'));
-                }
-                let mut p = Paragraph::new().add_run(run);
+
+                let mut p = Paragraph::new();
                 if let Some(align) = alignment {
                     p = match align.as_str() {
                         "center" => p.align(AlignmentType::Center),
@@ -290,15 +444,56 @@ impl WordEngine {
                         _ => p.align(AlignmentType::Left),
                     };
                 }
+
+                let lines: Vec<&str> = interpolated.split('\n').collect();
+                for (l_idx, line) in lines.iter().enumerate() {
+                    let mut run = Run::new().add_text(*line);
+                    if is_bold {
+                        run = run.bold();
+                    }
+                    if italic.unwrap_or(false) {
+                        run = run.italic();
+                    }
+                    run = run.size(sz);
+                    if let Some(c) = color {
+                        run = run.color(c.trim_start_matches('#'));
+                    }
+                    if l_idx + 1 < lines.len() {
+                        run = run.add_break(BreakType::TextWrapping);
+                    }
+                    p = p.add_run(run);
+                }
+
                 Ok(vec![p])
             }
+
+            ComponentAst::Image { source, width, height, alignment, .. } => {
+                let src = interpolate_string(source, data);
+                if let Ok(bytes) = crate::image::load_source(&src) {
+                    let w = (width.unwrap_or(120.0) * 15.0) as u32;
+                    let h = (height.unwrap_or(40.0) * 15.0) as u32;
+                    let pic = Pic::new(&bytes).size(w, h);
+                    let mut p = Paragraph::new().add_run(Run::new().add_image(pic));
+                    if let Some(align) = alignment {
+                        p = match align.as_str() {
+                            "center" => p.align(AlignmentType::Center),
+                            "right" => p.align(AlignmentType::Right),
+                            _ => p.align(AlignmentType::Left),
+                        };
+                    }
+                    return Ok(vec![p]);
+                }
+                Ok(vec![])
+            }
+
             ComponentAst::Column { items, .. } => {
                 let mut res = Vec::new();
                 for item in items {
-                    res.extend(self.component_to_paragraphs(item, data)?);
+                    res.extend(self.component_to_paragraphs(item, data, available_width_dxa)?);
                 }
                 Ok(res)
             }
+
             ComponentAst::Row { items, .. } => {
                 let mut res = Vec::new();
                 for item in items {
@@ -306,11 +501,44 @@ impl WordEngine {
                         RowItemAst::Detailed { item, .. } => item,
                         RowItemAst::Simple(item) => item,
                     };
-                    res.extend(self.component_to_paragraphs(c, data)?);
+                    res.extend(self.component_to_paragraphs(c, data, available_width_dxa)?);
                 }
                 Ok(res)
             }
-            _ => Ok(Vec::new()),
+
+            ComponentAst::Container { child, .. } => {
+                if let Some(c) = child {
+                    self.component_to_paragraphs(c, data, available_width_dxa)
+                } else {
+                    Ok(vec![])
+                }
+            }
+
+            ComponentAst::Divider { thickness, color, .. } => {
+                let c = color.as_deref().unwrap_or("CBD5E1").trim_start_matches('#');
+                let sz = (*thickness * 8.0).max(4.0) as usize;
+                let run = Run::new().add_text("____________________________________________________________")
+                    .color(c)
+                    .size(sz);
+                Ok(vec![Paragraph::new().add_run(run)])
+            }
+
+            ComponentAst::Spacer { height } => {
+                let lines = (height / 15.0).max(1.0) as usize;
+                Ok((0..lines).map(|_| Paragraph::new()).collect())
+            }
+
+            ComponentAst::PageNumber { alignment, .. } => {
+                let mut p = Paragraph::new().add_run(Run::new().add_text("Pág. 1 de 1").size(18));
+                p = match alignment.as_str() {
+                    "center" => p.align(AlignmentType::Center),
+                    "right" => p.align(AlignmentType::Right),
+                    _ => p.align(AlignmentType::Left),
+                };
+                Ok(vec![p])
+            }
+
+            _ => Ok(vec![]),
         }
     }
 }
@@ -327,54 +555,55 @@ fn resolve_table_rows(
     data: Option<&Value>,
 ) -> Vec<HashMap<String, Value>> {
     if let Some(td) = table_data {
-        td.clone()
-    } else if let Some(src) = source {
+        if !td.is_empty() {
+            return td.clone();
+        }
+    }
+    if let Some(src) = source {
         if let Some(val) = data {
             if let Some(arr) = val.get(src).and_then(|v| v.as_array()) {
-                arr.iter().filter_map(|item| {
-                    item.as_object().map(|obj| obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
-                }).collect()
-            } else {
-                Vec::new()
+                return arr.iter().filter_map(|item| {
+                    if let Some(obj) = item.as_object() {
+                        Some(obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
+                    } else {
+                        None
+                    }
+                }).collect();
             }
-        } else {
-            Vec::new()
         }
-    } else {
-        Vec::new()
     }
+    Vec::new()
 }
 
 fn format_cell_value(val: Option<&Value>, format: Option<&str>) -> String {
-    let Some(v) = val else { return String::new(); };
     match format {
         Some("currency") => {
-            if let Some(n) = v.as_f64() {
+            if let Some(n) = val.and_then(|v| v.as_f64().or_else(|| v.as_str().and_then(|s| s.trim_start_matches('$').trim().parse::<f64>().ok()))) {
                 format!("${:.2}", n)
-            } else if let Some(s) = v.as_str() {
-                s.to_string()
             } else {
-                v.to_string()
+                val.map(|v| v.to_string()).unwrap_or_default()
             }
         }
         Some("number") => {
-            if let Some(n) = v.as_f64() {
+            if let Some(n) = val.and_then(|v| v.as_f64().or_else(|| v.as_str().and_then(|s| s.parse::<f64>().ok()))) {
                 format!("{:.2}", n)
             } else {
-                v.to_string()
+                val.map(|v| v.to_string()).unwrap_or_default()
             }
         }
         Some("percentage") => {
-            if let Some(n) = v.as_f64() {
+            if let Some(n) = val.and_then(|v| v.as_f64()) {
                 format!("{:.1}%", n)
             } else {
-                v.to_string()
+                val.map(|v| v.to_string()).unwrap_or_default()
             }
         }
-        _ => match v {
-            Value::String(s) => s.clone(),
-            _ => v.to_string(),
-        },
+        _ => {
+            val.map(|v| match v {
+                Value::String(s) => s.clone(),
+                _ => v.to_string(),
+            }).unwrap_or_default()
+        }
     }
 }
 

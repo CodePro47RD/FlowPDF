@@ -15,7 +15,27 @@ impl ExcelEngine {
         let mut workbook = Workbook::new();
         let worksheet = workbook.add_worksheet();
 
-        // Estilos
+        // 1. Configuración de página y márgenes según el AST
+        if doc_ast.page.orientation.to_lowercase() == "landscape" {
+            worksheet.set_landscape();
+        } else {
+            worksheet.set_portrait();
+        }
+
+        match doc_ast.page.size.to_uppercase().as_str() {
+            "LETTER" => { worksheet.set_paper_size(1); }
+            "LEGAL" => { worksheet.set_paper_size(5); }
+            _ => { worksheet.set_paper_size(9); } // A4 por defecto
+        };
+
+        let margin_top_in = (doc_ast.page.margin_top.unwrap_or(doc_ast.page.margin) / 72.0) as f64;
+        let margin_bottom_in = (doc_ast.page.margin_bottom.unwrap_or(doc_ast.page.margin) / 72.0) as f64;
+        let margin_left_in = (doc_ast.page.margin_left.unwrap_or(doc_ast.page.margin) / 72.0) as f64;
+        let margin_right_in = (doc_ast.page.margin_right.unwrap_or(doc_ast.page.margin) / 72.0) as f64;
+        worksheet.set_margins(margin_left_in, margin_right_in, margin_top_in, margin_bottom_in, 0.3, 0.3);
+        worksheet.set_screen_gridlines(true);
+
+        // Estilos base
         let title_format = Format::new()
             .set_bold()
             .set_font_size(14.0)
@@ -25,33 +45,36 @@ impl ExcelEngine {
             .set_font_size(10.0)
             .set_font_color(XlsxColor::RGB(0x111827));
 
+        // Determinar número de columnas estimado para cuadrícula armónica
+        let estimated_cols = self.estimate_grid_cols(doc_ast);
+
         let mut current_row: u32 = 0;
 
-        // 1. Encabezado
+        // 2. Encabezado del documento
         if let Some(header) = &doc_ast.header {
-            current_row = self.render_component(header, worksheet, current_row, data, &title_format, &regular_format)?;
+            current_row = self.render_component(header, worksheet, current_row, 0, estimated_cols, data, &title_format, &regular_format)?;
             current_row += 1;
         }
 
-        // 2. Contenido principal
+        // 3. Contenido principal
         match &doc_ast.content {
             ContentAst::Single(comp) => {
-                current_row = self.render_component(comp, worksheet, current_row, data, &title_format, &regular_format)?;
+                current_row = self.render_component(comp, worksheet, current_row, 0, estimated_cols, data, &title_format, &regular_format)?;
             }
             ContentAst::Multiple(items) => {
                 for item in items {
-                    current_row = self.render_component(item, worksheet, current_row, data, &title_format, &regular_format)?;
+                    current_row = self.render_component(item, worksheet, current_row, 0, estimated_cols, data, &title_format, &regular_format)?;
                 }
             }
         }
 
-        // 3. Pie de página
+        // 4. Pie de página del documento
         if let Some(footer) = &doc_ast.footer {
             current_row += 1;
-            let _ = self.render_component(footer, worksheet, current_row, data, &regular_format, &regular_format)?;
+            let _ = self.render_component(footer, worksheet, current_row, 0, estimated_cols, data, &regular_format, &regular_format)?;
         }
 
-        // 4. Marcas de agua flotantes
+        // 5. Marcas de agua flotantes
         let watermarks = doc_ast.all_watermarks();
         for wm in &watermarks {
             let text = interpolate_string(&wm.text, data);
@@ -85,23 +108,52 @@ impl ExcelEngine {
         workbook.save_to_buffer().map_err(|e| format!("Excel generation error: {}", e))
     }
 
+    fn estimate_grid_cols(&self, doc_ast: &DocumentDefinitionAst) -> u16 {
+        let mut max_cols: u16 = 6;
+        let mut inspect_comp = |c: &ComponentAst| {
+            if let ComponentAst::Table { columns, .. } = c {
+                if columns.len() as u16 > max_cols {
+                    max_cols = columns.len() as u16;
+                }
+            }
+        };
+
+        if let Some(h) = &doc_ast.header {
+            inspect_comp(h);
+        }
+        match &doc_ast.content {
+            ContentAst::Single(c) => inspect_comp(c),
+            ContentAst::Multiple(items) => {
+                for it in items {
+                    inspect_comp(it);
+                }
+            }
+        }
+        max_cols
+    }
+
     fn render_component(
         &self,
         comp: &ComponentAst,
         worksheet: &mut Worksheet,
         mut row: u32,
+        col: u16,
+        max_cols: u16,
         data: Option<&Value>,
         title_format: &Format,
         regular_format: &Format,
     ) -> Result<u32, String> {
         match comp {
-            ComponentAst::Text { value, style, bold, font_size, color, alignment, .. } => {
+            ComponentAst::Text { value, style, bold, italic, font_size, color, alignment, .. } => {
                 let interpolated = interpolate_string(value, data);
                 let mut fmt = Format::new();
 
                 let is_bold = bold.unwrap_or(style.as_deref() == Some("h1") || style.as_deref() == Some("h2"));
                 if is_bold {
                     fmt = fmt.set_bold();
+                }
+                if italic.unwrap_or(false) {
+                    fmt = fmt.set_italic();
                 }
 
                 if let Some(fs) = font_size {
@@ -127,7 +179,11 @@ impl ExcelEngine {
                     }
                 }
 
-                worksheet.write_string_with_format(row, 0, &interpolated, &fmt)
+                if interpolated.contains('\n') {
+                    fmt = fmt.set_text_wrap();
+                }
+
+                worksheet.write_string_with_format(row, col, &interpolated, &fmt)
                     .map_err(|e| e.to_string())?;
                 row += 1;
             }
@@ -137,44 +193,97 @@ impl ExcelEngine {
                 row += empty_rows;
             }
 
-            ComponentAst::Divider { .. } => {
+            ComponentAst::Divider { thickness, color, .. } => {
+                let mut div_fmt = Format::new()
+                    .set_border_bottom(if *thickness > 1.2 { FormatBorder::Medium } else { FormatBorder::Thin });
+                if let Some(c) = color {
+                    div_fmt = div_fmt.set_border_bottom_color(parse_xlsx_color(c));
+                }
+
+                let span = max_cols.max(6);
+                for c in col..(col + span) {
+                    let _ = worksheet.write_blank(row, c, &div_fmt);
+                }
                 row += 1;
             }
 
             ComponentAst::Column { items, .. } => {
                 for item in items {
-                    row = self.render_component(item, worksheet, row, data, title_format, regular_format)?;
+                    row = self.render_component(item, worksheet, row, col, max_cols, data, title_format, regular_format)?;
                 }
             }
 
             ComponentAst::Row { items, .. } => {
-                let mut col_offset: u16 = 0;
-                for row_item in items {
+                let count = items.len();
+                if count == 0 {
+                    return Ok(row);
+                }
+                if count == 1 {
+                    let item_comp = match &items[0] {
+                        RowItemAst::Detailed { item, .. } => item,
+                        RowItemAst::Simple(item) => item,
+                    };
+                    return self.render_component(item_comp, worksheet, row, col, max_cols, data, title_format, regular_format);
+                }
+
+                let total_cols = max_cols.max(6);
+                let col_step = (total_cols / count as u16).max(1);
+                let mut max_end_row = row;
+
+                for (idx, row_item) in items.iter().enumerate() {
                     let item_comp = match row_item {
                         RowItemAst::Detailed { item, .. } => item,
                         RowItemAst::Simple(item) => item,
                     };
-                    if let ComponentAst::Text { value, bold, .. } = item_comp {
-                        let interpolated = interpolate_string(value, data);
-                        let mut fmt = regular_format.clone();
-                        if bold.unwrap_or(false) {
-                            fmt = fmt.set_bold();
-                        }
-                        let _ = worksheet.write_string_with_format(row, col_offset, &interpolated, &fmt);
-                        col_offset += 2;
+
+                    let start_col = col + (idx as u16 * col_step);
+                    let item_span = if idx + 1 == count {
+                        (col + total_cols).saturating_sub(start_col).max(1)
                     } else {
-                        row = self.render_component(item_comp, worksheet, row, data, title_format, regular_format)?;
+                        col_step
+                    };
+
+                    let end_row = self.render_component(item_comp, worksheet, row, start_col, item_span, data, title_format, regular_format)?;
+                    if end_row > max_end_row {
+                        max_end_row = end_row;
                     }
                 }
-                if col_offset > 0 {
-                    row += 1;
-                }
+                row = max_end_row;
             }
 
             ComponentAst::Container { child, .. } => {
                 if let Some(c) = child {
-                    row = self.render_component(c, worksheet, row, data, title_format, regular_format)?;
+                    row = self.render_component(c, worksheet, row, col, max_cols, data, title_format, regular_format)?;
                 }
+            }
+
+            ComponentAst::Image { source, width, height, .. } => {
+                let interpolated_src = interpolate_string(source, data);
+                if let Ok(bytes) = crate::image::load_source(&interpolated_src) {
+                    if let Ok(mut img) = rust_xlsxwriter::Image::new_from_buffer(&bytes) {
+                        if let Some(w) = width {
+                            let img_w = (img.width() as f64).max(1.0);
+                            let img_h = (img.height() as f64).max(1.0);
+                            let scale_x = (*w as f64 * 1.33) / img_w;
+                            let scale_y = (height.unwrap_or(*w) as f64 * 1.33) / img_h;
+                            img = img.set_scale_width(scale_x).set_scale_height(scale_y);
+                        }
+                        let _ = worksheet.insert_image(row, col, &img);
+                        let consumed_rows = (height.unwrap_or(40.0) / 20.0).max(1.0) as u32;
+                        row += consumed_rows;
+                    }
+                }
+            }
+
+            ComponentAst::PageNumber { alignment, .. } => {
+                let mut fmt = regular_format.clone();
+                match alignment.as_str() {
+                    "center" => { fmt = fmt.set_align(FormatAlign::Center); }
+                    "right" => { fmt = fmt.set_align(FormatAlign::Right); }
+                    _ => { fmt = fmt.set_align(FormatAlign::Left); }
+                }
+                let _ = worksheet.write_string_with_format(row, col, "Pág. 1 de 1", &fmt);
+                row += 1;
             }
 
             ComponentAst::Table {
@@ -194,7 +303,8 @@ impl ExcelEngine {
                 // Formato de cabecera de tabla
                 let mut header_fmt = Format::new()
                     .set_bold()
-                    .set_border(FormatBorder::Thin);
+                    .set_border(FormatBorder::Thin)
+                    .set_text_wrap();
 
                 if let Some(bg) = header_background {
                     header_fmt = header_fmt.set_background_color(parse_xlsx_color(bg));
@@ -209,12 +319,21 @@ impl ExcelEngine {
                 }
 
                 // Escribir cabeceras de columnas
-                for (col_idx, col) in columns.iter().enumerate() {
-                    let col_u16 = col_idx as u16;
-                    worksheet.write_string_with_format(row, col_u16, &col.title, &header_fmt)
+                for (col_idx, table_col) in columns.iter().enumerate() {
+                    let col_u16 = col + (col_idx as u16);
+                    let mut col_header_fmt = header_fmt.clone();
+                    if let Some(align) = &table_col.align {
+                        match align.as_str() {
+                            "center" => { col_header_fmt = col_header_fmt.set_align(FormatAlign::Center); }
+                            "right" => { col_header_fmt = col_header_fmt.set_align(FormatAlign::Right); }
+                            _ => { col_header_fmt = col_header_fmt.set_align(FormatAlign::Left); }
+                        }
+                    }
+
+                    worksheet.write_string_with_format(row, col_u16, &table_col.title, &col_header_fmt)
                         .map_err(|e| e.to_string())?;
 
-                    if let Some(w) = col.width {
+                    if let Some(w) = table_col.width {
                         worksheet.set_column_width(col_u16, (w / 7.0).max(10.0))
                             .map_err(|e| e.to_string())?;
                     }
@@ -229,7 +348,6 @@ impl ExcelEngine {
                     &empty_vec
                 };
 
-                // Si viene de source en data
                 let resolved_rows: Vec<HashMap<String, Value>> = if !rows_data.is_empty() {
                     rows_data.clone()
                 } else if let Some(src) = source {
@@ -283,11 +401,11 @@ impl ExcelEngine {
                                 grp_fmt = grp_fmt.set_font_color(XlsxColor::RGB(0x0F172A));
                             }
 
-                            worksheet.write_string_with_format(row, 0, &format!("▶ {}", grp_val), &grp_fmt)
+                            worksheet.write_string_with_format(row, col, &format!("▶ {}", grp_val), &grp_fmt)
                                 .map_err(|e| e.to_string())?;
 
                             for c_i in 1..columns.len() {
-                                let _ = worksheet.write_string_with_format(row, c_i as u16, "", &grp_fmt);
+                                let _ = worksheet.write_string_with_format(row, col + (c_i as u16), "", &grp_fmt);
                             }
                             row += 1;
                         }
@@ -309,12 +427,12 @@ impl ExcelEngine {
                         base_cell_fmt = base_cell_fmt.set_font_color(parse_xlsx_color(tc));
                     }
 
-                    for (col_idx, col) in columns.iter().enumerate() {
-                        let col_u16 = col_idx as u16;
-                        let field_val = col.field.as_ref().and_then(|f| row_map.get(f));
+                    for (col_idx, table_col) in columns.iter().enumerate() {
+                        let col_u16 = col + (col_idx as u16);
+                        let field_val = table_col.field.as_ref().and_then(|f| row_map.get(f));
 
                         let mut cell_fmt = base_cell_fmt.clone();
-                        if let Some(align) = &col.align {
+                        if let Some(align) = &table_col.align {
                             match align.as_str() {
                                 "center" => { cell_fmt = cell_fmt.set_align(FormatAlign::Center); }
                                 "right" => { cell_fmt = cell_fmt.set_align(FormatAlign::Right); }
@@ -322,7 +440,10 @@ impl ExcelEngine {
                             }
                         }
 
-                        match col.format.as_deref() {
+                        // Multilínea automática con set_text_wrap
+                        cell_fmt = cell_fmt.set_text_wrap();
+
+                        match table_col.format.as_deref() {
                             Some("currency") => {
                                 cell_fmt = cell_fmt.set_num_format("$#,##0.00");
                                 if let Some(n) = field_val.and_then(|v| v.as_f64().or_else(|| v.as_str().and_then(|s| s.trim_start_matches('$').trim().parse::<f64>().ok()))) {
@@ -373,7 +494,7 @@ impl ExcelEngine {
             }
 
             _ => {
-                // Otros componentes (qr, barcode, chart, image) se representan con placeholder textual en Excel
+                // Componentes decorativos / gráficos opcionales
             }
         }
         Ok(row)
