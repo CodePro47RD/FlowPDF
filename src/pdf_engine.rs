@@ -837,7 +837,7 @@ impl PdfEngine {
         let auto_scale = if auto_w > auto_max && auto_w > 0.0 { auto_max / auto_w } else { 1.0 };
         let remaining_w = (available_w - fixed_w - auto_w * auto_scale).max(0.0);
         let flex_unit = if total_flex > 0.0 { remaining_w / total_flex } else { 0.0 };
-        let col_widths: Vec<f32> = columns
+        let mut col_widths: Vec<f32> = columns
             .iter()
             .zip(&natural)
             .map(|(c, n)| match n {
@@ -845,6 +845,16 @@ impl PdfEngine {
                 None => c.width.unwrap_or_else(|| c.flex.unwrap_or(1.0) * flex_unit),
             })
             .collect();
+
+        // Si la suma total de columnas excede el espacio disponible en la página (available_w),
+        // reescalar proporcionalmente para garantizar que la tabla nunca se corte en el margen derecho
+        let total_col_w: f32 = col_widths.iter().sum();
+        if total_col_w > available_w && total_col_w > 0.0 {
+            let scale = available_w / total_col_w;
+            for w in &mut col_widths {
+                *w *= scale;
+            }
+        }
 
         let header: Vec<Vec<String>> = columns
             .iter()
@@ -901,17 +911,19 @@ impl PdfEngine {
     }
 
     fn draw_table_header(&self, t: &TableLayout, x: f32, y: f32, available_w: f32, ops: &mut Vec<PdfOp>) {
+        let table_w = t.col_widths.iter().sum::<f32>().min(available_w);
         ops.push(PdfOp::RectFill {
-            rect: Rect::new(x, y, available_w, t.header_h),
+            rect: Rect::new(x, y, table_w, t.header_h),
             color: t.header_bg,
         });
         self.draw_cells(t, &t.header, x, y, true, t.header_color, ops);
     }
 
     fn draw_table_row(&self, t: &TableLayout, idx: usize, x: f32, y: f32, available_w: f32, ops: &mut Vec<PdfOp>) {
+        let table_w = t.col_widths.iter().sum::<f32>().min(available_w);
         match &t.rows[idx] {
             TableRow::Group { lines, h } => {
-                ops.push(PdfOp::RectFill { rect: Rect::new(x, y, available_w, *h), color: t.group_bg });
+                ops.push(PdfOp::RectFill { rect: Rect::new(x, y, table_w, *h), color: t.group_bg });
                 for (l_idx, line) in lines.iter().enumerate() {
                     ops.push(PdfOp::Text {
                         text: line.clone(),
@@ -923,15 +935,15 @@ impl PdfEngine {
                     });
                 }
                 if let Some((color, thickness)) = t.border {
-                    ops.push(PdfOp::Line { x1: x, y1: y + h, x2: x + available_w, y2: y + h, thickness, color });
+                    ops.push(PdfOp::Line { x1: x, y1: y + h, x2: x + table_w, y2: y + h, thickness, color });
                 }
             }
             TableRow::Data { cells, h, alt } => {
                 if let (Some(color), true) = (t.zebra, *alt) {
-                    ops.push(PdfOp::RectFill { rect: Rect::new(x, y, available_w, *h), color });
+                    ops.push(PdfOp::RectFill { rect: Rect::new(x, y, table_w, *h), color });
                 }
                 if let Some((color, thickness)) = t.border {
-                    ops.push(PdfOp::Line { x1: x, y1: y + h, x2: x + available_w, y2: y + h, thickness, color });
+                    ops.push(PdfOp::Line { x1: x, y1: y + h, x2: x + table_w, y2: y + h, thickness, color });
                 }
                 self.draw_cells(t, cells, x, y, false, t.text_color, ops);
             }

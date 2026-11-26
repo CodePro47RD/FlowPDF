@@ -138,20 +138,22 @@ impl ExcelEngine {
             if let Some(f) = &doc_ast.footer { scan_table(f, &mut table_cols); }
         }
 
+        let is_landscape = doc_ast.page.orientation.to_lowercase() == "landscape";
+        // Ancho canónico total en caracteres para encajar 100% en hoja sin desbordar el margen derecho
+        let target_chars = if is_landscape { 120.0f64 } else { 82.0f64 };
+
         if let Some(cols) = table_cols {
             let total_w: f32 = cols.iter().map(|c| c.width.unwrap_or(80.0)).sum();
-            // Ancho visual armónico en hoja A4 a 96dpi (~95 caracteres útiles totales)
-            let target_chars = 95.0f64;
 
             for (idx, c) in cols.iter().enumerate() {
                 let col_idx = idx as u16;
                 let w_pt = c.width.unwrap_or(total_w / cols.len().max(1) as f32);
-                let col_chars = ((w_pt as f64 / total_w.max(1.0) as f64) * target_chars).max(5.0);
+                let col_chars = ((w_pt as f64 / total_w.max(1.0) as f64) * target_chars).max(4.0);
                 let _ = worksheet.set_column_width(col_idx, col_chars);
             }
             true
         } else if estimated_cols > 0 {
-            let default_col_w = (95.0f64 / estimated_cols as f64).max(10.0);
+            let default_col_w = (target_chars / estimated_cols as f64).max(8.0);
             for c in 0..estimated_cols {
                 let _ = worksheet.set_column_width(c, default_col_w);
             }
@@ -513,10 +515,33 @@ impl ExcelEngine {
                     let is_zebra_row = *zebra && (r_idx % 2 == 1);
                     let mut base_cell_fmt = Format::new().set_border(FormatBorder::Thin);
 
-                    let has_multiline = columns.iter().any(|c| {
-                        c.field.as_ref().and_then(|f| row_map.get(f)).and_then(|v| v.as_str()).map(|s| s.contains('\n')).unwrap_or(false)
-                    });
-                    let row_h = if has_multiline { 28.0 } else { 18.0 };
+                    let mut max_lines = 1usize;
+                    for col_item in columns.iter() {
+                        let val_str = col_item.field.as_ref()
+                            .and_then(|f| row_map.get(f))
+                            .map(|v| v.as_str().map(|s| s.to_string()).unwrap_or_else(|| v.to_string()))
+                            .unwrap_or_default();
+
+                        let explicit_lines = val_str.lines().count().max(1);
+                        let col_w = col_item.width.unwrap_or(80.0);
+                        let approx_chars = ((col_w / 600.0) * 82.0).max(8.0) as usize;
+                        let mut wrapped_lines = 0usize;
+                        for line in val_str.lines() {
+                            let l_cnt = if approx_chars > 0 { (line.chars().count() + approx_chars - 1) / approx_chars } else { 1 };
+                            wrapped_lines += l_cnt.max(1);
+                        }
+                        let col_lines = explicit_lines.max(wrapped_lines);
+                        if col_lines > max_lines {
+                            max_lines = col_lines;
+                        }
+                    }
+
+                    let row_h = match max_lines {
+                        1 => 20.0,
+                        2 => 32.0,
+                        3 => 44.0,
+                        _ => max_lines as f64 * 14.0 + 4.0,
+                    };
                     let _ = worksheet.set_row_height(row, row_h);
 
                     if is_zebra_row {
