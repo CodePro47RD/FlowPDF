@@ -28,6 +28,9 @@ public class FlowPdfEngine {
 
     public interface FlowPdfNativeLib extends Library {
         FlowPdfResult.ByValue flowpdf_render_pdf(byte[] docJson, byte[] dataJson);
+        FlowPdfResult.ByValue flowpdf_render_xlsx(byte[] docJson, byte[] dataJson);
+        FlowPdfResult.ByValue flowpdf_render_docx(byte[] docJson, byte[] dataJson);
+        FlowPdfResult.ByValue flowpdf_render_document(byte[] docJson, byte[] dataJson, byte[] format);
         FlowPdfResult.ByValue flowpdf_extract_text(byte[] pdfData, long pdfLen);
         FlowPdfResult.ByValue flowpdf_extract_json(byte[] pdfData, long pdfLen, byte[] optionsJson);
         int flowpdf_register_font(byte[] fontName, byte[] fontBytes, long fontLen);
@@ -134,6 +137,85 @@ public class FlowPdfEngine {
 
     public static byte[] renderPdf(String documentJson) {
         return renderPdf(documentJson, null);
+    }
+
+    public static byte[] renderXlsx(String documentJson, String dataJson) {
+        FlowPdfNativeLib lib = getLib();
+        byte[] docBytes = (documentJson + "\0").getBytes(StandardCharsets.UTF_8);
+        byte[] dataBytes = dataJson != null ? (dataJson + "\0").getBytes(StandardCharsets.UTF_8) : null;
+        FlowPdfResult.ByValue result = lib.flowpdf_render_xlsx(docBytes, dataBytes);
+
+        try {
+            if (result.success == 0) {
+                String err = result.errorMessage != null ? result.errorMessage.getString(0, "UTF-8") : "Unknown native error";
+                throw new RuntimeException("FlowPDF Native Error: " + err);
+            }
+
+            int len = (int) result.length;
+            if (len > 0 && result.data != null) {
+                return result.data.getByteArray(0, len);
+            }
+            return new byte[0];
+        } finally {
+            lib.flowpdf_free_result(result);
+        }
+    }
+
+    public static byte[] renderXlsx(String documentJson) {
+        return renderXlsx(documentJson, null);
+    }
+
+    public static byte[] renderDocx(String documentJson, String dataJson) {
+        FlowPdfNativeLib lib = getLib();
+        byte[] docBytes = (documentJson + "\0").getBytes(StandardCharsets.UTF_8);
+        byte[] dataBytes = dataJson != null ? (dataJson + "\0").getBytes(StandardCharsets.UTF_8) : null;
+        FlowPdfResult.ByValue result = lib.flowpdf_render_docx(docBytes, dataBytes);
+
+        try {
+            if (result.success == 0) {
+                String err = result.errorMessage != null ? result.errorMessage.getString(0, "UTF-8") : "Unknown native error";
+                throw new RuntimeException("FlowPDF Native Error: " + err);
+            }
+
+            int len = (int) result.length;
+            if (len > 0 && result.data != null) {
+                return result.data.getByteArray(0, len);
+            }
+            return new byte[0];
+        } finally {
+            lib.flowpdf_free_result(result);
+        }
+    }
+
+    public static byte[] renderDocx(String documentJson) {
+        return renderDocx(documentJson, null);
+    }
+
+    public static byte[] render(String documentJson, String dataJson, String format) {
+        FlowPdfNativeLib lib = getLib();
+        byte[] docBytes = (documentJson + "\0").getBytes(StandardCharsets.UTF_8);
+        byte[] dataBytes = dataJson != null ? (dataJson + "\0").getBytes(StandardCharsets.UTF_8) : null;
+        byte[] fmtBytes = (format + "\0").getBytes(StandardCharsets.UTF_8);
+        FlowPdfResult.ByValue result = lib.flowpdf_render_document(docBytes, dataBytes, fmtBytes);
+
+        try {
+            if (result.success == 0) {
+                String err = result.errorMessage != null ? result.errorMessage.getString(0, "UTF-8") : "Unknown native error";
+                throw new RuntimeException("FlowPDF Native Error: " + err);
+            }
+
+            int len = (int) result.length;
+            if (len > 0 && result.data != null) {
+                return result.data.getByteArray(0, len);
+            }
+            return new byte[0];
+        } finally {
+            lib.flowpdf_free_result(result);
+        }
+    }
+
+    public static byte[] render(String documentJson, String format) {
+        return render(documentJson, null, format);
     }
 
     public static String extractText(byte[] pdfBytes) {

@@ -52,6 +52,9 @@ class FlowPdfEngine
                 } FlowPdfResult;
 
                 FlowPdfResult flowpdf_render_pdf(const char *doc_json, const char *data_json);
+                FlowPdfResult flowpdf_render_xlsx(const char *doc_json, const char *data_json);
+                FlowPdfResult flowpdf_render_docx(const char *doc_json, const char *data_json);
+                FlowPdfResult flowpdf_render_document(const char *doc_json, const char *data_json, const char *format);
                 FlowPdfResult flowpdf_extract_text(const uint8_t *pdf_data, size_t pdf_len);
                 FlowPdfResult flowpdf_extract_json(const uint8_t *pdf_data, size_t pdf_len, const char *options_json);
                 int flowpdf_register_font(const char *font_name, const uint8_t *font_bytes, size_t font_len);
@@ -85,6 +88,87 @@ class FlowPdfEngine
 
         $ffi = self::getFFI();
         $result = $ffi->flowpdf_render_pdf($docJson, $dataJson);
+
+        try {
+            if (!$result->success) {
+                $err = $result->error_message ? \FFI::string($result->error_message) : 'Unknown native render error';
+                throw new \RuntimeException("FlowPDF Native Error: {$err}");
+            }
+
+            if ($result->length > 0 && $result->data !== null) {
+                return \FFI::string($result->data, $result->length);
+            }
+            return '';
+        } finally {
+            $ffi->flowpdf_free_result($result);
+        }
+    }
+
+    public static function renderXlsx(mixed $document, mixed $data = null): string
+    {
+        if (is_object($document) && method_exists($document, 'build')) {
+            $document = $document->build();
+        }
+
+        $docJson = is_string($document) ? $document : json_encode($document, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $dataJson = $data !== null ? (is_string($data) ? $data : json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) : null;
+
+        $ffi = self::getFFI();
+        $result = $ffi->flowpdf_render_xlsx($docJson, $dataJson);
+
+        try {
+            if (!$result->success) {
+                $err = $result->error_message ? \FFI::string($result->error_message) : 'Unknown native render error';
+                throw new \RuntimeException("FlowPDF Native Error: {$err}");
+            }
+
+            if ($result->length > 0 && $result->data !== null) {
+                return \FFI::string($result->data, $result->length);
+            }
+            return '';
+        } finally {
+            $ffi->flowpdf_free_result($result);
+        }
+    }
+
+    public static function renderDocx(mixed $document, mixed $data = null): string
+    {
+        if (is_object($document) && method_exists($document, 'build')) {
+            $document = $document->build();
+        }
+
+        $docJson = is_string($document) ? $document : json_encode($document, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $dataJson = $data !== null ? (is_string($data) ? $data : json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) : null;
+
+        $ffi = self::getFFI();
+        $result = $ffi->flowpdf_render_docx($docJson, $dataJson);
+
+        try {
+            if (!$result->success) {
+                $err = $result->error_message ? \FFI::string($result->error_message) : 'Unknown native render error';
+                throw new \RuntimeException("FlowPDF Native Error: {$err}");
+            }
+
+            if ($result->length > 0 && $result->data !== null) {
+                return \FFI::string($result->data, $result->length);
+            }
+            return '';
+        } finally {
+            $ffi->flowpdf_free_result($result);
+        }
+    }
+
+    public static function render(mixed $document, mixed $data = null, string $format = 'pdf'): string
+    {
+        if (is_object($document) && method_exists($document, 'build')) {
+            $document = $document->build();
+        }
+
+        $docJson = is_string($document) ? $document : json_encode($document, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $dataJson = $data !== null ? (is_string($data) ? $data : json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) : null;
+
+        $ffi = self::getFFI();
+        $result = $ffi->flowpdf_render_document($docJson, $dataJson, $format);
 
         try {
             if (!$result->success) {
