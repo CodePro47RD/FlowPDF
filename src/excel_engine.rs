@@ -84,36 +84,6 @@ impl ExcelEngine {
             let _ = self.render_component(footer, worksheet, current_row, 0, estimated_cols, data, &regular_format, &regular_format)?;
         }
 
-        // 5. Marcas de agua flotantes
-        let watermarks = doc_ast.all_watermarks();
-        for wm in &watermarks {
-            let text = interpolate_string(&wm.text, data);
-            if !text.is_empty() {
-                // Header de impresión estándar para marcas de agua en Excel
-                worksheet.set_header(&format!("&C&\"Helvetica-Bold,Bold\"&36&K888888 {}", text));
-
-                // Marca de agua flotante textual sobre la cuadrícula
-                let wm_format = Format::new()
-                    .set_bold()
-                    .set_font_size(wm.font_size.min(28.0))
-                    .set_font_color(parse_xlsx_color(wm.color.as_deref().unwrap_or("#888888")))
-                    .set_align(FormatAlign::Center);
-
-                let target_row = if let Some(y) = wm.y {
-                    (y / 20.0).max(0.0) as u32
-                } else {
-                    (current_row / 2).max(1)
-                };
-                let target_col = if let Some(x) = wm.x {
-                    (x / 60.0).max(0.0) as u16
-                } else {
-                    1
-                };
-
-                let _ = worksheet.write_string_with_format(target_row, target_col, &text, &wm_format);
-            }
-        }
-
         worksheet.autofit();
         workbook.save_to_buffer().map_err(|e| format!("Excel generation error: {}", e))
     }

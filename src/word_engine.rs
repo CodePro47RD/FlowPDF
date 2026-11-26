@@ -54,27 +54,7 @@ impl WordEngine {
             doc = doc.header(header_obj);
         }
 
-        // 3. Marcas de agua flotantes
-        let watermarks = doc_ast.all_watermarks();
-        for wm in &watermarks {
-            let text = interpolate_string(&wm.text, data);
-            if !text.is_empty() {
-                let color_hex = wm.color.as_deref().unwrap_or("CCCCCC").trim_start_matches('#');
-                let wm_run = Run::new()
-                    .add_text(&text)
-                    .bold()
-                    .size((wm.font_size * 2.0) as usize)
-                    .color(color_hex);
 
-                let mut wm_p = Paragraph::new().add_run(wm_run);
-                wm_p = match wm.position.as_deref() {
-                    Some("top-left") | Some("bottom-left") => wm_p.align(AlignmentType::Left),
-                    Some("top-right") | Some("bottom-right") => wm_p.align(AlignmentType::Right),
-                    _ => wm_p.align(AlignmentType::Center),
-                };
-                doc = doc.add_paragraph(wm_p);
-            }
-        }
 
         // 4. Contenido principal
         match &doc_ast.content {
