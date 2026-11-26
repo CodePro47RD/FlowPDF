@@ -194,15 +194,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. Excel (XLSX)
     let excel_engine = ExcelEngine::new();
     let xlsx_bytes = excel_engine.render(&doc_ast, None)?;
-    let xlsx_path = "resultado_academico.xlsx";
-    fs::write(xlsx_path, &xlsx_bytes)?;
+    let xlsx_path = match fs::write("resultado_academico.xlsx", &xlsx_bytes) {
+        Ok(_) => "resultado_academico.xlsx".to_string(),
+        Err(_) => {
+            let alt = "resultado_academico_nuevo.xlsx".to_string();
+            let _ = fs::write(&alt, &xlsx_bytes);
+            println!("[!] Nota: 'resultado_academico.xlsx' está abierto en Excel. Se guardó como '{}'", alt);
+            alt
+        }
+    };
     println!("[✓] Excel (.xlsx) generado con éxito: {} ({} bytes)", xlsx_path, xlsx_bytes.len());
 
     // 3. Word (DOCX)
     let word_engine = WordEngine::new();
     let docx_bytes = word_engine.render(&doc_ast, None)?;
-    let docx_path = "resultado_academico.docx";
-    fs::write(docx_path, &docx_bytes)?;
+    let docx_path = match fs::write("resultado_academico.docx", &docx_bytes) {
+        Ok(_) => "resultado_academico.docx".to_string(),
+        Err(_) => {
+            let alt = "resultado_academico_nuevo.docx".to_string();
+            let _ = fs::write(&alt, &docx_bytes);
+            println!("[!] Nota: 'resultado_academico.docx' está abierto en Word. Se guardó como '{}'", alt);
+            alt
+        }
+    };
     println!("[✓] Word (.docx) generado con éxito: {} ({} bytes)", docx_path, docx_bytes.len());
 
     println!("============================================================");

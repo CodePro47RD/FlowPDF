@@ -60,6 +60,9 @@ impl ExcelEngine {
         // Determinar número de columnas estimado para cuadrícula armónica
         let estimated_cols = self.estimate_grid_cols(doc_ast);
 
+        // Aplicar anchos canónicos de columnas maestras basadas en la tabla (Estilo Microsoft Report Builder)
+        let has_master_table = self.apply_master_grid_columns(doc_ast, worksheet, estimated_cols);
+
         let mut current_row: u32 = 0;
 
         // 2. Encabezado del documento
@@ -84,8 +87,78 @@ impl ExcelEngine {
             let _ = self.render_component(footer, worksheet, current_row, 0, estimated_cols, data, &regular_format, &regular_format)?;
         }
 
-        worksheet.autofit();
+        // Si no hay tabla con anchos definidos, usar autofit de respaldo
+        if !has_master_table {
+            worksheet.autofit();
+        }
+
         workbook.save_to_buffer().map_err(|e| format!("Excel generation error: {}", e))
+    }
+
+    fn apply_master_grid_columns(&self, doc_ast: &DocumentDefinitionAst, worksheet: &mut Worksheet, estimated_cols: u16) -> bool {
+        let mut table_cols: Option<Vec<TableColumnAst>> = None;
+
+        fn scan_table(c: &ComponentAst, found: &mut Option<Vec<TableColumnAst>>) {
+            if found.is_some() { return; }
+            match c {
+                ComponentAst::Table { columns, .. } => {
+                    if !columns.is_empty() {
+                        *found = Some(columns.clone());
+                    }
+                }
+                ComponentAst::Column { items, .. } => {
+                    for it in items { scan_table(it, found); }
+                }
+                ComponentAst::Row { items, .. } => {
+                    for it in items {
+                        let c_inner = match it {
+                            RowItemAst::Detailed { item, .. } => item,
+                            RowItemAst::Simple(item) => item,
+                        };
+                        scan_table(c_inner, found);
+                    }
+                }
+                ComponentAst::Container { child, .. } => {
+                    if let Some(ch) = child { scan_table(ch, found); }
+                }
+                _ => {}
+            }
+        }
+
+        if let Some(h) = &doc_ast.header { scan_table(h, &mut table_cols); }
+        if table_cols.is_none() {
+            match &doc_ast.content {
+                ContentAst::Single(c) => scan_table(c, &mut table_cols),
+                ContentAst::Multiple(items) => {
+                    for it in items { scan_table(it, &mut table_cols); }
+                }
+            }
+        }
+        if table_cols.is_none() {
+            if let Some(f) = &doc_ast.footer { scan_table(f, &mut table_cols); }
+        }
+
+        if let Some(cols) = table_cols {
+            let total_w: f32 = cols.iter().map(|c| c.width.unwrap_or(80.0)).sum();
+            // Ancho visual armónico en hoja A4 a 96dpi (~95 caracteres útiles totales)
+            let target_chars = 95.0f64;
+
+            for (idx, c) in cols.iter().enumerate() {
+                let col_idx = idx as u16;
+                let w_pt = c.width.unwrap_or(total_w / cols.len().max(1) as f32);
+                let col_chars = ((w_pt as f64 / total_w.max(1.0) as f64) * target_chars).max(5.0);
+                let _ = worksheet.set_column_width(col_idx, col_chars);
+            }
+            true
+        } else if estimated_cols > 0 {
+            let default_col_w = (95.0f64 / estimated_cols as f64).max(10.0);
+            for c in 0..estimated_cols {
+                let _ = worksheet.set_column_width(c, default_col_w);
+            }
+            true
+        } else {
+            false
+        }
     }
 
     fn estimate_grid_cols(&self, doc_ast: &DocumentDefinitionAst) -> u16 {
@@ -186,27 +259,21 @@ impl ExcelEngine {
 
                 let align_str = alignment.as_deref().unwrap_or("left");
                 match align_str {
-                    "center" => {
-                        fmt = fmt.set_align(FormatAlign::Center);
-                        if max_cols > 1 {
-                            worksheet.merge_range(row, col, row, col + max_cols - 1, &interpolated, &fmt)
-                                .map_err(|e| e.to_string())?;
-                        } else {
-                            worksheet.write_string_with_format(row, col, &interpolated, &fmt)
-                                .map_err(|e| e.to_string())?;
-                        }
-                    }
-                    "right" => {
-                        fmt = fmt.set_align(FormatAlign::Right);
-                        let target_col = if max_cols > 1 { col + max_cols - 1 } else { col };
-                        worksheet.write_string_with_format(row, target_col, &interpolated, &fmt)
-                            .map_err(|e| e.to_string())?;
-                    }
-                    _ => {
-                        fmt = fmt.set_align(FormatAlign::Left);
-                        worksheet.write_string_with_format(row, col, &interpolated, &fmt)
-                            .map_err(|e| e.to_string())?;
-                    }
+                    "center" => { fmt = fmt.set_align(FormatAlign::Center); }
+                    "right" => { fmt = fmt.set_align(FormatAlign::Right); }
+                    _ => { fmt = fmt.set_align(FormatAlign::Left); }
+                }
+
+                if is_bold && font_size.map(|f| f >= 12.0).unwrap_or(style.as_deref() == Some("h1") || style.as_deref() == Some("h2")) {
+                    let _ = worksheet.set_row_height(row, 22.0);
+                }
+
+                if max_cols > 1 {
+                    worksheet.merge_range(row, col, row, col + max_cols - 1, &interpolated, &fmt)
+                        .map_err(|e| e.to_string())?;
+                } else {
+                    worksheet.write_string_with_format(row, col, &interpolated, &fmt)
+                        .map_err(|e| e.to_string())?;
                 }
                 row += 1;
             }
@@ -354,6 +421,7 @@ impl ExcelEngine {
                 }
 
                 // Escribir cabeceras de columnas
+                let _ = worksheet.set_row_height(row, 20.0);
                 for (col_idx, table_col) in columns.iter().enumerate() {
                     let col_u16 = col + (col_idx as u16);
                     let mut col_header_fmt = header_fmt.clone();
@@ -367,11 +435,6 @@ impl ExcelEngine {
 
                     worksheet.write_string_with_format(row, col_u16, &table_col.title, &col_header_fmt)
                         .map_err(|e| e.to_string())?;
-
-                    if let Some(w) = table_col.width {
-                        worksheet.set_column_width(col_u16, (w / 7.0).max(10.0))
-                            .map_err(|e| e.to_string())?;
-                    }
                 }
                 row += 1;
 
@@ -449,6 +512,12 @@ impl ExcelEngine {
                     // Formatos de celdas normales y zebra
                     let is_zebra_row = *zebra && (r_idx % 2 == 1);
                     let mut base_cell_fmt = Format::new().set_border(FormatBorder::Thin);
+
+                    let has_multiline = columns.iter().any(|c| {
+                        c.field.as_ref().and_then(|f| row_map.get(f)).and_then(|v| v.as_str()).map(|s| s.contains('\n')).unwrap_or(false)
+                    });
+                    let row_h = if has_multiline { 28.0 } else { 18.0 };
+                    let _ = worksheet.set_row_height(row, row_h);
 
                     if is_zebra_row {
                         if let Some(zc) = zebra_color {
