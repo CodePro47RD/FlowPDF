@@ -108,24 +108,53 @@ impl ExcelEngine {
 
     fn estimate_grid_cols(&self, doc_ast: &DocumentDefinitionAst) -> u16 {
         let mut max_cols: u16 = 6;
-        let mut inspect_comp = |c: &ComponentAst| {
-            if let ComponentAst::Table { columns, .. } = c {
-                if columns.len() as u16 > max_cols {
-                    max_cols = columns.len() as u16;
+
+        fn scan_comp(c: &ComponentAst, max_cols: &mut u16) {
+            match c {
+                ComponentAst::Table { columns, .. } => {
+                    if columns.len() as u16 > *max_cols {
+                        *max_cols = columns.len() as u16;
+                    }
                 }
+                ComponentAst::Column { items, .. } => {
+                    for it in items {
+                        scan_comp(it, max_cols);
+                    }
+                }
+                ComponentAst::Row { items, .. } => {
+                    if items.len() as u16 > *max_cols {
+                        *max_cols = items.len() as u16;
+                    }
+                    for it in items {
+                        let c_inner = match it {
+                            RowItemAst::Detailed { item, .. } => item,
+                            RowItemAst::Simple(item) => item,
+                        };
+                        scan_comp(c_inner, max_cols);
+                    }
+                }
+                ComponentAst::Container { child, .. } => {
+                    if let Some(ch) = child {
+                        scan_comp(ch, max_cols);
+                    }
+                }
+                _ => {}
             }
-        };
+        }
 
         if let Some(h) = &doc_ast.header {
-            inspect_comp(h);
+            scan_comp(h, &mut max_cols);
         }
         match &doc_ast.content {
-            ContentAst::Single(c) => inspect_comp(c),
+            ContentAst::Single(c) => scan_comp(c, &mut max_cols),
             ContentAst::Multiple(items) => {
                 for it in items {
-                    inspect_comp(it);
+                    scan_comp(it, &mut max_cols);
                 }
             }
+        }
+        if let Some(f) = &doc_ast.footer {
+            scan_comp(f, &mut max_cols);
         }
         max_cols
     }
