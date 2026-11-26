@@ -34,17 +34,10 @@ impl WordEngine {
             .right(margin_right);
         doc = doc.page_margin(page_margin);
 
-        // Dimensiones de página
-        let (w_pt, h_pt) = match doc_ast.page.size.to_uppercase().as_str() {
-            "LETTER" => (612.0, 792.0),
-            "LEGAL" => (612.0, 1008.0),
-            _ => (595.28, 841.89), // A4
-        };
-        let (w_dxa, h_dxa) = if doc_ast.page.orientation.to_lowercase() == "landscape" {
-            ((h_pt * 20.0) as u32, (w_pt * 20.0) as u32)
-        } else {
-            ((w_pt * 20.0) as u32, (h_pt * 20.0) as u32)
-        };
+        // Dimensiones de página según PageSize compartido
+        let (w_pt, h_pt) = crate::core::PageSize::from_str(&doc_ast.page.size).dimensions(&doc_ast.page.orientation);
+        let w_dxa = (w_pt * 20.0).round() as u32;
+        let h_dxa = (h_pt * 20.0).round() as u32;
         doc = doc.page_size(w_dxa, h_dxa);
 
         let usable_width_dxa = w_dxa.saturating_sub((margin_left + margin_right).max(0) as u32).max(1000);

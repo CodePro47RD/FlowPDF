@@ -25,6 +25,10 @@ impl ExcelEngine {
         match doc_ast.page.size.to_uppercase().as_str() {
             "LETTER" => { worksheet.set_paper_size(1); }
             "LEGAL" => { worksheet.set_paper_size(5); }
+            "EXECUTIVE" => { worksheet.set_paper_size(7); }
+            "A3" => { worksheet.set_paper_size(8); }
+            "A4" => { worksheet.set_paper_size(9); }
+            "A5" => { worksheet.set_paper_size(11); }
             _ => { worksheet.set_paper_size(9); } // A4 por defecto
         };
 
@@ -34,6 +38,14 @@ impl ExcelEngine {
         let margin_right_in = (doc_ast.page.margin_right.unwrap_or(doc_ast.page.margin) / 72.0) as f64;
         worksheet.set_margins(margin_left_in, margin_right_in, margin_top_in, margin_bottom_in, 0.3, 0.3);
         worksheet.set_screen_gridlines(true);
+
+        // Configuración de vista de diseño de página (Page Layout) para ver la hoja A4 directamente
+        worksheet.set_view_page_layout();
+
+        // Ajuste de impresión para que encaje horizontalmente a 1 página de ancho
+        worksheet.set_print_fit_to_pages(1, 0);
+        worksheet.set_print_center_horizontally(true);
+        worksheet.set_header_footer_align_with_page(true);
 
         // Estilos base
         let title_format = Format::new()
