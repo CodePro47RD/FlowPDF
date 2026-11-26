@@ -5,6 +5,11 @@ use serde_json::Value;
 
 use crate::ast::*;
 
+enum DocxHeaderFooterItem {
+    Paragraph(Paragraph),
+    Table(Table),
+}
+
 pub struct WordEngine;
 
 impl WordEngine {
@@ -47,8 +52,11 @@ impl WordEngine {
         // 2. Encabezado de página
         if let Some(header) = &doc_ast.header {
             let mut header_obj = Header::new();
-            for p in self.component_to_paragraphs(header, data, usable_width_dxa)? {
-                header_obj = header_obj.add_paragraph(p);
+            for item in self.component_to_header_footer_items(header, data, usable_width_dxa)? {
+                header_obj = match item {
+                    DocxHeaderFooterItem::Paragraph(p) => header_obj.add_paragraph(p),
+                    DocxHeaderFooterItem::Table(t) => header_obj.add_table(t),
+                };
             }
             doc = doc.header(header_obj);
         }
@@ -90,8 +98,11 @@ impl WordEngine {
         // 5. Pie de página
         if let Some(footer) = &doc_ast.footer {
             let mut footer_obj = Footer::new();
-            for p in self.component_to_paragraphs(footer, data, usable_width_dxa)? {
-                footer_obj = footer_obj.add_paragraph(p);
+            for item in self.component_to_header_footer_items(footer, data, usable_width_dxa)? {
+                footer_obj = match item {
+                    DocxHeaderFooterItem::Paragraph(p) => footer_obj.add_paragraph(p),
+                    DocxHeaderFooterItem::Table(t) => footer_obj.add_table(t),
+                };
             }
             doc = doc.footer(footer_obj);
         }
@@ -160,23 +171,7 @@ impl WordEngine {
             }
 
             ComponentAst::Divider { thickness, color, .. } => {
-                let sz = (*thickness * 8.0).max(4.0) as usize;
-                let c = color.as_deref().unwrap_or("CBD5E1").trim_start_matches('#');
-                let tcb = TableCellBorder::new(TableCellBorderPosition::Bottom)
-                    .size(sz)
-                    .color(c)
-                    .border_type(BorderType::Single);
-
-                let cell = TableCell::new()
-                    .width(usable_width_dxa as usize, WidthType::Dxa)
-                    .clear_all_border()
-                    .set_border(tcb)
-                    .add_paragraph(Paragraph::new());
-
-                let row = TableRow::new(vec![cell]);
-                let table = Table::new(vec![row])
-                    .clear_all_border()
-                    .set_grid(vec![usable_width_dxa as usize]);
+                let table = self.render_divider_table(*thickness, color.as_deref(), usable_width_dxa);
                 doc = doc.add_table(table);
             }
 
@@ -199,54 +194,7 @@ impl WordEngine {
                     return self.render_component(item_comp, doc, usable_width_dxa, data);
                 }
 
-                // Disposición horizontal de múltiples columnas mediante tabla de maquetación invisible
-                let total_flex: f32 = items.iter().map(|it| match it {
-                    RowItemAst::Detailed { flex, .. } => flex.unwrap_or(1.0),
-                    RowItemAst::Simple(_) => 1.0,
-                }).sum();
-
-                let mut col_widths_dxa: Vec<usize> = Vec::new();
-                for it in items {
-                    let f = match it {
-                        RowItemAst::Detailed { flex, width, .. } => {
-                            if let Some(w) = width {
-                                (*w * 20.0) as usize
-                            } else {
-                                (flex.unwrap_or(1.0) / total_flex.max(1.0) * usable_width_dxa as f32) as usize
-                            }
-                        }
-                        RowItemAst::Simple(_) => (usable_width_dxa as f32 / count as f32) as usize,
-                    };
-                    col_widths_dxa.push(f.max(500));
-                }
-
-                let mut cells: Vec<TableCell> = Vec::new();
-                for (idx, row_item) in items.iter().enumerate() {
-                    let item_comp = match row_item {
-                        RowItemAst::Detailed { item, .. } => item,
-                        RowItemAst::Simple(item) => item,
-                    };
-
-                    let w_dxa = col_widths_dxa[idx];
-                    let mut cell = TableCell::new()
-                        .width(w_dxa, WidthType::Dxa)
-                        .clear_all_border();
-
-                    let paras = self.component_to_paragraphs(item_comp, data, w_dxa as u32)?;
-                    if paras.is_empty() {
-                        cell = cell.add_paragraph(Paragraph::new());
-                    } else {
-                        for p in paras {
-                            cell = cell.add_paragraph(p);
-                        }
-                    }
-                    cells.push(cell);
-                }
-
-                let row_obj = TableRow::new(cells);
-                let table = Table::new(vec![row_obj])
-                    .clear_all_border()
-                    .set_grid(col_widths_dxa);
+                let table = self.render_row_to_table(items, data, usable_width_dxa)?;
                 doc = doc.add_table(table);
             }
 
@@ -372,7 +320,8 @@ impl WordEngine {
                     let mut data_cells: Vec<TableCell> = Vec::new();
 
                     for (c_idx, col) in columns.iter().enumerate() {
-                        let val_str = format_cell_value(col.field.as_ref().and_then(|f| row_map.get(f)), col.format.as_deref());
+                        let raw_str = format_cell_value(col.field.as_ref().and_then(|f| row_map.get(f)), col.format.as_deref());
+                        let val_str = clean_word_text(&raw_str);
 
                         let mut p = Paragraph::new();
                         if let Some(align) = &col.align {
@@ -384,13 +333,17 @@ impl WordEngine {
                         }
 
                         // Soporte para texto multilínea con saltos de línea (como en horarios)
-                        let lines: Vec<&str> = val_str.split('\n').collect();
-                        for (l_idx, line) in lines.iter().enumerate() {
-                            let mut run = Run::new().add_text(*line).size(18);
-                            if l_idx + 1 < lines.len() {
-                                run = run.add_break(BreakType::TextWrapping);
+                        let lines: Vec<&str> = val_str.split('\n').filter(|l| !l.is_empty()).collect();
+                        if lines.is_empty() {
+                            p = p.add_run(Run::new().add_text("").size(18));
+                        } else {
+                            for (l_idx, line) in lines.iter().enumerate() {
+                                let mut run = Run::new().add_text(*line).size(18);
+                                if l_idx + 1 < lines.len() {
+                                    run = run.add_break(BreakType::TextWrapping);
+                                }
+                                p = p.add_run(run);
                             }
-                            p = p.add_run(run);
                         }
 
                         let col_w = col_widths_dxa[c_idx];
@@ -419,7 +372,6 @@ impl WordEngine {
                     .clear_all_border()
                     .set_grid(col_widths_dxa);
                 doc = doc.add_table(table);
-                doc = doc.add_paragraph(Paragraph::new()); // Espacio tras la tabla
             }
 
             _ => {
@@ -429,10 +381,117 @@ impl WordEngine {
         Ok(doc)
     }
 
+    fn render_divider_table(&self, thickness: f32, color: Option<&str>, usable_width_dxa: u32) -> Table {
+        let sz = (thickness * 8.0).max(4.0) as usize;
+        let c = color.unwrap_or("CBD5E1").trim_start_matches('#');
+        let tcb = TableCellBorder::new(TableCellBorderPosition::Bottom)
+            .size(sz)
+            .color(c)
+            .border_type(BorderType::Single);
+
+        let cell = TableCell::new()
+            .width(usable_width_dxa as usize, WidthType::Dxa)
+            .clear_all_border()
+            .set_border(tcb)
+            .add_paragraph(Paragraph::new());
+
+        let row = TableRow::new(vec![cell]);
+        Table::new(vec![row])
+            .clear_all_border()
+            .set_grid(vec![usable_width_dxa as usize])
+    }
+
+    fn render_row_to_table(&self, items: &[RowItemAst], data: Option<&Value>, usable_width_dxa: u32) -> Result<Table, String> {
+        let count = items.len();
+        let total_flex: f32 = items.iter().map(|it| match it {
+            RowItemAst::Detailed { flex, .. } => flex.unwrap_or(1.0),
+            RowItemAst::Simple(_) => 1.0,
+        }).sum();
+
+        let mut col_widths_dxa: Vec<usize> = Vec::new();
+        for it in items {
+            let f = match it {
+                RowItemAst::Detailed { flex, width, .. } => {
+                    if let Some(w) = width {
+                        (*w * 20.0) as usize
+                    } else {
+                        (flex.unwrap_or(1.0) / total_flex.max(1.0) * usable_width_dxa as f32) as usize
+                    }
+                }
+                RowItemAst::Simple(_) => (usable_width_dxa as f32 / count as f32) as usize,
+            };
+            col_widths_dxa.push(f.max(500));
+        }
+
+        let mut cells: Vec<TableCell> = Vec::new();
+        for (idx, row_item) in items.iter().enumerate() {
+            let item_comp = match row_item {
+                RowItemAst::Detailed { item, .. } => item,
+                RowItemAst::Simple(item) => item,
+            };
+
+            let w_dxa = col_widths_dxa[idx];
+            let mut cell = TableCell::new()
+                .width(w_dxa, WidthType::Dxa)
+                .clear_all_border();
+
+            let paras = self.component_to_paragraphs(item_comp, data, w_dxa as u32)?;
+            if paras.is_empty() {
+                cell = cell.add_paragraph(Paragraph::new());
+            } else {
+                for p in paras {
+                    cell = cell.add_paragraph(p);
+                }
+            }
+            cells.push(cell);
+        }
+
+        let row_obj = TableRow::new(cells);
+        Ok(Table::new(vec![row_obj])
+            .clear_all_border()
+            .set_grid(col_widths_dxa))
+    }
+
+    fn component_to_header_footer_items(
+        &self,
+        comp: &ComponentAst,
+        data: Option<&Value>,
+        available_width_dxa: u32,
+    ) -> Result<Vec<DocxHeaderFooterItem>, String> {
+        match comp {
+            ComponentAst::Row { items, .. } if items.len() > 1 => {
+                let table = self.render_row_to_table(items, data, available_width_dxa)?;
+                Ok(vec![DocxHeaderFooterItem::Table(table)])
+            }
+            ComponentAst::Divider { thickness, color, .. } => {
+                let table = self.render_divider_table(*thickness, color.as_deref(), available_width_dxa);
+                Ok(vec![DocxHeaderFooterItem::Table(table)])
+            }
+            ComponentAst::Column { items, .. } => {
+                let mut res = Vec::new();
+                for item in items {
+                    res.extend(self.component_to_header_footer_items(item, data, available_width_dxa)?);
+                }
+                Ok(res)
+            }
+            ComponentAst::Container { child, .. } => {
+                if let Some(c) = child {
+                    self.component_to_header_footer_items(c, data, available_width_dxa)
+                } else {
+                    Ok(vec![])
+                }
+            }
+            _ => {
+                let paras = self.component_to_paragraphs(comp, data, available_width_dxa)?;
+                Ok(paras.into_iter().map(DocxHeaderFooterItem::Paragraph).collect())
+            }
+        }
+    }
+
     fn component_to_paragraphs(&self, comp: &ComponentAst, data: Option<&Value>, available_width_dxa: u32) -> Result<Vec<Paragraph>, String> {
         match comp {
             ComponentAst::Text { value, style, bold, italic, font_size, color, alignment, .. } => {
-                let interpolated = interpolate_string(value, data);
+                let interpolated = clean_word_text(&interpolate_string(value, data));
                 let is_bold = bold.unwrap_or(style.as_deref() == Some("h1") || style.as_deref() == Some("h2"));
                 let sz = font_size.map(|f| (f * 2.0) as usize).unwrap_or(20);
 
@@ -514,18 +573,12 @@ impl WordEngine {
                 }
             }
 
-            ComponentAst::Divider { thickness, color, .. } => {
-                let c = color.as_deref().unwrap_or("CBD5E1").trim_start_matches('#');
-                let sz = (*thickness * 8.0).max(4.0) as usize;
-                let run = Run::new().add_text("____________________________________________________________")
-                    .color(c)
-                    .size(sz);
-                Ok(vec![Paragraph::new().add_run(run)])
+            ComponentAst::Divider { thickness: _, color: _, .. } => {
+                Ok(vec![Paragraph::new()])
             }
 
-            ComponentAst::Spacer { height } => {
-                let lines = (height / 15.0).max(1.0) as usize;
-                Ok((0..lines).map(|_| Paragraph::new()).collect())
+            ComponentAst::Spacer { height: _ } => {
+                Ok(vec![Paragraph::new()])
             }
 
             ComponentAst::PageNumber { alignment, .. } => {
@@ -636,4 +689,12 @@ fn interpolate_string(text: &str, data: Option<&Value>) -> String {
         }
     }
     result
+}
+
+fn clean_word_text(s: &str) -> String {
+    s.replace('\t', " ")
+     .lines()
+     .map(|l| l.trim())
+     .collect::<Vec<_>>()
+     .join("\n")
 }

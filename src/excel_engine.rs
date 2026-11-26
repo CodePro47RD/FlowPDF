@@ -53,7 +53,6 @@ impl ExcelEngine {
         // 2. Encabezado del documento
         if let Some(header) = &doc_ast.header {
             current_row = self.render_component(header, worksheet, current_row, 0, estimated_cols, data, &title_format, &regular_format)?;
-            current_row += 1;
         }
 
         // 3. Contenido principal
@@ -70,7 +69,6 @@ impl ExcelEngine {
 
         // 4. Pie de página del documento
         if let Some(footer) = &doc_ast.footer {
-            current_row += 1;
             let _ = self.render_component(footer, worksheet, current_row, 0, estimated_cols, data, &regular_format, &regular_format)?;
         }
 
@@ -145,7 +143,7 @@ impl ExcelEngine {
     ) -> Result<u32, String> {
         match comp {
             ComponentAst::Text { value, style, bold, italic, font_size, color, alignment, .. } => {
-                let interpolated = interpolate_string(value, data);
+                let interpolated = clean_cell_text(&interpolate_string(value, data));
                 let mut fmt = Format::new();
 
                 let is_bold = bold.unwrap_or(style.as_deref() == Some("h1") || style.as_deref() == Some("h2"));
@@ -171,26 +169,41 @@ impl ExcelEngine {
                     fmt = fmt.set_font_color(parse_xlsx_color(c));
                 }
 
-                if let Some(align) = alignment {
-                    match align.as_str() {
-                        "center" => { fmt = fmt.set_align(FormatAlign::Center); }
-                        "right" => { fmt = fmt.set_align(FormatAlign::Right); }
-                        _ => { fmt = fmt.set_align(FormatAlign::Left); }
-                    }
-                }
-
                 if interpolated.contains('\n') {
                     fmt = fmt.set_text_wrap();
                 }
 
-                worksheet.write_string_with_format(row, col, &interpolated, &fmt)
-                    .map_err(|e| e.to_string())?;
+                let align_str = alignment.as_deref().unwrap_or("left");
+                match align_str {
+                    "center" => {
+                        fmt = fmt.set_align(FormatAlign::Center);
+                        if max_cols > 1 {
+                            worksheet.merge_range(row, col, row, col + max_cols - 1, &interpolated, &fmt)
+                                .map_err(|e| e.to_string())?;
+                        } else {
+                            worksheet.write_string_with_format(row, col, &interpolated, &fmt)
+                                .map_err(|e| e.to_string())?;
+                        }
+                    }
+                    "right" => {
+                        fmt = fmt.set_align(FormatAlign::Right);
+                        let target_col = if max_cols > 1 { col + max_cols - 1 } else { col };
+                        worksheet.write_string_with_format(row, target_col, &interpolated, &fmt)
+                            .map_err(|e| e.to_string())?;
+                    }
+                    _ => {
+                        fmt = fmt.set_align(FormatAlign::Left);
+                        worksheet.write_string_with_format(row, col, &interpolated, &fmt)
+                            .map_err(|e| e.to_string())?;
+                    }
+                }
                 row += 1;
             }
 
             ComponentAst::Spacer { height } => {
-                let empty_rows = (height / 15.0).max(1.0) as u32;
-                row += empty_rows;
+                let h_pt = (*height as f64).max(2.0);
+                let _ = worksheet.set_row_height(row, h_pt);
+                row += 1;
             }
 
             ComponentAst::Divider { thickness, color, .. } => {
@@ -200,7 +213,8 @@ impl ExcelEngine {
                     div_fmt = div_fmt.set_border_bottom_color(parse_xlsx_color(c));
                 }
 
-                let span = max_cols.max(6);
+                let _ = worksheet.set_row_height(row, 4.0);
+                let span = max_cols.max(1);
                 for c in col..(col + span) {
                     let _ = worksheet.write_blank(row, c, &div_fmt);
                 }
@@ -226,9 +240,14 @@ impl ExcelEngine {
                     return self.render_component(item_comp, worksheet, row, col, max_cols, data, title_format, regular_format);
                 }
 
-                let total_cols = max_cols.max(6);
-                let col_step = (total_cols / count as u16).max(1);
+                let total_cols = max_cols.max(count as u16);
+                let total_flex: f32 = items.iter().map(|it| match it {
+                    RowItemAst::Detailed { flex, .. } => flex.unwrap_or(1.0),
+                    RowItemAst::Simple(_) => 1.0,
+                }).sum();
+
                 let mut max_end_row = row;
+                let mut current_col = col;
 
                 for (idx, row_item) in items.iter().enumerate() {
                     let item_comp = match row_item {
@@ -236,17 +255,22 @@ impl ExcelEngine {
                         RowItemAst::Simple(item) => item,
                     };
 
-                    let start_col = col + (idx as u16 * col_step);
-                    let item_span = if idx + 1 == count {
-                        (col + total_cols).saturating_sub(start_col).max(1)
-                    } else {
-                        col_step
+                    let flex = match row_item {
+                        RowItemAst::Detailed { flex, .. } => flex.unwrap_or(1.0),
+                        RowItemAst::Simple(_) => 1.0,
                     };
 
-                    let end_row = self.render_component(item_comp, worksheet, row, start_col, item_span, data, title_format, regular_format)?;
+                    let item_cols = if idx + 1 == count {
+                        (col + total_cols).saturating_sub(current_col).max(1)
+                    } else {
+                        ((flex / total_flex.max(1.0)) * total_cols as f32).round().max(1.0) as u16
+                    };
+
+                    let end_row = self.render_component(item_comp, worksheet, row, current_col, item_cols, data, title_format, regular_format)?;
                     if end_row > max_end_row {
                         max_end_row = end_row;
                     }
+                    current_col += item_cols;
                 }
                 row = max_end_row;
             }
@@ -482,15 +506,15 @@ impl ExcelEngine {
                                     Value::String(s) => s.clone(),
                                     _ => v.to_string(),
                                 }).unwrap_or_default();
+                                let clean_val = clean_cell_text(&str_val);
 
-                                worksheet.write_string_with_format(row, col_u16, &str_val, &cell_fmt)
+                                worksheet.write_string_with_format(row, col_u16, &clean_val, &cell_fmt)
                                     .map_err(|e| e.to_string())?;
                             }
                         }
                     }
                     row += 1;
                 }
-                row += 1; // Espacio posterior a la tabla
             }
 
             _ => {
@@ -505,6 +529,14 @@ impl Default for ExcelEngine {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn clean_cell_text(s: &str) -> String {
+    s.replace('\t', " ")
+     .lines()
+     .map(|line| line.trim())
+     .collect::<Vec<_>>()
+     .join("\n")
 }
 
 fn parse_xlsx_color(hex: &str) -> XlsxColor {
